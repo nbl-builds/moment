@@ -1,0 +1,14 @@
+{
+  "name": "moment",
+  "private": true,
+  "packageManager": "pnpm@12.21.0",
+  "scripts": {
+    "mobile": "pnpm --filter mobile start",
+    "web": "pnpm --filter web dev",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "supabase": "^2"
+  }
+}
