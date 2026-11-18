@@ -9,5 +9,5 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["src"]
+  "include": ["src", "tests", "vitest.config.ts", "vitest.integration.config.ts"]
 }
