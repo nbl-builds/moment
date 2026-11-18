@@ -5,7 +5,10 @@ Keep this file current: tick items as they land and update **Next up** so any se
 ## Next up
 - Decide maps provider (Mapbox vs Google Maps) before Explore work
 - Confirm exact "Third" orange hex from Figma (`packages/shared/src/tokens/colors.ts` has a placeholder)
-- Start Phase 1: core data model + auth
+- Phase 1 remaining: Supabase Auth providers (phone OTP via a Pakistan SMS provider, email, Apple, Google, Facebook) and the shared typed API client + zod schemas
+- Choose payment providers for Pakistan (JazzCash, Easypaisa, Safepay, PayFast...) and the payout model (`direct` vs `platform_collect`); the schema supports both
+- Business-side booking RPC for walk-ins and POS (`create_booking` is consumer-only today)
+- Membership benefits in pricing (`create_booking` ignores member discounts and included sessions for now)
 
 ---
 
@@ -20,12 +23,16 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - [ ] Shared UI primitives: Button (large/small, icon, states), Text, Input, Icon (Huge Icons)
 
 ## Phase 1: Data model, auth, roles
-- [ ] Core schema: profiles, businesses, business_members, listings (experiences + services), staff, availability, bookings, reviews, memberships
-- [ ] Roles: `consumer`, `business_owner`, `business_staff`, `super_admin`
-- [ ] RLS on every business table scoped by `business_id`; explicit super admin policies
+- [x] Core schema: 17 migrations covering every surface (see `docs/DATABASE.md`)
+- [x] Roles: consumer, business owner / manager / staff, super admin
+- [x] RLS on every table, business data scoped by `business_id`; explicit super admin policies
+- [x] Booking engine: slot capacity, appointment availability, no double-booking, coupons, status RPCs
+- [x] Provider-agnostic payments, refunds, payouts, wallet
+- [x] pgTAP tests (117 assertions) for isolation, roles, bookings, social, payments
+- [x] Generated TypeScript types in `@moment/shared` (`pnpm db:types`), typed clients in both apps
 - [ ] Supabase Auth: phone OTP, email + password, Apple, Google, Facebook
 - [ ] Shared typed API client + zod schemas in `@moment/shared` (POS-ready: no client-specific logic in the API)
-- [ ] Seed data for local dev
+- [x] Seed data: Islamabad, Lahore, Karachi (PKR, Asia/Karachi, +92)
 
 ## Phase 2: Consumer app core (mobile)
 - [ ] Onboarding, sign up / sign in, passcode + Face ID

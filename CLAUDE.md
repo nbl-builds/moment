@@ -9,6 +9,9 @@ Moment is a booking platform for local experiences (tours, activities, local hos
 4. **Super admin** (web): the Moment team controls all businesses, consumers, listings and platform settings.
 5. **POS integration** (later): businesses will link a POS (built separately for Convexa) to manage things from mobile. Design the data model and API so the POS can become another client without a rebuild.
 
+## Launch market
+Pakistan first: Islamabad, Lahore, Karachi. Default currency PKR (stored in minor units), timezone Asia/Karachi, phone numbers +92.
+
 ## Stack
 - Monorepo with pnpm workspaces
 - `apps/mobile`: Expo (React Native), TypeScript, Expo Router
@@ -16,12 +19,13 @@ Moment is a booking platform for local experiences (tours, activities, local hos
 - `packages/shared`: shared types, validation schemas, API client, design tokens
 - `supabase/`: Postgres schema, migrations, Row Level Security policies, edge functions, seed data
 - Auth: Supabase Auth (phone OTP, email + password, Apple, Google, Facebook)
-- Payments: Stripe (test mode during development)
+- Payments: provider-agnostic (launch market is Pakistan, where Stripe is unavailable). Store provider name plus provider transaction/account refs; payout model (direct vs Moment collects) is undecided. See `docs/DATABASE.md`
 - Maps: Mapbox or Google Maps (decide before building Explore)
 - Realtime chat: Supabase Realtime
 
 ## Roles and access
-- `consumer`, `business_owner`, `business_staff`, `super_admin`
+- `consumer`, business `owner` / `manager` / `staff` (per business, in `business_members`), `super_admin`
+- Managers edit listings, prices and schedules, but not payouts, business settings or team membership
 - Every table holding business data is scoped by `business_id` and protected with RLS. A business only ever sees its own data. Super admin access goes through explicit policies, never by disabling RLS.
 
 ## Design system (from Figma)
