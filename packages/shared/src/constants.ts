@@ -13,7 +13,7 @@ export type LaunchCity = (typeof LAUNCH_CITIES)[number];
 
 /** Digits in a Supabase phone/email OTP (`otp_length` in supabase/config.toml, 6 boxes in Figma). */
 export const OTP_LENGTH = 6;
-/** On-device passcode length. Stored in secure storage only, never in the database. */
+/** On-device passcode length (6 digits, confirmed). Stored in secure storage only, never in the database. */
 export const PASSCODE_LENGTH = 6;
 /** Minimum age to create an account (Figma: adults are 13+). */
 export const MIN_SIGNUP_AGE = 13;

@@ -9,8 +9,7 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Phase 0 remaining: shared UI primitives, then the first screens (onboarding + auth) using `@moment/shared` schemas with react-hook-form
 - Figma fields with no column yet (add a migration when the screens are built): profile pronouns and emergency contact, group "Who can see likes?", recommendation type (experience vs business; stored in the note for now)
 - Search by distance and date (`near`, `maxDistanceKm`, `date`, `sort: 'distance'`) needs a search RPC; `catalog.searchListings` throws `unsupported` for these until then. Build it with the Explore map
-- Align `minimum_password_length` in `supabase/config.toml` (6) with the client rule (8, letter + number)
-- Confirm the passcode length with design (`PASSCODE_LENGTH = 6`; the Figma screen shows Face ID only)
+- Set the same password rule (8+ characters, letters and digits) on the hosted Supabase project under Auth settings; `config.toml` only covers local
 - Check the date helpers on Hermes devices (they use `Intl.DateTimeFormat` with `timeZone`, verified on Node only)
 - Choose payment providers for Pakistan (JazzCash, Easypaisa, Safepay, PayFast...) and the payout model (`direct` vs `platform_collect`); the schema supports both
 - Business-side booking RPC for walk-ins and POS (`create_booking` is consumer-only today)
