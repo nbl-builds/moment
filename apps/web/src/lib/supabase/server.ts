@@ -1,3 +1,4 @@
+import type { Database } from "@moment/shared";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { supabasePublishableKey, supabaseUrl } from "./env";
@@ -6,7 +7,7 @@ import { supabasePublishableKey, supabaseUrl } from "./env";
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(supabaseUrl, supabasePublishableKey, {
+  return createServerClient<Database>(supabaseUrl, supabasePublishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

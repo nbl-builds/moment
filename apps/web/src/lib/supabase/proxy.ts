@@ -1,3 +1,4 @@
+import type { Database } from "@moment/shared";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { supabasePublishableKey, supabaseUrl } from "./env";
@@ -6,7 +7,7 @@ import { supabasePublishableKey, supabaseUrl } from "./env";
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(supabaseUrl, supabasePublishableKey, {
+  const supabase = createServerClient<Database>(supabaseUrl, supabasePublishableKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

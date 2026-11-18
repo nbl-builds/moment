@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Database } from '@moment/shared';
 import { createClient } from '@supabase/supabase-js';
 import { AppState, Platform } from 'react-native';
 
@@ -14,7 +15,7 @@ if (!supabaseUrl || !supabasePublishableKey) {
 // Expo web renders on the server too, where there is no storage.
 const isServer = Platform.OS === 'web' && typeof window === 'undefined';
 
-export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
+export const supabase = createClient<Database>(supabaseUrl, supabasePublishableKey, {
   auth: {
     storage: isServer ? undefined : AsyncStorage,
     autoRefreshToken: !isServer,
