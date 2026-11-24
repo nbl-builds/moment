@@ -107,7 +107,7 @@ export function ListingCard({ listing, size, distanceKm, saved, onPress, onToggl
         accessibilityLabel={saved ? `Remove ${listing.title} from bucket list` : `Add ${listing.title} to bucket list`}
         accessibilityState={{ selected: saved }}
       >
-        {saved ? <Icon name="heart-solid" color="primary" /> : <Icon name="heart-on-photo" />}
+        {saved ? <Icon name="heart-saved" /> : <Icon name="heart-on-photo" />}
       </Pressable>
     </View>
   );

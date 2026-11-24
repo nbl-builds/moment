@@ -10,6 +10,7 @@ import { AuthBypassBadge } from '@/components/auth-bypass-badge';
 import { BrandSplash } from '@/components/brand-splash';
 import { ToastHost } from '@/components/toast';
 import { LoginSheetProvider } from '@/features/auth/login-sheet-provider';
+import { BucketSheetsProvider } from '@/features/bucket-list/bucket-sheets';
 import { queryClient } from '@/lib/query-client';
 
 /** How long the splash stays up after the app has drawn it. */
@@ -47,7 +48,9 @@ export default function RootLayout() {
         <StatusBar style={showSplash ? 'dark' : 'light'} />
         {appReady && (
           <LoginSheetProvider>
-            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.secondary } }} />
+            <BucketSheetsProvider>
+              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.secondary } }} />
+            </BucketSheetsProvider>
           </LoginSheetProvider>
         )}
         {showSplash && <BrandSplash onLayout={onSplashLayout} />}
