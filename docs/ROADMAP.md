@@ -7,6 +7,7 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Confirm exact "Third" orange hex from Figma (`packages/shared/src/tokens/colors.ts` has a placeholder)
 - Phase 1 remaining: Supabase Auth providers for production (a Pakistan SMS provider for phone OTP, email, Apple, Google, Facebook). Locally, phone OTP works with the test numbers in `supabase/config.toml` (`+92 308 4282001` / `051518`, `+92 300 1234567` / `123456`)
 - Next auth sections: "Sign Up with email" (Figma row 2: 10:1049 onwards), "Sign In Screens with Email" (12:845, 12:979) and "Forgot Screens" (13:1141, 13:1256). Open questions: Facebook button and Skip on the login sheet, how email sign-in tells new from returning users, where the reset link lands, copy typos in Figma
+- Dev auth bypass for testing screens: `EXPO_PUBLIC_AUTH_BYPASS=1` in `apps/mobile/.env.local` (dev builds only; see `.env.example`). Remove it, or keep it dev-only, when the production SMS provider is wired
 - Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
 - Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
 - Replace the placeholder `/home` with the Customer Dashboard; keep `OnboardingPermissions` on top of it after sign up
