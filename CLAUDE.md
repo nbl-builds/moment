@@ -49,7 +49,14 @@ Planned: gamification (personality badges, group progress).
 - Keep `docs/ROADMAP.md` updated: mark features done and note what's next, so any session can pick up where the last stopped
 - Never push to `main` (live). Work on feature branches, merge them into `staging` and push `staging`
 - Mobile first: do not touch `apps/web` until mobile app development is done. Changes in `packages/shared` and `supabase/` are fine when mobile needs them
-- Match Figma exactly (frames are 428 x 926; test on the iPhone 18 Pro Max simulator). The "App Design" page (node 2:30) is huge: fetch it section by section, never whole
+- Match Figma exactly (frames are 428 x 926; test on the iPhone 18 Pro Max simulator). The "App Design" page (node 2:30) is huge: fetch it section by section, never whole. Small queries that list only names and IDs (sections and their direct child frames) are fine; then `get_design_context` frame by frame
+
+## UI-first rule (current phase)
+- Build the complete consumer mobile UI section by section before further backend work
+- Every screen matches its Figma frame exactly, with working navigation, loading / empty / error states, and realistic Pakistan data (PKR, km, +92)
+- Use existing `api.*` calls where they work. Where the backend does not exist yet (payments, chat realtime, maps provider, groups logic, wallet, notifications feed, ...), use typed mock data in one place per feature (`features/<name>/mock.ts`) behind the same function signatures the real API will have, so swapping is a one-line change. List each mock in `docs/ROADMAP.md` under "To wire after UI"
+- No new payment, SMS, social or maps providers now. Explore uses `react-native-maps` with the default provider and seed coordinates
+- Keep the dev auth bypass working
 
 ## Dev workflow
 - Mobile: `pnpm --filter mobile start`, then scan the QR code with Expo Go (Android phone) or use the iOS Simulator

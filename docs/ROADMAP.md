@@ -7,7 +7,6 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Phase 1 remaining: Supabase Auth providers for production (a Pakistan SMS provider for phone OTP, email, Apple, Google, Facebook). Locally, phone OTP works with the test numbers in `supabase/config.toml` (`+92 308 4282001` / `051518`, `+92 300 1234567` / `123456`)
 - Sign-in providers at the end: a Pakistan SMS provider (production phone OTP), Apple, Google and Facebook (buttons show "Coming soon" today), and production SMTP for auth emails (templates in `supabase/templates`)
 - Before launch: rate-limit `email_sign_in_method` (it reveals whether an email has an account), and set `moment://**` as a redirect URL on the hosted project
-- Guest mode ("Skip for now") is not remembered: a relaunch shows onboarding again. Decide whether guests should land on Home next time
 - Dev auth bypass for testing screens: `EXPO_PUBLIC_AUTH_BYPASS=1` in `apps/mobile/.env.local` (dev builds only; see `.env.example`). Remove it, or keep it dev-only, when the production SMS provider is wired
 - Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
 - Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
@@ -23,6 +22,10 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Choose payment providers for Pakistan (JazzCash, Easypaisa, Safepay, PayFast...) and the payout model (`direct` vs `platform_collect`); the schema supports both
 - Business-side booking RPC for walk-ins and POS (`create_booking` is consumer-only today)
 - Membership benefits in pricing (`create_booking` ignores member discounts and included sessions for now)
+
+## To wire after UI
+Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`). Swap each for the `api.*` call when the backend lands.
+- (none yet)
 
 ---
 
