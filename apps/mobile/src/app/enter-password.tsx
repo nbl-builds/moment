@@ -25,7 +25,7 @@ export default function EnterPasswordScreen() {
       kind="current"
       title="Enter Password"
       placeholder="Enter your password"
-      buttonLabel="Agree & Continue"
+      buttonLabel="Sign in"
       onSubmit={onSubmit}
       onForgot={() => router.push({ pathname: '/forgot-password', params: { email } })}
     />
