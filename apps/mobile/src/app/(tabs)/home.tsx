@@ -24,6 +24,7 @@ import { useBucketList } from '@/features/home/use-bucket-list';
 import { useHomeData, type ListingCardData } from '@/features/home/use-home-data';
 import { OnboardingPermissions } from '@/features/permissions/onboarding-permissions';
 import { EMPTY_FILTERS, encodeFilters, groupForCategorySlug } from '@/features/search/filters';
+import type { SeeAllKey } from '@/features/see-all/sections';
 
 const CARD = HOME.card;
 
@@ -50,7 +51,7 @@ export default function HomeScreen() {
     const group = groupForCategorySlug(slug);
     go({ pathname: '/search-results', params: { filters: encodeFilters({ ...EMPTY_FILTERS, categoryGroups: group ? [group] : [] }) } });
   };
-  const seeAll = (section: string, title: string) => () => go({ pathname: '/see-all/[section]', params: { section, title } });
+  const seeAll = (section: SeeAllKey) => () => go({ pathname: '/see-all/[section]', params: { section } });
 
   // Ask once: drop the flag so a reload does not show the sheets again.
   const onPermissionsFinished = useCallback(() => router.setParams({ permissions: undefined }), []);
@@ -87,7 +88,7 @@ export default function HomeScreen() {
         <Section
           title="Popular activities"
           query={data.popular}
-          onSeeAll={seeAll('popular', 'Popular activities')}
+          onSeeAll={seeAll('popular')}
           skeleton={<CardSkeletons height={CARD.tall.height} />}
         >
           {(items) => (
@@ -98,7 +99,7 @@ export default function HomeScreen() {
         <Section
           title="Top Hosts"
           query={data.hosts}
-          onSeeAll={seeAll('hosts', 'Top Hosts')}
+          onSeeAll={seeAll('hosts')}
           skeleton={<RowSkeletons width={HOME.host.tile} height={145} gap={HOME.host.gap} />}
         >
           {(hosts) => (
@@ -118,7 +119,7 @@ export default function HomeScreen() {
         <Section
           title="Just for you"
           query={data.forYou}
-          onSeeAll={seeAll('for-you', 'Just for you')}
+          onSeeAll={seeAll('for-you')}
           skeleton={<CardSkeletons height={CARD.short.height} />}
         >
           {(items) => (
@@ -130,7 +131,7 @@ export default function HomeScreen() {
           title="More to explore"
           query={data.categories}
           items={categories}
-          onSeeAll={() => go('/search')}
+          onSeeAll={seeAll('explore')}
           skeleton={<RowSkeletons width={100} height={65} gap={HOME.chip.gap} />}
         >
           {() => (
@@ -147,7 +148,7 @@ export default function HomeScreen() {
           )}
         </Section>
 
-        <Section title="Recently viewed" query={data.recent} skeleton={null} noArrow>
+        <Section title="Recently viewed" query={data.recent} onSeeAll={seeAll('recent')} skeleton={null}>
           {(items) => (
             <Rail data={items} keyOf={(l) => l.id} renderItem={({ item }) => renderCard(item, 'tall')} itemWidth={CARD.width} gap={CARD.gap} accessibilityLabel="Recently viewed" />
           )}
@@ -156,7 +157,7 @@ export default function HomeScreen() {
         <Section
           title="Local fun"
           query={data.localFun}
-          onSeeAll={seeAll('local-fun', 'Local fun')}
+          onSeeAll={seeAll('local-fun')}
           skeleton={<RowSkeletons width={HOME.tile.width} height={HOME.tile.height} gap={HOME.tile.gap} />}
         >
           {(items) => (
@@ -167,7 +168,7 @@ export default function HomeScreen() {
         <Section
           title="Must - trys"
           query={data.mustTry}
-          onSeeAll={seeAll('must-try', 'Must-trys')}
+          onSeeAll={seeAll('must-try')}
           skeleton={<RowSkeletons width={HOME.tile.width} height={HOME.tile.height} gap={HOME.tile.gap} />}
         >
           {(items) => (
@@ -184,7 +185,7 @@ export default function HomeScreen() {
       <View style={[styles.header, { paddingTop: insets.top + HOME.headerTop, height: headerHeight }]}>
         <HomeHeader
           onSearch={() => go('/search')}
-          onFilters={() => go('/search')}
+          onFilters={() => go('/filters')}
           onBucketList={() => (session ? go('/bucket-list') : openLoginSheet())}
         />
       </View>

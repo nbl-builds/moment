@@ -39,7 +39,15 @@ Other pages: Typography `2:121`, Colors `4:82`, Icons `4:58` (Huge Icons), Butto
 | Dashboard Long (all sections) | 17:1027 | `app/(tabs)/home.tsx` |
 
 ## Customer Dashboard (Section Screens): "See all" lists
-Popular Activites 18:1085, 20:1354 · Top Hosts 20:1479 · Just For You 20:1676, 20:1897
+| Frame | Node | Built |
+|---|---|---|
+| Popular Activites | 18:1085 | `app/see-all/[section].tsx` (`popular`) |
+| Popular Activites, chip selected | 20:1354 | `features/search/components/group-chip.tsx` |
+| Top Hosts (2-column grid) | 20:1479 | `see-all/hosts`, `HostCard variant="grid"` |
+| Just For You | 20:1676 | `see-all/for-you` |
+| Just For You (titled "Explore") | 20:1897 | `see-all/explore` (Home "More to explore" arrow) |
+
+Local fun, Must-trys and Recently viewed have no frame and reuse the list layout (`see-all/local-fun`, `must-try`, `recent`).
 
 ## Costumer Dashboard (Adventure Quiz)
 Adventure Quiz 20:2060 · Questions 1-6: 20:2103, 20:2170, 20:2237, 20:2305, 20:2367, 20:2453 · Analyzing 20:3444 · Result 20:3543
@@ -47,12 +55,13 @@ Adventure Quiz 20:2060 · Questions 1-6: 20:2103, 20:2170, 20:2237, 20:2305, 20:
 ## Search Filter
 | Frame | Node | Built |
 |---|---|---|
-| Search Filter | 20:3702 | `app/search.tsx` |
-| Search Filter Long | 22:1336 | `app/search.tsx` |
-| Select Location (sheet) | 22:1475 | `components/picker-sheet.tsx` |
+| Search Filter | 20:3702 | `app/filters.tsx` |
+| Search Filter Long | 22:1336 | `app/filters.tsx` |
+| Select Location (sheet) | 22:1475 | `components/picker-sheet.tsx` ("Choose a destination") |
 | Select Date (sheet) | 22:1789 | `components/range-calendar.tsx` |
 | Select Language (sheet) | 22:2017 | `components/picker-sheet.tsx` |
 | Search Results | 22:2173 | `app/search-results.tsx` |
+| (no frame) typing a search | n/a | `app/search.tsx` |
 
 ## Bucket List
 22:2329, 22:2487, 24:1225, 24:1444, 24:1667, 24:2071, 24:2120, 24:2226, 24:2474, 25:1517, 25:1723

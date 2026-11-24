@@ -17,9 +17,10 @@ const PAGE = 20;
 const FILTERED_PAGE = 50;
 
 /**
- * Search Results for the Filters screen. Category, city, price, rating,
- * language and Host go to `api.catalog.searchListings`; distance uses the real
+ * Experience results for Search / Filters. Text, category, city, area, price,
+ * rating and language go to `api.catalog.searchListings`; distance uses the real
  * `listing_distances`; date availability is a mock until the search RPC exists.
+ * Host mode (hosts instead of experiences) is `searchHosts` in ./mock.
  */
 export async function searchWithFilters(
   f: SearchFilterState,
@@ -34,9 +35,11 @@ export async function searchWithFilters(
 
   const { items, total } = await api.catalog.searchListings(
     searchFiltersSchema.parse({
-      hostedOnly: f.hostedOnly || undefined,
+      query: f.query ?? undefined,
       categoryIds: categoryIds.length ? categoryIds : undefined,
       city: f.city ?? undefined,
+      area: f.area ?? undefined,
+      priceMin: f.minPrice ?? undefined,
       priceMax: f.maxPrice ?? undefined,
       minRating: f.minRating ?? undefined,
       language: f.language ?? undefined,

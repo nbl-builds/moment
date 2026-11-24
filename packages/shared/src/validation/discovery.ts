@@ -23,6 +23,8 @@ export const searchFiltersSchema = z
     /** Filters > "Host": only listings with a local host. */
     hostedOnly: z.boolean().optional(),
     city: optionalText(80, 'City'),
+    /** A neighbourhood within the city (business location `area`, e.g. "F-7 Markaz"). */
+    area: optionalText(80, 'Area'),
     near: z
       .object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })
       .optional(),
