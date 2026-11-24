@@ -83,16 +83,24 @@ export const passwordSchema = z
   .refine((v) => /[A-Za-z]/.test(v) && /\d/.test(v), { message: 'Use at least one letter and one number' });
 
 /** "YYYY-MM-DD" calendar date. */
-export const localDateSchema = z
-  .string({ message: 'Date is required' })
-  .refine(isValidLocalDate, { message: 'Enter a valid date' });
+/**
+ * "YYYY-MM-DD" that exists on the calendar. Both checks abort, so refinements
+ * chained after this (which parse the date) never see a malformed value.
+ */
+const requiredLocalDate = (requiredMessage: string) =>
+  z
+    .string({ message: requiredMessage })
+    .min(1, { message: requiredMessage, abort: true })
+    .refine(isValidLocalDate, { message: 'Enter a valid date', abort: true });
+
+export const localDateSchema = requiredLocalDate('Date is required');
 
 /** Local date that is today or later in Karachi (booking day pickers). */
 export const futureLocalDateSchema = localDateSchema.refine((d) => d >= toLocalDate(Date.now()), {
   message: 'Pick today or a later date',
 });
 
-export const dateOfBirthSchema = localDateSchema
+export const dateOfBirthSchema = requiredLocalDate('Date of birth is required')
   .refine((d) => d <= toLocalDate(Date.now()), { message: 'Date of birth cannot be in the future' })
   .refine((d) => ageOn(d) >= MIN_SIGNUP_AGE, { message: `You must be at least ${MIN_SIGNUP_AGE} to use Moment` })
   .refine((d) => ageOn(d) <= 120, { message: 'Enter a valid date of birth' });

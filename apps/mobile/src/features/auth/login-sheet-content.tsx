@@ -34,7 +34,13 @@ const CONTENT_INSET = 20;
 type SignInMethod = 'phone' | 'email';
 
 export interface LoginSheetContentProps {
-  onContinueWithPhone?: (nationalNumber: string) => void;
+  /** Phone number to start with (e.g. after "Edit" on the code screen). National format. */
+  initialPhone?: string;
+  /**
+   * Called with the typed national number. Throw an Error to show its message
+   * under the field; the button shows a spinner until it settles.
+   */
+  onContinueWithPhone?: (nationalNumber: string) => Promise<void>;
   /** Called with a valid, normalised (trimmed, lowercased) email. */
   onContinueWithEmail?: (email: string) => void;
   onContinueWithApple?: () => void;
@@ -50,6 +56,7 @@ export interface LoginSheetContentProps {
  * switches between the two fields. UI only.
  */
 export function LoginSheetContent({
+  initialPhone = '',
   onContinueWithPhone,
   onContinueWithEmail,
   onContinueWithApple,
@@ -60,7 +67,9 @@ export function LoginSheetContent({
 }: LoginSheetContentProps) {
   const insets = useSafeAreaInsets();
   const [method, setMethod] = useState<SignInMethod>('phone');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState(initialPhone);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
 
@@ -76,9 +85,18 @@ export function LoginSheetContent({
     if (emailError) validateEmail(value);
   };
 
-  const onContinue = () => {
+  const onContinue = async () => {
     if (method === 'phone') {
-      onContinueWithPhone?.(phone);
+      if (!onContinueWithPhone || sending) return;
+      setSending(true);
+      setPhoneError(null);
+      try {
+        await onContinueWithPhone(phone);
+      } catch (e) {
+        setPhoneError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
+      } finally {
+        setSending(false);
+      }
       return;
     }
     const valid = validateEmail(email);
@@ -109,6 +127,7 @@ export function LoginSheetContent({
           style={styles.fieldBlock}
           label="Phone Number"
           helperText="We will call or text you to confirm your number. Standard message and rates apply."
+          error={phoneError}
           leading={
             // Pakistan only for now; the chevron is where a country picker will open.
             <View style={styles.countryCode} accessible accessibilityLabel="Country code Pakistan, plus 92">
@@ -119,7 +138,11 @@ export function LoginSheetContent({
             </View>
           }
           value={phone}
-          onChangeText={(text) => setPhone(formatPkPhoneInput(text))}
+          onChangeText={(text) => {
+            setPhone(formatPkPhoneInput(text));
+            if (phoneError) setPhoneError(null);
+          }}
+          onSubmitEditing={onContinue}
           placeholder="3XX XXXXXXX"
           keyboardType="phone-pad"
           textContentType="telephoneNumber"
@@ -149,6 +172,7 @@ export function LoginSheetContent({
       <Button
         label="Continue"
         onPress={onContinue}
+        loading={sending}
         style={{ marginTop: method === 'email' ? GAP.fieldToContinue : GAP.helperToContinue }}
       />
 

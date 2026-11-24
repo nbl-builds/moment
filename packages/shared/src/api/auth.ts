@@ -93,6 +93,20 @@ export function createAuthApi(db: MomentSupabaseClient) {
     signOut: () => call(db.auth.signOut().then((r) => ({ data: null, error: r.error }))).then(() => undefined),
 
     /**
+     * True while a signed-in user has not finished sign up ("Finish signing up"),
+     * so the app can send returning users straight past it. False when signed out.
+     */
+    needsSignUp: async (): Promise<boolean> => {
+      const { data } = await db.auth.getSession();
+      const userId = data.session?.user.id;
+      if (!userId) return false;
+      const row = await unwrap(
+        db.from('profile_private').select('sign_up_completed_at').eq('user_id', userId).maybeSingle(),
+      );
+      return !row?.sign_up_completed_at;
+    },
+
+    /**
      * "Sign Up Finishing": name, email, date of birth, marketing choice, optional
      * password, and acceptance of the current Terms and Privacy Policy.
      */
@@ -120,8 +134,11 @@ export function createAuthApi(db: MomentSupabaseClient) {
         db
           .from('profile_private')
           .update({
+            first_name: form.firstName,
+            last_name: form.lastName,
             date_of_birth: form.dateOfBirth,
             notification_prefs: { ...existing, marketing: !form.marketingOptOut },
+            sign_up_completed_at: new Date().toISOString(),
           })
           .eq('user_id', userId),
       );

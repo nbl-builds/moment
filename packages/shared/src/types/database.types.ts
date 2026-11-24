@@ -2207,9 +2207,12 @@ export type Database = {
         Row: {
           date_of_birth: string | null;
           email: string | null;
+          first_name: string | null;
+          last_name: string | null;
           locale: string;
           notification_prefs: NonNullable<Json>;
           phone: string | null;
+          sign_up_completed_at: string | null;
           updated_at: string;
           user_id: string;
         };
@@ -2217,18 +2220,24 @@ export type Database = {
         Insert: {
           date_of_birth?: string | null;
           email?: string | null;
+          first_name?: string | null;
+          last_name?: string | null;
           locale?: string;
           notification_prefs?: NonNullable<Json>;
           phone?: string | null;
+          sign_up_completed_at?: string | null;
           updated_at?: string;
           user_id: string;
         };
         Update: {
           date_of_birth?: string | null;
           email?: string | null;
+          first_name?: string | null;
+          last_name?: string | null;
           locale?: string;
           notification_prefs?: NonNullable<Json>;
           phone?: string | null;
+          sign_up_completed_at?: string | null;
           updated_at?: string;
           user_id?: string;
         };

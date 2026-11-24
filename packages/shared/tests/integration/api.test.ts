@@ -110,6 +110,9 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
 
   describe('sign up and profile', () => {
     it('completes sign up', async () => {
+      expect(await anon.auth.needsSignUp()).toBe(false);
+      expect(await me.auth.needsSignUp()).toBe(true);
+
       const form = completeSignUpWithPasswordSchema.parse({
         firstName: 'Integration',
         lastName: 'Tester',
@@ -124,6 +127,9 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
       const { profile, private: details } = await me.profile.getMe();
       expect(profile.display_name).toBe('Integration Tester');
       expect(details?.date_of_birth).toBe('1996-03-23');
+      expect(details?.first_name).toBe('Integration');
+      expect(details?.last_name).toBe('Tester');
+      expect(await me.auth.needsSignUp()).toBe(false);
       expect((details?.notification_prefs as { marketing: boolean }).marketing).toBe(false);
 
       const accepted = await me.db.from('legal_acceptances').select('document_id');
@@ -131,6 +137,17 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
 
       // The new password works.
       await newApi().auth.signInWithPassword({ email: myEmail, password: 'moment2027' });
+    });
+
+    it('signs in with a phone OTP (test number from supabase/config.toml)', async () => {
+      const phoneApi = newApi();
+      const phone = '+923001234567';
+      await phoneApi.auth.sendPhoneOtp(phone);
+      await expectApiError(phoneApi.auth.verifyPhoneOtp({ phone, code: '000000' }), 'invalid');
+      await phoneApi.auth.verifyPhoneOtp({ phone, code: '123456' });
+      const user = await phoneApi.auth.getUser();
+      expect(user?.phone).toBe('923001234567');
+      expect(typeof (await phoneApi.auth.needsSignUp())).toBe('boolean');
     });
 
     it('maps wrong passwords to a friendly error', async () => {

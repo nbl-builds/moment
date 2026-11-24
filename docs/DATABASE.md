@@ -59,7 +59,7 @@ RLS helpers live in the `private` schema (not exposed through the API), are `sec
 
 ### Identity
 - `profiles`: public card (display name, avatar, bio, home city, personality badge). Readable by everyone, so review authors can be shown. Users edit only display fields; the badge is set by `submit_quiz`.
-- `profile_private`: email, phone, date of birth, locale, notification preferences. Owner only.
+- `profile_private`: email, phone, first and last name, date of birth, locale, notification preferences, and `sign_up_completed_at` (set by "Finish signing up"; while it is null the app shows that screen after sign in, see `api.auth.needsSignUp()`). Owner only.
 - `platform_admins`: super admins.
 - A trigger on `auth.users` creates `profiles` and `profile_private` at sign-up.
 
