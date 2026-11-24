@@ -76,6 +76,8 @@ RLS helpers live in the `private` schema (not exposed through the API), are `sec
 
 ### Catalog
 - `categories` (nestable, by kind), `tags` (drive recommendations).
+- Curation tags `local-fun` and `must-try` fill the Home rails "Local fun" and "Must-trys" (tagged listings in the user's city).
+- `listing_distances(lat, lng, listing_ids)` returns km to each listing (meeting point, else business location) for cards.
 - `listings`: type, booking mode, title, description, category, location, meeting point, duration, guest limits, price and price unit (`per_person | per_booking`), instant book, cancellation policy, languages, inclusions, status, ratings, popularity, full-text `search_vector`, `external_ref`.
 - `listing_options` (price tiers or variants), `listing_media`, `listing_tags`, `listing_staff`.
 
@@ -156,6 +158,7 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - `avatars` (public read, users write their own folder `<user_id>/...`)
 - `business-media` (public read, owners and managers write `<business_id>/...`)
 - `chat-attachments` (private, conversation participants, `<conversation_id>/...`)
+- `seed-media` (local dev only, public): images exported from Figma in `supabase/seed-media`, uploaded on `supabase db reset`. Media columns may hold `storage://<bucket>/<path>` references; the API client resolves them to public URLs for the app's own Supabase host.
 
 ## Indexes
 
