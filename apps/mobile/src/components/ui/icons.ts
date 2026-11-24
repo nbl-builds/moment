@@ -105,6 +105,29 @@ export const icons = {
   'tab-explore': { source: require('../../../assets/icons/tab-explore.svg') },
   /** "Huge-icon/user/outline/user" (4:14358): Profile for guests. */
   'tab-profile': { source: require('../../../assets/icons/tab-profile.svg') },
+
+  // Bucket List (Figma 22:2329 ... 25:1723)
+  /** "heart" on the save sheet (23:1230), 28pt. */
+  'heart-outline': { source: require('../../../assets/icons/heart-outline-28.svg') },
+  /** Saved listing on card photos: 50% red fill, white outline (24:2189). */
+  'heart-saved': { source: require('../../../assets/icons/heart-saved.svg'), multicolor: true },
+  /** "users" on "Add to Groups" (23:1236), 28pt. */
+  users: { source: require('../../../assets/icons/users.svg') },
+  /** "plus" on "Create a new bucketlist" (24:1429), 28pt. */
+  plus: { source: require('../../../assets/icons/plus.svg') },
+  /** "share" next to a list's title (24:2161): 21pt glyph in a 28pt box. */
+  share: { source: require('../../../assets/icons/share.svg'), glyph: { width: 18, height: 18 } },
+  /** "•••" next to a list's title (24:2167): 24 x 6 in a 28pt box. */
+  more: { source: require('../../../assets/icons/more.svg'), glyph: { width: 20.6, height: 5.1 } },
+  /** "share-2" on "Share a link" (24:2458), 28pt. */
+  'share-link': { source: require('../../../assets/icons/share-2.svg') },
+  /** Two users and a plus on "Invite others" (24:2459), 28pt. */
+  'user-add': { source: require('../../../assets/icons/user-add.svg') },
+  /** "file-edit" (25:1508) and "trash-2" (25:1507) on the list menu, 28pt. */
+  'file-edit': { source: require('../../../assets/icons/file-edit.svg') },
+  trash: { source: require('../../../assets/icons/trash.svg') },
+  /** Tick on lists that already hold the listing. Not in Figma: drawn to match the 2pt stroke icons. */
+  check: { source: require('../../../assets/icons/check.svg') },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;
