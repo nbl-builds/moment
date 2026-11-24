@@ -5,6 +5,7 @@ import { BottomSheet } from '@/components/bottom-sheet';
 import { showToast } from '@/components/toast';
 import { AUTH_BYPASS } from '@/lib/auth-bypass';
 import { LoginSheetContent } from './login-sheet-content';
+import { setGuestMode } from './guest-mode';
 import { sendCode } from './otp';
 import { resetTo } from './sign-in-flow';
 
@@ -59,6 +60,7 @@ export function LoginSheetProvider({ children }: { children: ReactNode }) {
   // Browsing without an account: Home as a guest.
   const skip = useCallback(() => {
     setVisible(false);
+    setGuestMode(true);
     resetTo('/home');
   }, []);
 

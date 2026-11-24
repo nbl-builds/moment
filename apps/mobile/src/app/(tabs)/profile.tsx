@@ -4,6 +4,7 @@ import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCollapsibleTabBarScroll, useTabBarContentInset } from '@/components/tab-bar';
 import { Button, Text } from '@/components/ui';
+import { setGuestMode } from '@/features/auth/guest-mode';
 import { useLoginSheet } from '@/features/auth/login-sheet-provider';
 import { resetTo } from '@/features/auth/sign-in-flow';
 import { useMyProfile, useSession } from '@/features/auth/use-session';
@@ -20,6 +21,7 @@ export default function ProfileTab() {
 
   const signOut = async () => {
     await api.auth.signOut().catch(() => undefined);
+    await setGuestMode(false);
     resetTo('/onboarding');
   };
 
