@@ -21,6 +21,9 @@ export const supabase = createClient<Database>(supabaseUrl, supabasePublishableK
     autoRefreshToken: !isServer,
     persistSession: !isServer,
     detectSessionInUrl: false,
+    // Links (password reset) come back as ?code=..., exchanged for a session in
+    // the app. The code verifier stays on this device, so a link only works here.
+    flowType: 'pkce',
   },
 });
 
