@@ -18,6 +18,10 @@ export const searchFiltersSchema = z
     /** Explore tabs: Experiences / Businesses (`service` listings). */
     type: z.enum(['experience', 'service']).optional(),
     categoryId: uuidSchema.optional(),
+    /** Several categories at once (a Filters chip such as "Beauty" covers hair, nails, ...). */
+    categoryIds: z.array(uuidSchema).max(20).optional(),
+    /** Filters > "Host": only listings with a local host. */
+    hostedOnly: z.boolean().optional(),
     city: optionalText(80, 'City'),
     near: z
       .object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) })

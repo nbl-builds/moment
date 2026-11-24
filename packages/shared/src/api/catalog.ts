@@ -122,9 +122,16 @@ export function createCatalogApi(db: MomentSupabaseClient) {
         const links = await unwrap(db.from('listing_staff').select('listing_id').eq('staff_id', filters.hostId));
         q = q.in('id', links.map((l) => l.listing_id));
       }
+      if (filters.hostedOnly) {
+        const hosted = await unwrap(
+          db.from('listing_staff').select('listing_id, staff:staff_members!inner(is_host)').eq('staff.is_host', true),
+        );
+        q = q.in('id', [...new Set(hosted.map((l) => l.listing_id))]);
+      }
       if (filters.query) q = q.textSearch('search_vector', filters.query, { type: 'websearch', config: 'simple' });
       if (filters.type) q = q.eq('type', filters.type);
       if (filters.categoryId) q = q.eq('category_id', filters.categoryId);
+      if (filters.categoryIds?.length) q = q.in('category_id', filters.categoryIds);
       if (filters.city) q = q.eq('city', filters.city);
       if (filters.language) q = q.contains('languages', [filters.language]);
       if (filters.priceMin !== undefined) q = q.gte('price_amount', filters.priceMin);
