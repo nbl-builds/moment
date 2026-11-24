@@ -15,6 +15,7 @@ import { useUserPlace } from '@/features/home/use-user-place';
 import { GroupChip } from '@/features/search/components/group-chip';
 import { CATEGORY_GROUPS, hostCategoryLabel } from '@/features/search/filters';
 import { isSeeAllKey, SEE_ALL_SECTIONS, type SeeAllKey } from '@/features/see-all/sections';
+import { openHost } from '@/features/business/navigation';
 import { api } from '@/lib/api';
 
 // Figma: "Popular Activites" (18:1085, chip selected 20:1354), "Top Hosts"
@@ -171,7 +172,7 @@ export default function SeeAllScreen() {
               variant="grid"
               width={hostWidth}
               category={hostCategoryLabel(item, categories.data ?? [])}
-              onPress={() => router.push({ pathname: '/host/[id]', params: { id: item.id } })}
+              onPress={() => openHost(item)}
             />
           )}
         />

@@ -25,6 +25,7 @@ import {
 } from '@/features/search/filters';
 import { searchHosts } from '@/features/search/mock';
 import { searchWithFilters, type SearchResult } from '@/features/search/search';
+import { openHost } from '@/features/business/navigation';
 import { api } from '@/lib/api';
 
 // Figma: "Search Results" (22:2173). Measured in the 428 x 926 frame below the 44pt status bar.
@@ -114,7 +115,7 @@ export default function SearchResultsScreen() {
       variant="grid"
       width={hostWidth}
       category={hostCategoryLabel(item, categories.data ?? [])}
-      onPress={() => router.push({ pathname: '/host/[id]', params: { id: item.id } })}
+      onPress={() => openHost(item)}
     />
   );
 
