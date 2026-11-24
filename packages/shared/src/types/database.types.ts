@@ -2320,6 +2320,7 @@ export type Database = {
         Row: {
           icon: string | null;
           id: string;
+          image_url: string | null;
           label: string;
           question_id: string;
           sort_order: number;
@@ -2329,6 +2330,7 @@ export type Database = {
         Insert: {
           icon?: string | null;
           id?: string;
+          image_url?: string | null;
           label: string;
           question_id: string;
           sort_order?: number;
@@ -2337,6 +2339,7 @@ export type Database = {
         Update: {
           icon?: string | null;
           id?: string;
+          image_url?: string | null;
           label?: string;
           question_id?: string;
           sort_order?: number;
@@ -2354,24 +2357,30 @@ export type Database = {
       };
       quiz_questions: {
         Row: {
+          config: NonNullable<Json>;
           id: string;
           image_url: string | null;
           is_active: boolean;
+          kind: Database["public"]["Enums"]["quiz_question_kind"];
           prompt: string;
           sort_order: number;
         };
         ComputedFields: never;
         Insert: {
+          config?: NonNullable<Json>;
           id?: string;
           image_url?: string | null;
           is_active?: boolean;
+          kind?: Database["public"]["Enums"]["quiz_question_kind"];
           prompt: string;
           sort_order?: number;
         };
         Update: {
+          config?: NonNullable<Json>;
           id?: string;
           image_url?: string | null;
           is_active?: boolean;
+          kind?: Database["public"]["Enums"]["quiz_question_kind"];
           prompt?: string;
           sort_order?: number;
         };
@@ -3356,6 +3365,8 @@ export type Database = {
       payout_model: "direct" | "platform_collect";
       payout_status: "pending" | "processing" | "paid" | "failed";
       price_unit: "per_person" | "per_booking";
+      quiz_question_kind:
+        "photo_list" | "emoji_list" | "glass" | "seat" | "slider";
       recommendation_status: "new" | "reviewed" | "onboarded" | "rejected";
       refund_status: "pending" | "succeeded" | "failed";
       review_status: "published" | "hidden" | "flagged";
@@ -3531,6 +3542,13 @@ export const Constants = {
       payout_model: ["direct", "platform_collect"],
       payout_status: ["pending", "processing", "paid", "failed"],
       price_unit: ["per_person", "per_booking"],
+      quiz_question_kind: [
+        "photo_list",
+        "emoji_list",
+        "glass",
+        "seat",
+        "slider",
+      ],
       recommendation_status: ["new", "reviewed", "onboarded", "rejected"],
       refund_status: ["pending", "succeeded", "failed"],
       review_status: ["published", "hidden", "flagged"],

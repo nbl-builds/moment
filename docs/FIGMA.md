@@ -50,7 +50,17 @@ Other pages: Typography `2:121`, Colors `4:82`, Icons `4:58` (Huge Icons), Butto
 Local fun, Must-trys and Recently viewed have no frame and reuse the list layout (`see-all/local-fun`, `must-try`, `recent`).
 
 ## Costumer Dashboard (Adventure Quiz)
-Adventure Quiz 20:2060 · Questions 1-6: 20:2103, 20:2170, 20:2237, 20:2305, 20:2367, 20:2453 · Analyzing 20:3444 · Result 20:3543
+All in `app/quiz.tsx` (one screen, components in `features/quiz/components`).
+| Frame | Node | Built |
+|---|---|---|
+| Adventure Quiz (intro) | 20:2060 | `quiz-intro.tsx` |
+| Question 1, 2 (photo list) | 20:2103, 20:2170 | `answer-cards.tsx` `PhotoAnswers` |
+| Question 3 (glass) | 20:2237 | `glass-question.tsx` |
+| Question 4 (emoji) | 20:2305 | `answer-cards.tsx` `EmojiAnswers` |
+| Question 5 (plane seat) | 20:2367 | `seat-question.tsx` (plane exported as `assets/quiz/plane.png`) |
+| Question 6 (thermometer) | 20:2453 | `thermometer-question.tsx` |
+| Analyzing | 20:3444 | `quiz-analyzing.tsx` |
+| Result | 20:3543 | `quiz-result.tsx` |
 
 ## Search Filter
 | Frame | Node | Built |

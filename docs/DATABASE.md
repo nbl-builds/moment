@@ -121,10 +121,15 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - `place_recommendations`: "Recommend a place", triaged by the Moment team.
 
 ### Quiz and badges
-- `quiz_questions`, `quiz_answers` (with `trait_weights`, e.g. `{"adventure": 2}`).
-- `badges` (personality or achievement, with a `primary_trait`), `badge_tags` (weights driving recommendations).
-- `quiz_results` (history kept), `user_badges`.
-- `submit_quiz(answer_ids)` scores on the server and sets the profile badge.
+- `quiz_questions` with a `kind` (`quiz_question_kind`: `photo_list`, `emoji_list`, `glass`, `seat`, `slider`) and a kind-specific `config` jsonb. Config refers to answers by `sort_order`:
+  - `glass`: `{"top": 1, "bottom": 2}` (which half of the glass picks which answer)
+  - `seat`: `{"rows": 3, "columns": [1, 2, 2, 1]}` (seat column -> answer: window, aisle, aisle, window)
+  - `slider`: `{"min": 0, "max": 50, "default": 20, "unit": "C", "buckets": [{"answer": 1, "max": 14}, ...]}` (a value up to `max` picks that answer)
+- `quiz_answers` with `trait_weights` (e.g. `{"adventure": 2}`) and an optional `image_url` (photo or emoji, storage ref). Every interaction, including the glass, seat and thermometer, resolves to one answer row per question.
+- `badges` (personality or achievement, with a `primary_trait`; `icon` holds the result illustration as a storage ref when there is one), `badge_tags` (weights driving recommendations).
+- `quiz_results`, `user_badges`.
+- `submit_quiz(answer_ids)` scores on the server and sets the profile badge. Retaking replaces the earlier result: the user's previous `quiz_results` rows and quiz-awarded personality badge are removed first.
+- Seed: Figma's six questions (Adventure Quiz 20:2103 ... 20:2453) with photos in `seed-media/quiz`; badges Nature Lover, Adventure Lover, Culture Lover, Food Lover, Wellness Lover, Party Lover (codes unchanged). `supabase/tests/database/07_quiz.test.sql` checks every badge can be earned.
 - `recommended_listings(limit)` powers "Just For You".
 
 ### Groups

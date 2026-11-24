@@ -111,14 +111,25 @@ export function createEngagementApi(db: MomentSupabaseClient) {
         unwrap(
           db
             .from('quiz_questions')
-            .select('id, prompt, image_url, sort_order, answers:quiz_answers(id, label, icon, sort_order)')
+            .select('id, prompt, kind, config, image_url, sort_order, answers:quiz_answers(id, label, icon, image_url, sort_order)')
             .eq('is_active', true)
             .order('sort_order')
             .order('sort_order', { referencedTable: 'quiz_answers' }),
         ),
 
-      /** Scores on the server, sets the personality badge, returns the result. */
-      submit: (answerIds: string[]) => unwrap(db.rpc('submit_quiz', { p_answer_ids: answerIds })),
+      /**
+       * Scores on the server, sets the personality badge (replacing any earlier
+       * quiz result) and returns the result with its badge.
+       */
+      submit: async (answerIds: string[]) => {
+        const result = await unwrap(db.rpc('submit_quiz', { p_answer_ids: answerIds }));
+        const badge = result.badge_id
+          ? await unwrap(
+              db.from('badges').select('id, code, name, description, icon, primary_trait').eq('id', result.badge_id).single(),
+            )
+          : null;
+        return { ...result, badge };
+      },
 
       latestResult: async () => {
         const userId = await requireUserId(db);

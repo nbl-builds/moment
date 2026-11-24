@@ -6,6 +6,7 @@ export const palette = {
   lime: '#CFFF58',
   limeTint1: '#D6FF70', // Figma: Primary Color / P Tint 1
   limeShade1: '#B2D84B', // Figma: Primary Color / P Shade 1
+  limeShade2: '#92B23C', // Figma: Primary Color / P Shade 2 (picked seat, Adventure Quiz 20:2367)
   limeShade4: '#52661E', // Figma: Primary Color / P Shade 4
   limeTint6: '#F8FFE5', // Figma: Primary Color / P Tint 6
   nearBlack: '#131617',
@@ -27,10 +28,14 @@ export const palette = {
   greenShade2: '#99B847', // Figma: Green Color / Green Shade 2 (prices)
   blackTint1: '#232323', // Figma: Black Color / Black Tint 1
   blackTint2: '#464646', // Figma: Black Color / Black Tint 2
+  blackTint4: '#8C8C8C', // Figma: Black Color / Black Tint 4 (picked quiz answer border, 20:2103)
   grey80: '#CCCCCC', // Figma: "Black Color Tint 3" (calendar days outside the range, radio rings)
   grey90: '#E6E6E6', // Figma: list dividers (22:1605)
   grey94: '#EFEFEF', // Figma: "Black Color Tint 2" (calendar arrow buttons)
   grey95: '#F2F2F2', // Figma: Black Color / Black Tint 7 (slider and toggle track)
+  // Adventure Quiz thermometer illustration (20:2453)
+  thermometerBlue: '#2979C1',
+  thermometerGrey: '#EAEAEA',
 } as const;
 
 /** Semantic colour roles used by components. */
@@ -91,6 +96,15 @@ export const colors = {
    */
   disabled: palette.nearBlackTint5,
   onDisabled: palette.nearBlack,
+  /** Adventure Quiz: border of the picked answer card. */
+  optionSelected: palette.blackTint4,
+  /** Adventure Quiz: the picked seat on the plane. */
+  seatSelected: palette.limeShade2,
+  /** Adventure Quiz: emoji and photo-collage circles (Black Tint 7). */
+  bubble: palette.grey95,
+  /** Adventure Quiz thermometer: mercury and empty tube. */
+  thermometerFill: palette.thermometerBlue,
+  thermometerEmpty: palette.thermometerGrey,
   /** Pressed overlay for buttons without a pressed colour of their own. */
   pressedOverlay: withAlpha(palette.pureBlack, 0.1),
 } as const;
