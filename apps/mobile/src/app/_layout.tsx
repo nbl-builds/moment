@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { AuthBypassBadge } from '@/components/auth-bypass-badge';
 import { BrandSplash } from '@/components/brand-splash';
 import { LoginSheetProvider } from '@/features/auth/login-sheet-provider';
 
@@ -45,6 +46,7 @@ export default function RootLayout() {
         </LoginSheetProvider>
       )}
       {showSplash && <BrandSplash onLayout={onSplashLayout} />}
+      {appReady && !showSplash && <AuthBypassBadge />}
     </GestureHandlerRootView>
   );
 }
