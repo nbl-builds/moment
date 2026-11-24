@@ -541,13 +541,15 @@ on conflict (listing_id, starts_at) do nothing;
 -- ---------------------------------------------------------------------------
 -- Badges and Adventure Quiz
 -- ---------------------------------------------------------------------------
+-- Personality badges follow Figma's naming ("Nature Lover"); codes stay stable.
+-- `icon` is the result illustration; only Nature Lover has one in Figma so far.
 insert into public.badges (code, name, description, icon, kind, primary_trait, sort_order) values
-  ('trailblazer', 'Trailblazer', 'You chase summits, rapids and the next big thrill.', 'mountain', 'personality', 'adventure', 1),
-  ('culture-seeker', 'Culture Seeker', 'Old cities, stories and art pull you in.', 'mosque-01', 'personality', 'culture', 2),
-  ('foodie-explorer', 'Foodie Explorer', 'You plan trips around what to eat next.', 'restaurant-01', 'personality', 'food', 3),
-  ('zen-wanderer', 'Zen Wanderer', 'You travel to slow down and recharge.', 'yoga-01', 'personality', 'wellness', 4),
-  ('social-butterfly', 'Social Butterfly', 'The best trips are the ones with your people.', 'user-group', 'personality', 'social', 5),
-  ('nature-soul', 'Nature Soul', 'Mountains, lakes and open sky are your happy place.', 'leaf-01', 'personality', 'nature', 6),
+  ('trailblazer', 'Adventure Lover', 'You chase summits, rapids and the next big thrill. We''ll find the adventures that get your heart racing.', null, 'personality', 'adventure', 1),
+  ('culture-seeker', 'Culture Lover', 'Old cities, stories and art pull you in. We''ll show you the heritage walks and workshops locals love.', null, 'personality', 'culture', 2),
+  ('foodie-explorer', 'Food Lover', 'You plan trips around what to eat next. We''ll point you to the food streets, cooking classes and hidden dhabas.', null, 'personality', 'food', 3),
+  ('zen-wanderer', 'Wellness Lover', 'You travel to slow down and recharge. We''ll find calm spots, spa days and slow mornings for you.', null, 'personality', 'wellness', 4),
+  ('social-butterfly', 'Party Lover', 'The best plans are the ones with your people. We''ll line up nights out and group experiences.', null, 'personality', 'social', 5),
+  ('nature-soul', 'Nature Lover', 'Mountains, lakes and open sky are your happy place. We''ll find trails, camps and sunrises worth waking up for.', 'storage://seed-media/badges/nature-lover.png', 'personality', 'nature', 6),
   ('first-booking', 'First Moment', 'Booked your first experience.', 'ticket-01', 'achievement', null, 10);
 
 insert into public.badge_tags (badge_id, tag_id, weight)
@@ -563,63 +565,55 @@ from (values
 join public.badges b on b.code = v.badge
 join public.tags t on t.slug = v.tag;
 
+-- The Adventure Quiz as designed in Figma (20:2103 ... 20:2453). Each kind maps
+-- its interaction onto answer rows (glass halves, seats, temperature buckets),
+-- so submit_quiz scores them all the same way. Weights are tuned so every
+-- personality can win (see supabase/tests/database/07_quiz.test.sql).
 with q as (
-  insert into public.quiz_questions (prompt, sort_order) values
-    ('Your ideal weekend morning?', 1),
-    ('Pick a souvenir to bring home', 2),
-    ('On a trip, you plan around...', 3),
-    ('Choose a Karachi evening', 4),
-    ('Your travel pace?', 5),
-    ('Best way to get to know a city?', 6),
-    ('Pick a soundtrack', 7),
-    ('In a group, you are...', 8)
+  insert into public.quiz_questions (prompt, kind, config, sort_order) values
+    ('What do you like to do in your free time?', 'photo_list', '{}', 1),
+    ('Where can we find you on a Saturday night?', 'photo_list', '{}', 2),
+    ('Is the glass half empty or half full?', 'glass', '{"top": 1, "bottom": 2}', 3),
+    ('People are ______?', 'emoji_list', '{}', 4),
+    ('Pick your seat on the plane.', 'seat', '{"rows": 3, "columns": [1, 2, 2, 1]}', 5),
+    ('What''s the temperature outside on a perfect day?', 'slider',
+      '{"min": 0, "max": 50, "default": 20, "unit": "C", "buckets": [{"answer": 1, "max": 14}, {"answer": 2, "max": 24}, {"answer": 3, "max": 32}, {"answer": 4, "max": 50}]}', 6)
   returning id, sort_order
 )
-insert into public.quiz_answers (question_id, label, trait_weights, sort_order)
-select q.id, a.label, a.weights::jsonb, a.pos
+insert into public.quiz_answers (question_id, label, image_url, trait_weights, sort_order)
+select q.id, a.label, a.image, a.weights::jsonb, a.pos
 from q
 join (values
-  (1, 1, 'A sunrise hike in the Margalla Hills', '{"adventure": 2, "nature": 1}'),
-  (1, 2, 'Brunch with friends', '{"social": 2, "food": 1}'),
-  (1, 3, 'A slow spa morning', '{"wellness": 2}'),
-  (1, 4, 'Exploring old bazaars', '{"culture": 2}'),
-  (2, 1, 'A hand-painted truck art panel', '{"culture": 2}'),
-  (2, 2, 'A bag of local spices', '{"food": 2}'),
-  (2, 3, 'Photos from a mountain peak', '{"nature": 2, "adventure": 1}'),
-  (2, 4, 'Matching bracelets with the group', '{"social": 2}'),
-  (3, 1, 'Where to eat', '{"food": 2}'),
-  (3, 2, 'Which trails to take', '{"adventure": 1, "nature": 2}'),
-  (3, 3, 'Downtime to recharge', '{"wellness": 2}'),
-  (3, 4, 'Who is coming along', '{"social": 2}'),
-  (4, 1, 'A Burns Road food crawl', '{"food": 2, "social": 1}'),
-  (4, 2, 'Sunset at Sea View', '{"nature": 1, "wellness": 1}'),
-  (4, 3, 'A visit to Mohatta Palace', '{"culture": 2}'),
-  (4, 4, 'Night kayaking in the mangroves', '{"adventure": 2}'),
-  (5, 1, 'Packed itinerary', '{"adventure": 1, "social": 1}'),
-  (5, 2, 'Slow and mindful', '{"wellness": 2}'),
-  (5, 3, 'Wherever the food takes me', '{"food": 2}'),
-  (5, 4, 'Off the beaten path', '{"nature": 1, "adventure": 1}'),
-  (6, 1, 'A guided heritage walk', '{"culture": 2}'),
-  (6, 2, 'Cooking with a local family', '{"food": 1, "culture": 1}'),
-  (6, 3, 'Meeting other travellers', '{"social": 2}'),
-  (6, 4, 'Getting lost outdoors', '{"nature": 2}'),
-  (7, 1, 'Qawwali under the stars', '{"culture": 2}'),
-  (7, 2, 'Waves on the beach', '{"nature": 1, "wellness": 1}'),
-  (7, 3, 'A busy dhaba at night', '{"food": 1, "social": 1}'),
-  (7, 4, 'Wind on a mountain ridge', '{"adventure": 2}'),
-  (8, 1, 'The planner', '{"social": 1, "culture": 1}'),
-  (8, 2, 'The thrill seeker', '{"adventure": 2}'),
-  (8, 3, 'The one who finds the food', '{"food": 2}'),
-  (8, 4, 'The calm one', '{"wellness": 2}')
-) as a(question, pos, label, weights) on a.question = q.sort_order;
+  (1, 1, 'I like to hike', 'storage://seed-media/quiz/q1-hike.jpg', '{"nature": 2, "adventure": 1}'),
+  (1, 2, 'I like to relax', 'storage://seed-media/quiz/q1-relax.jpg', '{"wellness": 2}'),
+  (1, 3, 'I like to take risks', 'storage://seed-media/quiz/q1-risks.jpg', '{"adventure": 2}'),
+  (1, 4, 'I like to party', 'storage://seed-media/quiz/q1-party.jpg', '{"social": 2}'),
+  (1, 5, 'I like to shop', 'storage://seed-media/quiz/q1-shop.jpg', '{"culture": 1, "food": 1}'),
+  (2, 1, 'Camping', 'storage://seed-media/quiz/q2-camping.jpg', '{"nature": 2}'),
+  (2, 2, 'At home', 'storage://seed-media/quiz/q2-home.jpg', '{"wellness": 2}'),
+  (2, 3, 'Jumping out of a plane', 'storage://seed-media/quiz/q2-jumping.jpg', '{"adventure": 2}'),
+  (2, 4, 'At the club', 'storage://seed-media/quiz/q2-club.jpg', '{"social": 2}'),
+  (2, 5, 'On a yacht', 'storage://seed-media/quiz/q2-yacht.jpg', '{"food": 1, "social": 1}'),
+  (3, 1, 'Half empty', null, '{"wellness": 1, "culture": 1}'),
+  (3, 2, 'Half full', null, '{"social": 1, "adventure": 1}'),
+  (4, 1, 'Cool', 'storage://seed-media/quiz/emoji-cool.png', '{"social": 2}'),
+  (4, 2, 'Scary', 'storage://seed-media/quiz/emoji-fearful.png', '{"nature": 2, "wellness": 1}'),
+  (4, 3, 'Just people', 'storage://seed-media/quiz/emoji-happy.png', '{"culture": 1, "food": 1}'),
+  (5, 1, 'Window seat', null, '{"nature": 1, "culture": 1}'),
+  (5, 2, 'Aisle seat', null, '{"social": 1, "food": 1}'),
+  (6, 1, 'Cold (below 15°C)', null, '{"nature": 1, "adventure": 1}'),
+  (6, 2, 'Mild (15–24°C)', null, '{"culture": 2}'),
+  (6, 3, 'Warm (25–32°C)', null, '{"food": 1, "social": 1}'),
+  (6, 4, 'Hot (33°C and up)', null, '{"wellness": 1, "adventure": 1}')
+) as a(question, pos, label, image, weights) on a.question = q.sort_order;
 
 -- Consumers take the quiz through the real RPC
-select pg_temp.act_as('00000000-0000-4000-a000-000000000021'); select public.submit_quiz(pg_temp.quiz_picks('{2,2,1,1,3,2,3,3}')); -- Hamza: foodie
-select pg_temp.act_as('00000000-0000-4000-a000-000000000022'); select public.submit_quiz(pg_temp.quiz_picks('{3,2,3,2,2,2,2,4}')); -- Fatima: zen
-select pg_temp.act_as('00000000-0000-4000-a000-000000000023'); select public.submit_quiz(pg_temp.quiz_picks('{1,3,2,4,1,4,4,2}')); -- Bilal: trailblazer
-select pg_temp.act_as('00000000-0000-4000-a000-000000000024'); select public.submit_quiz(pg_temp.quiz_picks('{1,3,2,2,4,4,2,4}')); -- Zainab: nature
-select pg_temp.act_as('00000000-0000-4000-a000-000000000025'); select public.submit_quiz(pg_temp.quiz_picks('{2,4,4,1,1,3,3,1}')); -- Usman: social
-select pg_temp.act_as('00000000-0000-4000-a000-000000000026'); select public.submit_quiz(pg_temp.quiz_picks('{4,1,4,3,3,1,1,1}')); -- Sana: culture
+select pg_temp.act_as('00000000-0000-4000-a000-000000000021'); select public.submit_quiz(pg_temp.quiz_picks('{5,5,2,3,2,3}')); -- Hamza: foodie
+select pg_temp.act_as('00000000-0000-4000-a000-000000000022'); select public.submit_quiz(pg_temp.quiz_picks('{2,2,1,2,1,4}')); -- Fatima: zen
+select pg_temp.act_as('00000000-0000-4000-a000-000000000023'); select public.submit_quiz(pg_temp.quiz_picks('{3,3,2,1,2,1}')); -- Bilal: trailblazer
+select pg_temp.act_as('00000000-0000-4000-a000-000000000024'); select public.submit_quiz(pg_temp.quiz_picks('{1,1,1,2,1,1}')); -- Zainab: nature
+select pg_temp.act_as('00000000-0000-4000-a000-000000000025'); select public.submit_quiz(pg_temp.quiz_picks('{4,4,2,1,2,3}')); -- Usman: social
+select pg_temp.act_as('00000000-0000-4000-a000-000000000026'); select public.submit_quiz(pg_temp.quiz_picks('{5,5,1,3,1,2}')); -- Sana: culture
 select pg_temp.act_as(null);
 
 -- ---------------------------------------------------------------------------
