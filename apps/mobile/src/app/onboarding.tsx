@@ -1,16 +1,16 @@
-import { colors, fontFamily, lineHeightPx, textStyles } from '@moment/shared';
+import { colors, lineHeightPx } from '@moment/shared';
 import { useRef, useState } from 'react';
 import {
   FlatList,
   Pressable,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text } from '@/components/ui';
 import { useLoginSheet } from '@/features/auth/login-sheet-provider';
 import {
   DOT_SIZE,
@@ -73,10 +73,14 @@ export default function OnboardingScreen() {
 
       <View style={[styles.footer, { bottom: footerBottom }]}>
         <Pressable onPress={onSkip} hitSlop={BUTTON_HIT_SLOP} accessibilityRole="button">
-          <Text style={styles.footerText}>Skip</Text>
+          <Text variant="body14" weight="medium" color="white">
+            Skip
+          </Text>
         </Pressable>
         <Pressable onPress={onNext} hitSlop={BUTTON_HIT_SLOP} accessibilityRole="button">
-          <Text style={styles.footerText}>Next</Text>
+          <Text variant="body14" weight="medium" color="white">
+            Next
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -99,11 +103,5 @@ const styles = StyleSheet.create({
     right: FOOTER_HORIZONTAL_INSET,
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  footerText: {
-    color: colors.white,
-    fontFamily: fontFamily.medium,
-    fontSize: textStyles.body14.fontSize,
-    lineHeight: lineHeightPx('body14'),
   },
 });
