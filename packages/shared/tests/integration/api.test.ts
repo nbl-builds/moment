@@ -87,6 +87,18 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
       expect(services.items.every((i) => i.type === 'service' && i.price_amount <= 1_000_000)).toBe(true);
     });
 
+    it('searches several categories and hosted listings', async () => {
+      const categories = await anon.catalog.listCategories();
+      const ids = categories.filter((c) => ['hair', 'nails'].includes(c.slug)).map((c) => c.id);
+      const beauty = await anon.catalog.searchListings(searchFiltersSchema.parse({ categoryIds: ids }));
+      expect(beauty.total).toBeGreaterThan(0);
+      expect(beauty.items.every((l) => l.type === 'service')).toBe(true);
+
+      const hosted = await anon.catalog.searchListings(searchFiltersSchema.parse({ hostedOnly: true, limit: 50 }));
+      expect(hosted.total).toBeGreaterThan(0);
+      expect(hosted.items.every((l) => l.staff.some((s) => s.staff?.is_host))).toBe(true);
+    });
+
     it('refuses filters that are not built yet', async () => {
       const filters = searchFiltersSchema.parse({ sort: 'distance', near: { lat: 33.7, lng: 73.0 } });
       await expectApiError(anon.catalog.searchListings(filters), 'unsupported');

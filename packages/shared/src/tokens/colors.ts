@@ -12,6 +12,7 @@ export const palette = {
   nearBlackTint1: '#383B3C', // Figma: Secondary Color / S Tint 1
   nearBlackTint2: '#5D6061', // Figma: Secondary Color / S Tint 2
   nearBlackTint3: '#828586', // Figma: Secondary Color / S Tint 3
+  nearBlackTint4: '#A7AAAB', // Figma: Secondary Color / S Tint 4
   nearBlackTint5: '#CCCFD0', // Figma: Secondary Color / S Tint 5
   nearBlackTint6: '#F1F3F4', // Figma: Secondary Color / S Tint 6
   orange: '#FE8A29', // Figma: Third Color / Third Color
@@ -26,6 +27,10 @@ export const palette = {
   greenShade2: '#99B847', // Figma: Green Color / Green Shade 2 (prices)
   blackTint1: '#232323', // Figma: Black Color / Black Tint 1
   blackTint2: '#464646', // Figma: Black Color / Black Tint 2
+  grey80: '#CCCCCC', // Figma: "Black Color Tint 3" (calendar days outside the range, radio rings)
+  grey90: '#E6E6E6', // Figma: list dividers (22:1605)
+  grey94: '#EFEFEF', // Figma: "Black Color Tint 2" (calendar arrow buttons)
+  grey95: '#F2F2F2', // Figma: Black Color / Black Tint 7 (slider and toggle track)
 } as const;
 
 /** Semantic colour roles used by components. */
@@ -43,6 +48,7 @@ export const colors = {
   secondaryTint1: palette.nearBlackTint1,
   secondaryTint2: palette.nearBlackTint2,
   secondaryTint3: palette.nearBlackTint3,
+  secondaryTint4: palette.nearBlackTint4,
   secondaryTint5: palette.nearBlackTint5,
   secondaryTint6: palette.nearBlackTint6,
   third: palette.orange,
@@ -58,6 +64,14 @@ export const colors = {
   price: palette.greenShade2,
   blackTint1: palette.blackTint1,
   blackTint2: palette.blackTint2,
+  /** Hairline dividers between list rows. */
+  divider: palette.grey90,
+  /** Slider and toggle tracks. */
+  track: palette.grey95,
+  /** Days you cannot pick, unselected radio rings. */
+  textDisabled: palette.grey80,
+  /** Round grey icon buttons (calendar month arrows). */
+  iconButtonMuted: palette.grey94,
 
   surface: palette.white,
   text: palette.black,

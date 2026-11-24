@@ -79,6 +79,21 @@ export const icons = {
   'category-day-trips': { source: require('../../../assets/icons/category-day-trips.svg') },
   'category-water': { source: require('../../../assets/icons/category-water.svg') },
 
+  // Search Filter (Figma 22:1336)
+  /** "Huge-icon/interface/solid/remove": the close cross on Filters / Search Results (22:1366); 11.65pt glyph in 28pt. */
+  close: { source: require('../../../assets/icons/close.svg'), glyph: { width: 10, height: 10 } },
+  /** "x" closing bottom sheets (22:1611), 28pt. */
+  x: { source: require('../../../assets/icons/x.svg') },
+  /** "Icon/Solid/Search" in sheet search fields (22:1598). */
+  'search-solid': { source: require('../../../assets/icons/search-solid.svg') },
+  /** Unselected radio in pickers (22:1612), 20pt. */
+  radio: { source: require('../../../assets/icons/radio.svg') },
+  /** Filters "Pick Category" chips (22:1372 ...). */
+  'category-art': { source: require('../../../assets/icons/category-art.svg'), glyph: { width: 19.2, height: 19.2 } },
+  'category-beauty': { source: require('../../../assets/icons/category-beauty.svg') },
+  'category-entertainment': { source: require('../../../assets/icons/category-entertainment.svg') },
+  'category-tours-solid': { source: require('../../../assets/icons/category-tours-solid.svg'), glyph: { width: 22, height: 22 } },
+
   // Tab bar (outline, tinted: lime when active)
   /** Figma "home" (13:1583), as an outline. */
   'tab-home': { source: require('../../../assets/icons/tab-home.svg') },

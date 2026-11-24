@@ -40,6 +40,8 @@ export const textStyles = {
   subText16: { fontSize: 16, lineHeight: 1.4, fontWeight: fontWeight.regular, letterSpacing: 0.16 },
   /** Figma: Mobile App Sub Text / ST3. */
   subText14: { fontSize: 14, lineHeight: 1.4, fontWeight: fontWeight.regular, letterSpacing: 0.14 },
+  /** Figma: calendar days and weekdays (22:1960), 13pt / 1.4 / 1%. */
+  subText13: { fontSize: 13, lineHeight: 1.4, fontWeight: fontWeight.regular, letterSpacing: 0.13 },
   /** Figma: Mobile App Sub Text / ST5. */
   subText12: { fontSize: 12, lineHeight: 1.4, fontWeight: fontWeight.regular, letterSpacing: 0.12 },
   /** Figma: Mobile App Sub Text / ST7. */
