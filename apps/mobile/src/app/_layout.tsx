@@ -1,5 +1,6 @@
 import { Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, useFonts } from '@expo-google-fonts/manrope';
 import { colors } from '@moment/shared';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -9,6 +10,7 @@ import { AuthBypassBadge } from '@/components/auth-bypass-badge';
 import { BrandSplash } from '@/components/brand-splash';
 import { ToastHost } from '@/components/toast';
 import { LoginSheetProvider } from '@/features/auth/login-sheet-provider';
+import { queryClient } from '@/lib/query-client';
 
 /** How long the splash stays up after the app has drawn it. */
 const SPLASH_HOLD_MS = 2000;
@@ -39,16 +41,18 @@ export default function RootLayout() {
   const showSplash = !appReady || !holdDone;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar style={showSplash ? 'dark' : 'light'} />
-      {appReady && (
-        <LoginSheetProvider>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.secondary } }} />
-        </LoginSheetProvider>
-      )}
-      {showSplash && <BrandSplash onLayout={onSplashLayout} />}
-      {appReady && !showSplash && <AuthBypassBadge />}
-      {appReady && <ToastHost />}
-    </GestureHandlerRootView>
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <StatusBar style={showSplash ? 'dark' : 'light'} />
+        {appReady && (
+          <LoginSheetProvider>
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.secondary } }} />
+          </LoginSheetProvider>
+        )}
+        {showSplash && <BrandSplash onLayout={onSplashLayout} />}
+        {appReady && !showSplash && <AuthBypassBadge />}
+        {appReady && <ToastHost />}
+      </GestureHandlerRootView>
+    </QueryClientProvider>
   );
 }
