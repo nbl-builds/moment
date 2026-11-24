@@ -1,4 +1,5 @@
 import { colors, spacing } from '@moment/shared';
+import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,6 +40,9 @@ export default function ProfileTab() {
         Your account, wallet, membership and settings come next.
       </Text>
       {session === null && <Button label="Sign in" onPress={() => openLoginSheet()} style={styles.button} />}
+      {session && (
+        <Button label="Bucket List" icon="heart" variant="light" onPress={() => router.push('/bucket-list')} style={styles.button} />
+      )}
       {session && <Button label="Sign out" variant="soft" onPress={signOut} style={styles.button} />}
       <View style={styles.spacer} />
     </Animated.ScrollView>
