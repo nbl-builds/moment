@@ -653,6 +653,45 @@ export type Database = {
           },
         ];
       };
+      business_hours: {
+        Row: {
+          business_id: string;
+          closes_at: string;
+          created_at: string;
+          id: string;
+          opens_at: string;
+          updated_at: string;
+          weekday: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          business_id: string;
+          closes_at: string;
+          created_at?: string;
+          id?: string;
+          opens_at: string;
+          updated_at?: string;
+          weekday: number;
+        };
+        Update: {
+          business_id?: string;
+          closes_at?: string;
+          created_at?: string;
+          id?: string;
+          opens_at?: string;
+          updated_at?: string;
+          weekday?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_hours_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       business_locations: {
         Row: {
           address_line1: string;
@@ -762,6 +801,42 @@ export type Database = {
           },
         ];
       };
+      business_photos: {
+        Row: {
+          alt: string | null;
+          business_id: string;
+          created_at: string;
+          id: string;
+          sort_order: number;
+          url: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          alt?: string | null;
+          business_id: string;
+          created_at?: string;
+          id?: string;
+          sort_order?: number;
+          url: string;
+        };
+        Update: {
+          alt?: string | null;
+          business_id?: string;
+          created_at?: string;
+          id?: string;
+          sort_order?: number;
+          url?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "business_photos_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       business_private: {
         Row: {
           business_id: string;
@@ -820,6 +895,7 @@ export type Database = {
           email: string | null;
           external_ref: string | null;
           id: string;
+          is_verified: boolean;
           kind: Database["public"]["Enums"]["business_kind"];
           logo_url: string | null;
           name: string;
@@ -843,6 +919,7 @@ export type Database = {
           email?: string | null;
           external_ref?: string | null;
           id?: string;
+          is_verified?: boolean;
           kind: Database["public"]["Enums"]["business_kind"];
           logo_url?: string | null;
           name: string;
@@ -865,6 +942,7 @@ export type Database = {
           email?: string | null;
           external_ref?: string | null;
           id?: string;
+          is_verified?: boolean;
           kind?: Database["public"]["Enums"]["business_kind"];
           logo_url?: string | null;
           name?: string;
@@ -3012,6 +3090,18 @@ export type Database = {
       };
     };
     Functions: {
+      business_is_open: {
+        Args: { p_at?: string; p_business_id: string };
+        Returns: boolean;
+      };
+      business_location_points: {
+        Args: { p_business_id: string };
+        Returns: {
+          lat: number;
+          lng: number;
+          location_id: string;
+        }[];
+      };
       cancel_booking: {
         Args: { p_booking_id: string; p_reason?: string };
         Returns: {
@@ -3253,6 +3343,15 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      reviewable_bookings: {
+        Args: { p_business_id: string };
+        Returns: {
+          booking_id: string;
+          listing_id: string;
+          listing_title: string;
+          starts_at: string;
+        }[];
       };
       start_business_conversation: {
         Args: { p_booking_id?: string; p_business_id: string };

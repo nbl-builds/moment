@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon, Text } from '@/components/ui';
 import { api } from '@/lib/api';
+import { openBusiness } from '@/features/business/navigation';
 import { HOME } from '../layout';
 import type { ListingCardData } from '../use-home-data';
 
@@ -41,6 +42,8 @@ export function ListingCard({ listing, size, distanceKm, saved, onPress, onToggl
         style={({ pressed }) => [styles.body, pressed && styles.pressed]}
         accessibilityRole="button"
         accessibilityLabel={`${listing.title}, with ${withName}, ${formatPrice(listing.price_amount)} ${priceUnitLabel(listing.price_unit as PriceUnit)}`}
+        accessibilityActions={[{ name: 'activate' }, { name: 'business', label: `Open ${listing.business.name}` }]}
+        onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'business' ? openBusiness(listing.business.slug) : onPress())}
       >
         <View style={[styles.photo, { height: v.image }]}>
           {photo && <Image source={{ uri: photo }} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} />}
@@ -69,7 +72,12 @@ export function ListingCard({ listing, size, distanceKm, saved, onPress, onToggl
         </Text>
 
         <View style={[styles.footer, { paddingBottom: v.footerBottom }]}>
-          <View style={styles.with}>
+          <Pressable
+            onPress={() => openBusiness(listing.business.slug)}
+            hitSlop={6}
+            style={styles.with}
+            accessible={false}
+          >
             {withAvatar ? (
               <Image source={{ uri: withAvatar }} style={styles.avatar} contentFit="cover" accessible={false} />
             ) : (
@@ -88,7 +96,7 @@ export function ListingCard({ listing, size, distanceKm, saved, onPress, onToggl
                 </Text>
               )}
             </View>
-          </View>
+          </Pressable>
           <View style={styles.price}>
             <Text variant="subText14" weight="bold" color="price">
               {formatPrice(listing.price_amount, { currency: listing.currency })}

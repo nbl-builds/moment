@@ -42,3 +42,15 @@ export const LIMITS = {
   supportBody: 4000,
   searchQuery: 100,
 } as const;
+
+/**
+ * How customers can pay, shown on Membership Details and at checkout. One list
+ * for every client; the payment providers themselves are chosen later (see
+ * docs/DATABASE.md, payments).
+ */
+export const PAYMENT_METHODS = [
+  { key: 'card', label: 'Card' },
+  { key: 'jazzcash', label: 'JazzCash' },
+  { key: 'easypaisa', label: 'Easypaisa' },
+] as const;
+export type PaymentMethodKey = (typeof PAYMENT_METHODS)[number]['key'];

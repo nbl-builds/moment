@@ -49,6 +49,8 @@ export const textStyles = {
   /** Figma: Mobile App Sub Text / ST5. */
   subText12: { fontSize: 12, lineHeight: 1.4, fontWeight: fontWeight.regular, letterSpacing: 0.12 },
   /** Figma: Mobile App Sub Text / ST7. */
+  /** Figma: "Total Services" in the cart bar (47:1828). */
+  caption11: { fontSize: 11, lineHeight: 1.3, fontWeight: fontWeight.regular, letterSpacing: 0.11 },
   subText10: { fontSize: 10, lineHeight: 1.4, fontWeight: fontWeight.regular, letterSpacing: 0.1 },
 } as const;
 

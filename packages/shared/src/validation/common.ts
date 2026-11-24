@@ -119,3 +119,9 @@ export const ratingSchema = z
   .max(5, { message: 'Pick a rating' });
 
 export const urlSchema = z.url({ protocol: /^https?$/, message: 'Enter a valid link' });
+
+/**
+ * A stored media reference: an http(s) URL or a storage ref
+ * (`storage://<bucket>/<path>`, resolved per client by `api.media.url`).
+ */
+export const mediaRefSchema = z.union([urlSchema, z.string().regex(/^storage:\/\/[a-z0-9-]+\/.+$/, 'Enter a valid link')]);

@@ -26,6 +26,7 @@ import { OnboardingPermissions } from '@/features/permissions/onboarding-permiss
 import { takePendingQuiz } from '@/features/quiz/model';
 import { EMPTY_FILTERS, encodeFilters, groupForCategorySlug } from '@/features/search/filters';
 import type { SeeAllKey } from '@/features/see-all/sections';
+import { openHost } from '@/features/business/navigation';
 
 const CARD = HOME.card;
 
@@ -129,7 +130,7 @@ export default function HomeScreen() {
               data={hosts}
               keyOf={(h) => h.id}
               renderItem={({ item, index }) => (
-                <HostCard host={item} index={index} onPress={() => go({ pathname: '/host/[id]', params: { id: item.id } })} />
+                <HostCard host={item} index={index} onPress={() => openHost(item)} />
               )}
               itemWidth={HOME.host.tile}
               gap={HOME.host.gap}

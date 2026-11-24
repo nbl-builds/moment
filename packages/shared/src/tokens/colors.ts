@@ -34,6 +34,8 @@ export const palette = {
   grey90: '#E6E6E6', // Figma: list dividers (22:1605)
   grey94: '#EFEFEF', // Figma: "Black Color Tint 2" (calendar arrow buttons)
   grey95: '#F2F2F2', // Figma: Black Color / Black Tint 7 (slider and toggle track)
+  grey82: '#D2D2D2', // Figma: Black Color / Black Tint 6 (chip borders, tab divider on the business page)
+  grey93: '#EEEEEE', // Figma: selected filter chip fill (47:1697)
   // Adventure Quiz thermometer illustration (20:2453)
   thermometerBlue: '#2979C1',
   thermometerGrey: '#EAEAEA',
@@ -104,6 +106,13 @@ export const colors = {
   optionSelected: palette.blackTint4,
   /** Adventure Quiz: the picked seat on the plane. */
   seatSelected: palette.limeShade2,
+  /** Business page: price badges on service and plan cards (P Shade 2). */
+  priceBadge: palette.limeShade2,
+  /** Business page: verified badge, "Open now". */
+  open: palette.limeShade2,
+  /** Filter chips: unselected border; selected fill. */
+  chipBorder: palette.grey82,
+  chipSelected: palette.grey93,
   /** Adventure Quiz: emoji and photo-collage circles (Black Tint 7). */
   bubble: palette.grey95,
   /** Adventure Quiz thermometer: mercury and empty tube. */
@@ -114,6 +123,12 @@ export const colors = {
 } as const;
 
 export type ColorToken = keyof typeof colors;
+
+/** Brand marks on the share sheet (Figma 47:2457), drawn as gradients behind white glyphs. */
+export const brandGradients = {
+  whatsapp: ['#60D66A', '#20B038'],
+  messenger: ['#0099FF', '#784DFF', '#A033FF', '#FF5280', '#FF7061'],
+} as const;
 
 /**
  * A 6-digit hex colour at the given opacity, as `rgba()`.

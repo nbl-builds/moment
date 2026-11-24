@@ -53,7 +53,14 @@
           "locationWhenInUsePermission": "Moment uses your location to personalise recommendations and deals near you."
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Moment uses your photos so you can add them to your reviews.",
+          "cameraPermission": "Moment uses your camera so you can take photos for your reviews."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

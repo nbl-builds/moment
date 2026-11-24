@@ -104,6 +104,12 @@ describe('reviews', () => {
     expect(reviewSchema.safeParse({ bookingId: ID, rating: 4.5 }).success).toBe(false);
     expect(reviewSchema.safeParse({ bookingId: ID, rating: 4, photos: ['ftp://x'] }).success).toBe(false);
   });
+
+  it('takes photos as https URLs or storage refs', () => {
+    const photos = ['https://cdn.example.com/a.jpg', 'storage://review-photos/u1/b.jpg'];
+    expect(reviewSchema.parse({ bookingId: ID, rating: 4, photos }).photos).toEqual(photos);
+    expect(reviewSchema.safeParse({ bookingId: ID, rating: 4, photos: ['storage://'] }).success).toBe(false);
+  });
 });
 
 describe('groups', () => {

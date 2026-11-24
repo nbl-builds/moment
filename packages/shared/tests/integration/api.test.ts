@@ -20,6 +20,8 @@ const SEED = {
   sunriseHike: '00000000-0000-4000-e000-000000000001',
   sunriseHikeSlug: 'margalla-sunrise-hike',
   swedishMassage: '00000000-0000-4000-e000-000000000021',
+  saffronSpa: '00000000-0000-4000-b000-000000000002',
+  devUser: 'dev@moment.test',
 };
 
 const newApi = () =>
@@ -62,6 +64,31 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
       expect(items.length).toBeGreaterThan(0);
       expect(items[0]?.business.name).toBeTruthy();
       expect(items.every((i) => i.type === 'experience')).toBe(true);
+    });
+
+    it('loads the business page', async () => {
+      const biz = await anon.catalog.getBusiness('saffron-spa');
+      expect(biz.id).toBe(SEED.saffronSpa);
+      expect(biz.is_verified).toBe(true);
+      expect(biz.hours.length).toBeGreaterThan(0);
+      expect(biz.photos.length).toBeGreaterThan(0);
+      expect(biz.plans.length).toBeGreaterThan(0);
+      const [point] = await anon.catalog.businessLocationPoints(biz.id);
+      expect(point?.lat).toBeGreaterThan(33);
+
+      const services = await anon.catalog.listBusinessServices(biz.id);
+      expect(services.every((s) => s.type === 'service')).toBe(true);
+      expect(services.some((s) => s.options.length > 0)).toBe(true);
+      expect(services[0]?.category?.name).toBeTruthy();
+
+      const plan = await anon.catalog.getMembershipPlan(biz.plans[0]!.id);
+      expect(plan.business?.slug).toBe('saffron-spa');
+
+      const stats = await anon.catalog.reviewStats(biz.id);
+      expect(stats.total).toBe(Object.values(stats.counts).reduce((a, b) => a + b, 0));
+      const fives = await anon.catalog.listReviews({ businessId: biz.id }, { rating: 5 });
+      expect(fives.every((r) => r.rating === 5)).toBe(true);
+      expect(fives.length).toBe(stats.counts[5]);
     });
 
     it('gets a listing by slug and by id', async () => {
@@ -354,6 +381,15 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
       await me.bucketList.deleteList(food.id);
       await me.bucketList.deleteList(nature.id);
       expect((await me.bucketList.savedIds()).listings.has(SEED.sunriseHike)).toBe(false);
+    });
+
+    it('knows who may review a business', async () => {
+      // A fresh account has no visits; the seeded dev user has one at Margalla Trails
+      // (their Saffron Spa visit is left for trying "Write a review" in the app).
+      expect(await me.reviews.reviewableBookings(SEED.saffronSpa)).toEqual([]);
+      const dev = await signedIn(SEED.devUser);
+      const [visit] = await dev.reviews.reviewableBookings(SEED.margallaBusiness);
+      expect(visit?.listing_title).toBe('Private Trail Guide (3 hours)');
     });
 
     it('recommends a place', async () => {
