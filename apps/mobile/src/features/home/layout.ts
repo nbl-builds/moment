@@ -39,10 +39,14 @@ export const HOME = {
     short: { height: 332, image: 198, titleGap: 12, titleLines: 2, footerBottom: 6 },
     /** Search Results (22:2205): full width, 392pt, one-line title. */
     wide: { height: 392, image: 285, titleGap: 10, titleLines: 1, footerBottom: 3 },
+    /** See all > Just For You / Explore (20:1676): full width, 304pt, 198pt photo. */
+    wideShort: { height: 304, image: 198, titleGap: 10, titleLines: 1, footerBottom: 2 },
     chip: { width: 50, height: 24, radius: 6, inset: 14 },
     avatar: 40,
   },
   host: { tile: 90, gap: 20, chipOverlap: 12, nameGap: 16 },
+  /** See all > Top Hosts (20:1479): 184 x 236 cards, 165pt photo, 20pt apart. */
+  hostGrid: { width: 184, gap: 20, padding: 9, radius: 15, imageRadius: 12, chipInset: 10, nameGap: 10, metaGap: 4 },
   chip: { gap: 16, radius: 12, paddingH: 20, paddingV: 8 },
   tile: { width: 160, height: 202, radius: 15, gap: 20, labelBottom: 12 },
   missing: { height: 188, radius: 15 },

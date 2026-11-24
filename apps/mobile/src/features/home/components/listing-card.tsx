@@ -11,8 +11,8 @@ const HEART_HIT_SLOP = 10;
 
 export interface ListingCardProps {
   listing: ListingCardData;
-  /** 'tall': Popular / Recently viewed (17:1126). 'short': Just for you (17:1169). 'wide': Search Results (22:2205). */
-  size: 'tall' | 'short' | 'wide';
+  /** 'tall': Popular / Recently viewed (17:1126). 'short': Just for you (17:1169). 'wide': Search Results (22:2205). 'wideShort': See all > Just For You (20:1676). */
+  size: 'tall' | 'short' | 'wide' | 'wideShort';
   distanceKm?: number;
   saved: boolean;
   onPress: () => void;
@@ -35,7 +35,7 @@ export function ListingCard({ listing, size, distanceKm, saved, onPress, onToggl
   return (
     // The heart is a sibling of the card's pressable, not nested in it, so screen
     // readers reach it as its own button.
-    <View style={[styles.card, { height: v.height }, size === 'wide' && styles.wide]}>
+    <View style={[styles.card, { height: v.height }, (size === 'wide' || size === 'wideShort') && styles.wide]}>
       <Pressable
         onPress={onPress}
         style={({ pressed }) => [styles.body, pressed && styles.pressed]}
