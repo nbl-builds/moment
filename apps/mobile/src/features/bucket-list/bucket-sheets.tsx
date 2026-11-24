@@ -13,7 +13,7 @@ import { ListThumbnail } from './components/list-thumbnail';
 import { NameSheet } from './components/name-sheet';
 import { SheetOption } from './components/sheet-option';
 import { BUCKET } from './layout';
-import { useBucketLists, useBucketMutations, useSavedListings } from './queries';
+import { useBucketLists, useBucketMutations, useSavedListings, type SaveTarget } from './queries';
 
 // Saving from a heart (Figma 22:2487 -> 24:1225 -> 24:1444 -> 24:1667):
 // actions sheet -> "Your Bucketlist" picker -> "Give it a name" -> first-save sheet.
@@ -28,6 +28,8 @@ export const comingWithGroups = () => showToast('Coming with Groups');
 interface BucketSheetsValue {
   /** Heart tapped on a listing: guests get the login sheet. */
   openForListing: (listingId: string) => void;
+  /** Heart on a business page. */
+  openForBusiness: (businessId: string) => void;
 }
 
 const Ctx = createContext<BucketSheetsValue | null>(null);
@@ -40,27 +42,33 @@ export function BucketSheetsProvider({ children }: { children: ReactNode }) {
   const { addToList, removeFromList, createAndAdd } = useBucketMutations();
 
   const [step, setStep] = useState<Step>(null);
-  const [listingId, setListingId] = useState<string | null>(null);
+  const [target, setTarget] = useState<SaveTarget | null>(null);
   /** Opened straight on the picker (heart already filled): back closes instead of returning to actions. */
   const [pickerOnly, setPickerOnly] = useState(false);
   const [firstListId, setFirstListId] = useState<string | null>(null);
 
   const close = useCallback(() => setStep(null), []);
 
-  const openForListing = useCallback(
-    (id: string) => {
+  const open = useCallback(
+    (t: SaveTarget) => {
       if (!saved.signedIn) {
         openLoginSheet();
         return;
       }
-      setListingId(id);
-      const alreadySaved = saved.isSaved(id);
+      setTarget(t);
+      const alreadySaved = saved.isTargetSaved(t);
       setPickerOnly(alreadySaved);
       setStep(alreadySaved ? 'picker' : 'actions');
     },
     [saved, openLoginSheet],
   );
-  const value = useMemo(() => ({ openForListing }), [openForListing]);
+  const value = useMemo(
+    () => ({
+      openForListing: (id: string) => open({ kind: 'listing', id }),
+      openForBusiness: (id: string) => open({ kind: 'business', id }),
+    }),
+    [open],
+  );
 
   const viewList = (listId: string) => router.push({ pathname: '/bucket-list/[id]', params: { id: listId } });
 
@@ -85,28 +93,28 @@ export function BucketSheetsProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleInList = (listId: string, name: string) => {
-    if (!listingId) return;
-    const inList = saved.listsFor(listingId).includes(listId);
+    if (!target) return;
+    const inList = saved.listsForTarget(target).includes(listId);
     if (inList) {
-      removeFromList.mutate({ listId, listingId });
+      removeFromList.mutate({ listId, target });
       return;
     }
     const wasEmpty = !saved.hasAnySaved();
-    addToList.mutate({ listId, listingId });
+    addToList.mutate({ listId, target });
     // Saving from the actions sheet finishes the flow; with a filled heart the picker stays open for more ticks.
     if (!pickerOnly) void afterSave(listId, name, wasEmpty);
   };
 
   const create = (name: string) => {
-    if (!listingId) return;
+    if (!target) return;
     const wasEmpty = !saved.hasAnySaved();
     createAndAdd.mutate(
-      { name, listingId },
+      { name, target },
       { onSuccess: (list) => void afterSave(list.id, list.name, wasEmpty) },
     );
   };
 
-  const ticked = listingId ? saved.listsFor(listingId) : [];
+  const ticked = target ? saved.listsForTarget(target) : [];
   const sheetBottom = insets.bottom + BUCKET.sheetBottom;
 
   return (

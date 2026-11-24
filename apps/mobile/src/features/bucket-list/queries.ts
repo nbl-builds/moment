@@ -10,6 +10,10 @@ export type BucketListRow = Awaited<ReturnType<typeof api.bucketList.lists>>[num
 export type BucketListDetail = Awaited<ReturnType<typeof api.bucketList.getList>>;
 type Saved = Awaited<ReturnType<typeof api.bucketList.savedIds>>;
 
+/** What a heart saves: an experience or service, or a whole business. */
+export type SaveTarget = { kind: 'listing' | 'business'; id: string };
+const itemFor = (t: SaveTarget) => (t.kind === 'listing' ? { listingId: t.id } : { businessId: t.id });
+
 export const bucketKeys = {
   all: (userId: string | undefined) => ['bucket', userId] as const,
   saved: (userId: string | undefined) => ['bucket', userId, 'saved'] as const,
@@ -29,10 +33,14 @@ export function useSavedListings() {
     queryFn: () => api.bucketList.savedIds(),
     enabled: Boolean(userId),
   });
+  const mapFor = (t: SaveTarget) => (t.kind === 'listing' ? saved.data?.listings : saved.data?.businesses);
   return {
     signedIn: Boolean(userId),
     isSaved: (listingId: string) => (saved.data?.listings.get(listingId)?.length ?? 0) > 0,
     listsFor: (listingId: string) => saved.data?.listings.get(listingId) ?? [],
+    /** Same for a listing or a business. */
+    isTargetSaved: (t: SaveTarget) => (mapFor(t)?.get(t.id)?.length ?? 0) > 0,
+    listsForTarget: (t: SaveTarget) => mapFor(t)?.get(t.id) ?? [],
     /** Anything saved anywhere yet (the first save shows a sheet instead of a toast). */
     hasAnySaved: () => (saved.data?.listings.size ?? 0) + (saved.data?.businesses.size ?? 0) > 0,
     isReady: saved.isSuccess,
@@ -61,12 +69,18 @@ export function useBucketListDetail(listId: string) {
 // Optimistic helpers
 // ---------------------------------------------------------------------------
 
-function editSaved(qc: QueryClient, userId: string | undefined, edit: (listings: Map<string, string[]>) => void) {
+function editSaved(
+  qc: QueryClient,
+  userId: string | undefined,
+  edit: (map: Map<string, string[]>) => void,
+  kind: SaveTarget['kind'] = 'listing',
+) {
   qc.setQueryData<Saved>(bucketKeys.saved(userId), (prev) => {
     if (!prev) return prev;
-    const listings = new Map(prev.listings);
-    edit(listings);
-    return { ...prev, listings };
+    const key = kind === 'listing' ? 'listings' : 'businesses';
+    const map = new Map(prev[key]);
+    edit(map);
+    return { ...prev, [key]: map };
   });
 }
 
@@ -92,11 +106,11 @@ export function useBucketMutations() {
   const settle = () => qc.invalidateQueries({ queryKey: bucketKeys.all(userId) });
 
   const addToList = useMutation({
-    mutationFn: ({ listId, listingId }: { listId: string; listingId: string }) =>
-      api.bucketList.addItem({ bucketListId: listId, listingId }),
-    onMutate: async ({ listId, listingId }) => {
+    mutationFn: ({ listId, target }: { listId: string; target: SaveTarget }) =>
+      api.bucketList.addItem({ bucketListId: listId, ...itemFor(target) }),
+    onMutate: async ({ listId, target }) => {
       const prev = await snapshot(qc, userId);
-      editSaved(qc, userId, (m) => m.set(listingId, [...new Set([...(m.get(listingId) ?? []), listId])]));
+      editSaved(qc, userId, (m) => m.set(target.id, [...new Set([...(m.get(target.id) ?? []), listId])]), target.kind);
       editLists(qc, userId, (rows) => rows.map((r) => (r.id === listId ? { ...r, itemCount: r.itemCount + 1 } : r)));
       return prev;
     },
@@ -108,14 +122,21 @@ export function useBucketMutations() {
   });
 
   const removeFromList = useMutation({
-    mutationFn: ({ listId, listingId }: { listId: string; listingId: string }) => api.bucketList.removeListing(listId, listingId),
-    onMutate: async ({ listId, listingId }) => {
+    mutationFn: ({ listId, target }: { listId: string; target: SaveTarget }) =>
+      target.kind === 'listing' ? api.bucketList.removeListing(listId, target.id) : api.bucketList.removeBusiness(listId, target.id),
+    onMutate: async ({ listId, target }) => {
       const prev = await snapshot(qc, userId);
-      editSaved(qc, userId, (m) => {
-        const left = (m.get(listingId) ?? []).filter((id) => id !== listId);
-        if (left.length) m.set(listingId, left);
-        else m.delete(listingId);
-      });
+      const listingId = target.id;
+      editSaved(
+        qc,
+        userId,
+        (m) => {
+          const left = (m.get(target.id) ?? []).filter((id) => id !== listId);
+          if (left.length) m.set(target.id, left);
+          else m.delete(target.id);
+        },
+        target.kind,
+      );
       editLists(qc, userId, (rows) => rows.map((r) => (r.id === listId ? { ...r, itemCount: Math.max(0, r.itemCount - 1) } : r)));
       qc.setQueryData<BucketListDetail>(bucketKeys.list(userId, listId), (d) =>
         d ? { ...d, items: d.items.filter((i) => i.listing?.id !== listingId) } : d,
@@ -131,14 +152,14 @@ export function useBucketMutations() {
 
   /** "Give it a name" -> Create Now: makes the list and saves the listing in it. */
   const createAndAdd = useMutation({
-    mutationFn: async ({ name, listingId }: { name: string; listingId: string }) => {
+    mutationFn: async ({ name, target }: { name: string; target: SaveTarget }) => {
       const list = await api.bucketList.createList({ name });
-      await api.bucketList.addItem({ bucketListId: list.id, listingId });
+      await api.bucketList.addItem({ bucketListId: list.id, ...itemFor(target) });
       return list;
     },
-    onMutate: async ({ listingId }) => {
+    onMutate: async ({ target }) => {
       const prev = await snapshot(qc, userId);
-      editSaved(qc, userId, (m) => m.set(listingId, [...(m.get(listingId) ?? []), 'pending']));
+      editSaved(qc, userId, (m) => m.set(target.id, [...(m.get(target.id) ?? []), 'pending']), target.kind);
       return prev;
     },
     onError: (_e, _v, prev) => {
@@ -168,13 +189,15 @@ export function useBucketMutations() {
     onMutate: async (listId) => {
       const prev = await snapshot(qc, userId);
       editLists(qc, userId, (rows) => rows.filter((r) => r.id !== listId));
-      editSaved(qc, userId, (m) => {
-        for (const [listingId, lists] of m) {
-          const left = lists.filter((id) => id !== listId);
-          if (left.length) m.set(listingId, left);
-          else m.delete(listingId);
+      const dropList = (m: Map<string, string[]>) => {
+        for (const [id, lists] of m) {
+          const left = lists.filter((l) => l !== listId);
+          if (left.length) m.set(id, left);
+          else m.delete(id);
         }
-      });
+      };
+      editSaved(qc, userId, dropList, 'listing');
+      editSaved(qc, userId, dropList, 'business');
       return prev;
     },
     onError: (_e, _v, prev) => {
