@@ -34,9 +34,11 @@ export const HOME = {
     padding: 10,
     imageRadius: 12,
     /** Popular / Recently viewed: 421pt card with a 285pt photo. */
-    tall: { height: 421, image: 285, titleGap: 10 },
+    tall: { height: 421, image: 285, titleGap: 10, titleLines: 2, footerBottom: 8 },
     /** Just for you: 332pt card with a 198pt photo. */
-    short: { height: 332, image: 198, titleGap: 12 },
+    short: { height: 332, image: 198, titleGap: 12, titleLines: 2, footerBottom: 6 },
+    /** Search Results (22:2205): full width, 392pt, one-line title. */
+    wide: { height: 392, image: 285, titleGap: 10, titleLines: 1, footerBottom: 3 },
     chip: { width: 50, height: 24, radius: 6, inset: 14 },
     avatar: 40,
   },
