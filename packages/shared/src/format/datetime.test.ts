@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatShortDateTime,
   addDaysToLocalDate,
   ageOn,
   formatDate,
@@ -116,5 +117,13 @@ describe('display formatting', () => {
     expect(ageOn('2000-11-18', '2026-11-18')).toBe(26);
     expect(ageOn('2000-11-19', '2026-11-18')).toBe(25);
     expect(ageOn('2008-02-29', '2026-02-28')).toBe(17);
+  });
+});
+
+describe('formatShortDateTime', () => {
+  it('formats in Asia/Karachi as on the Bucket List rows', () => {
+    // 16:00 UTC is 21:00 in Karachi (UTC+5).
+    expect(formatShortDateTime('2023-01-01T16:00:00Z')).toBe('1/1/2023 - 9:00PM');
+    expect(formatShortDateTime('2026-11-23T19:05:00Z')).toBe('11/24/2026 - 12:05AM');
   });
 });

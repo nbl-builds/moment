@@ -21,6 +21,7 @@ export const palette = {
   white: '#FFFFFF',
   pureBlack: '#000000', // Figma: Black Color / Black Color
   red: '#D61600', // Figma: Red Color / Red Color
+  coral: '#F66A6A', // Figma: "Yes, Delete" on the delete bucket list sheet (25:1885)
   redTint: '#FFEEEE', // Figma: error field and OTP cell fill (7:949, 9:728)
   redBorder: '#FFA7A7', // Figma: error field and OTP cell border
   slate: '#6E7198', // Figma: Button page, Ghost border and disabled fill
@@ -81,6 +82,9 @@ export const colors = {
   surface: palette.white,
   text: palette.black,
   textInverse: palette.white,
+  /** Destructive buttons ("Yes, Delete"). */
+  danger: palette.coral,
+  onDanger: palette.white,
   /** Validation and error messages. */
   error: palette.red,
   /** Fill and border of a field or OTP cell in its error state. */
