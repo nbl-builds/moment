@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ApiError, colors, completeSignUpSchema, MIN_SIGNUP_AGE, type CompleteSignUp } from '@moment/shared';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Alert, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -40,6 +41,8 @@ function formatDob(value: string): string {
 export default function FinishSignUpScreen() {
   const insets = useSafeAreaInsets();
   const [pickingDob, setPickingDob] = useState(false);
+  /** Email sign-ups arrive with their address, which is prefilled. */
+  const { email: signUpEmail } = useLocalSearchParams<{ email?: string }>();
 
   const {
     control,
@@ -49,11 +52,22 @@ export default function FinishSignUpScreen() {
     formState: { errors, isSubmitting },
   } = useForm<FormInput, unknown, CompleteSignUp>({
     resolver: zodResolver(completeSignUpSchema),
-    defaultValues: { firstName: '', lastName: '', email: '', dateOfBirth: '', acceptTerms: true },
+    defaultValues: { firstName: '', lastName: '', email: signUpEmail ?? '', dateOfBirth: '', acceptTerms: true },
     mode: 'onTouched',
   });
 
   const dateOfBirth = useWatch({ control, name: 'dateOfBirth' });
+
+  // Otherwise prefill the account's email, if it has one (e.g. relaunching mid sign-up).
+  useEffect(() => {
+    if (signUpEmail) return;
+    api.auth
+      .getUser()
+      .then((user) => {
+        if (user?.email) setValue('email', user.email);
+      })
+      .catch(() => undefined);
+  }, [signUpEmail, setValue]);
 
   const onSubmit = handleSubmit(async (form) => {
     try {

@@ -24,9 +24,24 @@ export async function sendCode(target: OtpTarget): Promise<void> {
 export async function verifyCode(target: OtpTarget, code: string): Promise<void> {
   if (AUTH_BYPASS) {
     if (code === BYPASS_WRONG_CODE) throw new ApiError('invalid', 'Wrong or expired verification code.');
-    await api.auth.verifyPhoneOtp({ phone: DEV_USER_PHONE, code: DEV_USER_CODE });
+    await signInAsDevUser();
     return;
   }
   if (target.email !== undefined) await api.auth.verifyEmailOtp({ email: target.email, code });
   else await api.auth.verifyPhoneOtp({ phone: target.phone, code });
+}
+
+/**
+ * Dev auth bypass: signs in as the fixed local dev user. Its number is a
+ * test_otp number, so the send and the fixed code never reach an SMS provider.
+ */
+export async function signInAsDevUser(): Promise<void> {
+  try {
+    // Creates the dev user on a fresh database; nothing is actually sent.
+    await api.auth.sendPhoneOtp(DEV_USER_PHONE);
+  } catch (e) {
+    // Sent a moment ago (e.g. by the code screen): the user exists, carry on.
+    if (!(e instanceof ApiError && e.code === 'rate_limited')) throw e;
+  }
+  await api.auth.verifyPhoneOtp({ phone: DEV_USER_PHONE, code: DEV_USER_CODE });
 }
