@@ -10,7 +10,7 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Dev auth bypass for testing screens: `EXPO_PUBLIC_AUTH_BYPASS=1` in `apps/mobile/.env.local` (dev builds only; see `.env.example`). Remove it, or keep it dev-only, when the production SMS provider is wired
 - Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
 - Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
-- Next screens behind Home's placeholder routes: Experience / Business details (`/listing/[id]`), host profile (`/host/[id]`), Recommend a place, and the Bookings / Explore / Groups / Profile tabs
+- Next screens behind Home's placeholder routes: Experience details (`/listing/[id]`), host profile (`/host/[id]`), Recommend a place, and the Bookings / Explore / Groups / Profile tabs
 - Promo banners are static in `apps/mobile/src/features/home/promos.ts`; move them to `platform_settings` when the team needs to change them without a release
 - "Recently viewed" is stored on the device (AsyncStorage); move it to the server if it should follow the user
 - Seed photos are the Figma images in `supabase/seed-media` (local only). Real listings need media upload in the business portal
@@ -26,7 +26,7 @@ Keep this file current: tick items as they land and update **Next up** so any se
 ## UI-first phase (consumer mobile)
 One branch per section (`feat/<section>`), merged into `staging`. Frames: `docs/FIGMA.md`.
 - [x] 1. Search Filter
-- [ ] 2. Business Look (business, experience detail, host profile, reviews)
+- [ ] 2. Business Look (business, experience detail, host profile, reviews). Business page done (`/business/[slug]`); experience detail and host profile next
 - [ ] 3. Booking Flow
 - [ ] 4. Booking Status Screens
 - [ ] 5. Bucket List + Recommend a place (Bucket List done: named lists, save sheets, list screens; Recommend a place next)
@@ -44,6 +44,10 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 
 - **Bucket List: Groups** ("Add to Groups" on the heart sheet, "Invite others" on the share sheet): show a "Coming with Groups" toast. Wire when Groups (section 9) is built; inviting converts the list to a group
 - **Bucket List: shared links**: "Share a link" sends `moment://bucket-list/<share_token>`; opening it (read-only view by token, RLS or an RPC) is not built yet
+
+- **Booking Flow entry** (`/booking/new`): placeholder. The cart's "Continue" passes `businessId` + `services` (ids); "Apply Membership" passes `planId`. Replace with the Booking Flow (section 3); clear the cart (`serviceCart.clear`) once booked
+- **Business links**: share uses `moment://business/<slug>`; opening it is not wired yet (same as bucket list links)
+- **Business logo "play" badge** (25:2265): no business videos/stories yet, so the play overlay isn't shown
 
 ### Needs design
 - **Badge illustrations**: only Nature Lover has one in Figma (20:3543). Adventure Lover, Culture Lover, Food Lover, Wellness Lover and Party Lover show a neutral placeholder on the quiz result. Export each into `seed-media/badges` and set `badges.icon` when drawn
@@ -112,6 +116,7 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 ## Phase 6: Social and discovery
 - [ ] Chat (Supabase Realtime)
 - [ ] Explore map
+- [x] Business page (`/business/[slug]`): hero carousel with a panel that slides over it (snaps collapsed/expanded, tabs pin), header with verified badge, address to Maps, km distance, bookings, Open now from opening hours; tabs Popular, Services (category chips, + to a per-business cart with total in PKR and Continue), Membership (plans -> Membership Details, payment methods from `PAYMENT_METHODS`), Reviews (star filters with counts, photo strip and full-screen viewer, Write a review with photo uploads; only after a completed visit), About (description, map); share sheet; heart saves the business to a bucket list
 - [x] Bucket List: several named lists (`bucket_lists`), heart -> save sheet -> list picker (ticks, toggle) -> name a new list -> first-save sheet or "Saved to ..." toast with View; all lists and one list screens with share link, rename and delete; optimistic hearts and lists
 - [x] Adventure Quiz + personality badge driving recommendations: Figma's six questions (photo lists, glass, emoji, plane seat, thermometer) as `quiz_questions.kind` + `config`, guests sign in at the end and Home resumes the submit, retaking replaces the result, Just for you refetches
 - [ ] Personality badge on Profile

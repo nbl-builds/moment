@@ -92,8 +92,16 @@ All in `app/quiz.tsx` (one screen, components in `features/quiz/components`).
 Recommend a service: 25:1941, 25:2025, 25:2067, 25:2148, 25:2198
 
 ## Business Look (Business Screens)
-Business Details: Popular 25:2265, 47:2457 · Services 47:1697, 47:1828, 47:2913 · Membership 47:2231 · Reviews 47:2080 · Ratings 47:3245 · About 47:1972
-Membership Details 47:3101 · Write a review 47:7344, 47:7419
+| Frame | Node | Built |
+|---|---|---|
+| Business, Popular tab (collapsed) | 25:2265 | `app/business/[slug]/index.tsx` |
+| Services tab / added + cart bar / expanded | 47:1697, 47:1828, 47:2913 | same screen, `features/business/components/{service-card,cart-bar}.tsx` |
+| Membership tab | 47:2231 | `features/business/components/plan-card.tsx` |
+| Membership Details | 47:3101 | `app/membership/[id].tsx` |
+| Reviews tab / expanded | 47:2080, 47:3245 | `features/business/components/review-item.tsx` |
+| About tab | 47:1972 | `features/business/components/about-section.tsx` |
+| Write a review / with media | 47:7344, 47:7419 | `app/business/[slug]/review.tsx` |
+| Share sheet | 47:2457 | `features/business/components/share-sheet.tsx` |
 (Experience details 48:3873, 48:6527 · About the host 48:4175, 48:4223 · Reviews 48:4310 sit under Explore Screens on the canvas)
 
 ## Booking Flow
