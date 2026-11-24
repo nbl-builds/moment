@@ -128,6 +128,38 @@ export const icons = {
   trash: { source: require('../../../assets/icons/trash.svg') },
   /** Tick on lists that already hold the listing. Not in Figma: drawn to match the 2pt stroke icons. */
   check: { source: require('../../../assets/icons/check.svg') },
+
+  // Business page (Figma 25:2265 ... 47:7419)
+  /** Verified badge next to a business name (P Shade 2), drawn at 14.6pt. */
+  verified: { source: require('../../../assets/icons/verified.svg'), multicolor: true },
+  /** "location.fill" pin before the address, 18pt. */
+  'location-pin': { source: require('../../../assets/icons/location-pin.svg') },
+  /** "navigation.fill" arrow before the distance, 18pt. */
+  navigation: { source: require('../../../assets/icons/navigation.svg') },
+  /** Play badge over the business logo (25:2265), 28pt. */
+  'play-circle': { source: require('../../../assets/icons/play-circle.svg') },
+  /** Panel handle: an up chevron (15 x 5) in S Tint 3; rotated to point down when expanded. */
+  'handle-chevron': { source: require('../../../assets/icons/handle-chevron.svg'), glyph: { width: 15, height: 5.1 } },
+  /** Red "remove service" button (47:1828), 40pt. */
+  'remove-circle': { source: require('../../../assets/icons/remove-circle.svg'), multicolor: true },
+  /** Red outline trash in the cart bar (47:1828). */
+  'trash-red': { source: require('../../../assets/icons/trash-red.svg'), multicolor: true },
+  /** "file-signature" on membership services and "Write a review" (47:3101, 47:2080). */
+  'file-signature': { source: require('../../../assets/icons/file-signature.svg') },
+  /** Upload cloud in the review media dropzone (47:7344), 32pt. */
+  'upload-cloud': { source: require('../../../assets/icons/upload-cloud.svg'), multicolor: true },
+  /** Big rating stars on "Write a review" (47:7344): amber and grey. */
+  'star-rate': { source: require('../../../assets/icons/star-rate.svg'), multicolor: true },
+  'star-rate-empty': { source: require('../../../assets/icons/star-rate-empty.svg'), multicolor: true },
+  /** Share sheet (47:2457): brand marks keep their colours; utility icons sit on grey circles. */
+  'share-facebook': { source: require('../../../assets/icons/share-facebook.svg'), multicolor: true },
+  'share-twitter': { source: require('../../../assets/icons/share-twitter.svg'), multicolor: true },
+  'share-messenger': { source: require('../../../assets/icons/share-messenger.svg'), multicolor: true },
+  'share-whatsapp': { source: require('../../../assets/icons/share-whatsapp.svg'), multicolor: true },
+  'share-sms': { source: require('../../../assets/icons/share-sms.svg') },
+  'share-email': { source: require('../../../assets/icons/share-email.svg') },
+  'share-link-copy': { source: require('../../../assets/icons/share-link-copy.svg'), glyph: { width: 17.6, height: 17.6 } },
+  'share-more': { source: require('../../../assets/icons/share-more.svg') },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;
