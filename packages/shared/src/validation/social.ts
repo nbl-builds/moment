@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { LIMITS } from '../constants';
-import { localDateSchema, optionalText, ratingSchema, requiredText, urlSchema, uuidSchema } from './common';
+import { localDateSchema, mediaRefSchema, optionalText, ratingSchema, requiredText, uuidSchema } from './common';
 
 // Figma: "Write a review", "Create new group", "Group Rename", "Group Settings",
 // "Chat", "Give us feedback", "Adventure Quiz".
@@ -10,7 +10,7 @@ export const reviewSchema = z.object({
   bookingId: uuidSchema,
   rating: ratingSchema,
   body: optionalText(LIMITS.reviewBody, 'Comment'),
-  photos: z.array(urlSchema).max(LIMITS.reviewPhotos, { message: `Add up to ${LIMITS.reviewPhotos} photos` }).default([]),
+  photos: z.array(mediaRefSchema).max(LIMITS.reviewPhotos, { message: `Add up to ${LIMITS.reviewPhotos} photos` }).default([]),
 });
 
 export type ReviewInput = z.input<typeof reviewSchema>;

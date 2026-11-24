@@ -384,11 +384,12 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
     });
 
     it('knows who may review a business', async () => {
-      // A fresh account has no visits; the seeded dev user has one at Saffron Spa.
+      // A fresh account has no visits; the seeded dev user has one at Margalla Trails
+      // (their Saffron Spa visit is left for trying "Write a review" in the app).
       expect(await me.reviews.reviewableBookings(SEED.saffronSpa)).toEqual([]);
       const dev = await signedIn(SEED.devUser);
-      const [visit] = await dev.reviews.reviewableBookings(SEED.saffronSpa);
-      expect(visit?.listing_title).toBeTruthy();
+      const [visit] = await dev.reviews.reviewableBookings(SEED.margallaBusiness);
+      expect(visit?.listing_title).toBe('Private Trail Guide (3 hours)');
     });
 
     it('recommends a place', async () => {
