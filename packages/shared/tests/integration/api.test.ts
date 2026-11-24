@@ -103,6 +103,29 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
     });
 
 
+    it('fills the Home rails', async () => {
+      const curated = await anon.catalog.curated({ tag: 'local-fun', city: 'Lahore' });
+      expect(curated.length).toBeGreaterThanOrEqual(3);
+      expect(curated.every((l) => l.city === 'Lahore')).toBe(true);
+
+      const ids = curated.slice(0, 2).map((l) => l.id).reverse();
+      const byIds = await anon.catalog.listingsByIds([...ids, '00000000-0000-4000-e000-00000000ffff']);
+      expect(byIds.map((l) => l.id)).toEqual(ids);
+
+      const forYou = await anon.catalog.justForYou({ limit: 5 });
+      expect(forYou.length).toBe(5);
+      expect(forYou[0]?.business.name).toBeTruthy();
+
+      const distances = await anon.catalog.listingDistances({ lat: 31.5204, lng: 74.3587 }, ids);
+      expect(distances.size).toBe(2);
+      expect([...distances.values()].every((km) => km >= 0 && km < 50)).toBe(true);
+
+      const photo = curated[0]?.media[0]?.url;
+      expect(photo).toMatch(/^storage:\/\/seed-media\//);
+      expect(anon.media.url(photo)).toBe(`${url}/storage/v1/object/public/${photo?.slice('storage://'.length)}`);
+      expect(anon.media.url('https://example.com/a.jpg')).toBe('https://example.com/a.jpg');
+    });
+
     it('requires sign in for personal data', async () => {
       await expectApiError(anon.bookings.listMine(), 'unauthenticated');
     });

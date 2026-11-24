@@ -36,6 +36,18 @@ export function createMomentApi(db: MomentSupabaseClient) {
     support: createSupportApi(db),
     account: createAccountApi(db),
     business: createBusinessApi(db),
+    media: {
+      /**
+       * Public URL for a media column. http(s) URLs pass through; storage refs
+       * (`storage://<bucket>/<path>`, used by seed data) resolve against this
+       * client's Supabase URL, so they work from a simulator and a phone alike.
+       */
+      url: (ref: string | null | undefined): string | null => {
+        if (!ref) return null;
+        const m = /^storage:\/\/([^/]+)\/(.+)$/.exec(ref);
+        return m ? db.storage.from(m[1] as string).getPublicUrl(m[2] as string).data.publicUrl : ref;
+      },
+    },
   };
 }
 

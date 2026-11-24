@@ -11,7 +11,8 @@ export const LISTING_CARD_SELECT = `
   id, slug, title, summary, type, booking_mode, city, price_amount, price_unit, currency,
   duration_minutes, rating_avg, rating_count, booking_count, instant_book,
   business:businesses!inner(id, slug, name, logo_url, kind),
-  media:listing_media(url, alt, sort_order)
+  media:listing_media(url, alt, sort_order),
+  staff:listing_staff(staff:staff_members(id, display_name, title, avatar_url, is_host))
 ` as const;
 
 export const HOST_CARD_SELECT = `
@@ -27,6 +28,20 @@ export interface PageOptions {
 const range = ({ limit = 20, offset = 0 }: PageOptions) => [offset, offset + limit - 1] as const;
 
 export function createCatalogApi(db: MomentSupabaseClient) {
+  const listingsByIds = async (ids: string[]) => {
+    if (ids.length === 0) return [];
+    const rows = await unwrap(
+      db
+        .from('listings')
+        .select(LISTING_CARD_SELECT)
+        .eq('status', 'published')
+        .in('id', ids)
+        .order('sort_order', { referencedTable: 'listing_media' }),
+    );
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    return ids.flatMap((id) => byId.get(id) ?? []);
+  };
+
   return {
     listCategories: (kind?: Enums<'category_kind'>) => {
       let q = db.from('categories').select('id, parent_id, kind, slug, name, icon, sort_order').eq('is_active', true);
@@ -54,9 +69,44 @@ export function createCatalogApi(db: MomentSupabaseClient) {
           .range(...range(page)),
       ),
 
-    /** Home > Just For You: personalised by the quiz badge (falls back to popular when signed out). */
-    justForYou: ({ city, limit = 20 }: { city?: string; limit?: number } = {}) =>
-      unwrap(db.rpc('recommended_listings', { p_city: city, p_limit: limit })),
+    /**
+     * Home > Just For You: ranked by the quiz badge's tags, falling back to
+     * popularity when there is no quiz result (or no session). Returns cards.
+     */
+    justForYou: async ({ city, limit = 20 }: { city?: string; limit?: number } = {}) => {
+      const ranked = await unwrap(db.rpc('recommended_listings', { p_city: city, p_limit: limit }).select('id'));
+      return listingsByIds(ranked.map((r) => r.id));
+    },
+
+    /** Cards for these listings, in the given order (Recently viewed). Unknown or hidden ids are skipped. */
+    listingsByIds: (ids: string[]) => listingsByIds(ids),
+
+    /**
+     * Home > "Local fun" / "Must-trys": listings the Moment team tagged
+     * (`local-fun`, `must-try`), in the city when given, best first.
+     */
+    curated: async ({ tag, city, limit = 10 }: { tag: 'local-fun' | 'must-try'; city?: string; limit?: number }) => {
+      const tagged = await unwrap(
+        db.from('listing_tags').select('listing_id, tag:tags!inner(slug)').eq('tag.slug', tag),
+      );
+      if (tagged.length === 0) return [];
+      let q = db
+        .from('listings')
+        .select(LISTING_CARD_SELECT)
+        .eq('status', 'published')
+        .in('id', tagged.map((t) => t.listing_id));
+      if (city) q = q.eq('city', city);
+      return unwrap(
+        q.order('popularity_score', { ascending: false }).order('sort_order', { referencedTable: 'listing_media' }).limit(limit),
+      );
+    },
+
+    /** "12 km away" on cards: km from a point to each listing, keyed by listing id. */
+    listingDistances: async ({ lat, lng }: { lat: number; lng: number }, listingIds: string[]) => {
+      if (listingIds.length === 0) return new Map<string, number>();
+      const rows = await unwrap(db.rpc('listing_distances', { p_lat: lat, p_lng: lng, p_listing_ids: listingIds }));
+      return new Map(rows.map((r) => [r.listing_id, Number(r.distance_km)]));
+    },
 
     /**
      * Search results. `near`, `maxDistanceKm`, `date` and `sort: 'distance'` need
