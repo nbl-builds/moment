@@ -6,7 +6,8 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Decide maps provider (Mapbox vs Google Maps) before Explore work
 - Confirm exact "Third" orange hex from Figma (`packages/shared/src/tokens/colors.ts` has a placeholder)
 - Phase 1 remaining: Supabase Auth providers (phone OTP via a Pakistan SMS provider, email, Apple, Google, Facebook). The client side is ready in `api.auth`; this is provider config in `supabase/config.toml` and the dashboard
-- Phase 0 remaining: shared UI primitives, then the first screens (onboarding + auth) using `@moment/shared` schemas with react-hook-form
+- Auth screens: "Sign Up / Screens with phone", "Sign In Screens with Email", "Forgot Screens" (plan first, then build with the UI primitives and `@moment/shared` schemas)
+- Icons: Figma's "Huge Icons" page is not the npm Hugeicons library, so icons are exported from Figma per screen into `apps/mobile/assets/icons` and registered in `components/ui/icons.ts`
 - Figma fields with no column yet (add a migration when the screens are built): profile pronouns and emergency contact, group "Who can see likes?", recommendation type (experience vs business; stored in the note for now)
 - Search by distance and date (`near`, `maxDistanceKm`, `date`, `sort: 'distance'`) needs a search RPC; `catalog.searchListings` throws `unsupported` for these until then. Build it with the Explore map
 - Set the same password rule (8+ characters, letters and digits) on the hosted Supabase project under Auth settings; `config.toml` only covers local
@@ -24,8 +25,8 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - [x] Design tokens in `@moment/shared` (colors, typography, spacing, radii, button sizes)
 - [x] Supabase CLI config, empty migrations / functions / seed
 - [x] `.env.example` files for both apps
-- [ ] CI: typecheck + lint on push
-- [ ] Shared UI primitives: Button (large/small, icon, states), Text, Input, Icon (Huge Icons)
+- [ ] CI: typecheck + lint on push (mobile ESLint config is in place: `pnpm --filter mobile lint`)
+- [x] Mobile UI primitives in `apps/mobile/src/components/ui`: Text, Button (large/small, primary/dark/light/soft/outline/ghost, icon, loading, disabled), IconButton, Input, Icon
 
 ## Phase 1: Data model, auth, roles
 - [x] Core schema: 17 migrations covering every surface (see `docs/DATABASE.md`)
@@ -42,7 +43,8 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - [x] Seed data: Islamabad, Lahore, Karachi (PKR, Asia/Karachi, +92)
 
 ## Phase 2: Consumer app core (mobile)
-- [ ] Onboarding, sign up / sign in, passcode + Face ID
+- [x] Splash, onboarding carousel, "Login or sign up" sheet (UI only)
+- [ ] Sign up / sign in screens, passcode + Face ID
 - [ ] Location and notification permissions
 - [ ] Home dashboard (Popular Activities, Top Hosts, Just For You)
 - [ ] Search and filters

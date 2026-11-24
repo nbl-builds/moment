@@ -4,7 +4,11 @@
  */
 export const palette = {
   lime: '#CFFF58',
+  limeTint1: '#D6FF70', // Figma: Primary Color / P Tint 1
+  limeShade1: '#B2D84B', // Figma: Primary Color / P Shade 1
+  limeShade4: '#52661E', // Figma: Primary Color / P Shade 4
   nearBlack: '#131617',
+  nearBlackTint1: '#383B3C', // Figma: Secondary Color / S Tint 1
   nearBlackTint2: '#5D6061', // Figma: Secondary Color / S Tint 2
   nearBlackTint3: '#828586', // Figma: Secondary Color / S Tint 3
   nearBlackTint5: '#CCCFD0', // Figma: Secondary Color / S Tint 5
@@ -14,14 +18,20 @@ export const palette = {
   white: '#FFFFFF',
   pureBlack: '#000000', // Figma: Black Color / Black Color
   red: '#D61600', // Figma: Red Color / Red Color
+  slate: '#6E7198', // Figma: Button page, Ghost border and disabled fill
 } as const;
 
 /** Semantic colour roles used by components. */
 export const colors = {
   primary: palette.lime,
   onPrimary: palette.nearBlack,
+  /** Primary button pressed and loading fill. */
+  primaryPressed: palette.limeShade1,
+  /** Icon button pressed border. */
+  primaryShade4: palette.limeShade4,
   secondary: palette.nearBlack,
   onSecondary: palette.white,
+  secondaryTint1: palette.nearBlackTint1,
   secondaryTint2: palette.nearBlackTint2,
   secondaryTint3: palette.nearBlackTint3,
   secondaryTint5: palette.nearBlackTint5,
@@ -40,6 +50,13 @@ export const colors = {
   error: palette.red,
   /** Dimmed backdrop behind sheets and dialogs. */
   scrim: withAlpha(palette.pureBlack, 0.5),
+  /** Outline button border. */
+  outline: palette.slate,
+  /** Disabled button fill and label. */
+  disabled: withAlpha(palette.slate, 0.2),
+  onDisabled: withAlpha(palette.white, 0.8),
+  /** Pressed overlay for buttons without a pressed colour of their own. */
+  pressedOverlay: withAlpha(palette.pureBlack, 0.1),
 } as const;
 
 export type ColorToken = keyof typeof colors;

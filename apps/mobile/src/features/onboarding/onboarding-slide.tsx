@@ -1,6 +1,7 @@
-import { colors, fontFamily, lineHeightPx, spacing, textStyles, withAlpha } from '@moment/shared';
+import { colors, spacing, withAlpha } from '@moment/shared';
 import { Image } from 'expo-image';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text } from '@/components/ui';
 import { GRADIENT_HEIGHT_RATIO, GRADIENT_SOLID_STOP, TITLE_MAX_WIDTH } from './layout';
 import type { OnboardingSlideData } from './slides';
 
@@ -24,10 +25,12 @@ export function OnboardingSlide({ slide, width, height, textBottom }: Onboarding
       />
       <View style={[styles.gradient, { height: height * GRADIENT_HEIGHT_RATIO }]} />
       <View style={[styles.text, { bottom: textBottom }]}>
-        <Text style={styles.title} accessibilityRole="header">
+        <Text variant="h2" color="white" align="center" style={styles.title}>
           {slide.title}
         </Text>
-        <Text style={styles.subtitle}>{slide.subtitle}</Text>
+        <Text variant="body14" weight="medium" color="white" align="center">
+          {slide.subtitle}
+        </Text>
       </View>
     </View>
   );
@@ -59,17 +62,5 @@ const styles = StyleSheet.create({
   },
   title: {
     maxWidth: TITLE_MAX_WIDTH,
-    color: colors.white,
-    fontFamily: fontFamily.bold,
-    fontSize: textStyles.h2.fontSize,
-    lineHeight: textStyles.h2.fontSize * textStyles.h2.lineHeight,
-    textAlign: 'center',
-  },
-  subtitle: {
-    color: colors.white,
-    fontFamily: fontFamily.medium,
-    fontSize: textStyles.body14.fontSize,
-    lineHeight: lineHeightPx('body14'),
-    textAlign: 'center',
   },
 });
