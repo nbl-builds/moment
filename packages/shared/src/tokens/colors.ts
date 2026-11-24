@@ -60,9 +60,12 @@ export const colors = {
   scrim: withAlpha(palette.pureBlack, 0.5),
   /** Outline button border. */
   outline: palette.slate,
-  /** Disabled button fill and label. */
-  disabled: withAlpha(palette.slate, 0.2),
-  onDisabled: withAlpha(palette.white, 0.8),
+  /**
+   * Disabled button fill and label, as used on the screens (Figma "Send Link",
+   * 13:1254). The Buttons page template uses a translucent slate instead.
+   */
+  disabled: palette.nearBlackTint5,
+  onDisabled: palette.nearBlack,
   /** Pressed overlay for buttons without a pressed colour of their own. */
   pressedOverlay: withAlpha(palette.pureBlack, 0.1),
 } as const;
