@@ -23,6 +23,7 @@ import { HOME } from '@/features/home/layout';
 import { useBucketList } from '@/features/home/use-bucket-list';
 import { useHomeData, type ListingCardData } from '@/features/home/use-home-data';
 import { OnboardingPermissions } from '@/features/permissions/onboarding-permissions';
+import { EMPTY_FILTERS, encodeFilters, groupForCategorySlug } from '@/features/search/filters';
 
 const CARD = HOME.card;
 
@@ -44,6 +45,11 @@ export default function HomeScreen() {
   const headerHeight = insets.top + HOME.headerTop + HOME.searchHeight + HOME.headerBottom / 2;
   const go = (href: Href) => router.push(href);
   const openListing = (listing: ListingCardData) => go({ pathname: '/listing/[id]', params: { id: listing.id } });
+  // "More to explore" chips show Search Results for that category.
+  const openCategory = (slug: string) => {
+    const group = groupForCategorySlug(slug);
+    go({ pathname: '/search-results', params: { filters: encodeFilters({ ...EMPTY_FILTERS, categoryGroups: group ? [group] : [] }) } });
+  };
   const seeAll = (section: string, title: string) => () => go({ pathname: '/see-all/[section]', params: { section, title } });
 
   // Ask once: drop the flag so a reload does not show the sheets again.
@@ -132,7 +138,7 @@ export default function HomeScreen() {
               data={categories}
               keyOf={(c) => c.id}
               renderItem={({ item }) => (
-                <CategoryChip category={item} onPress={() => go({ pathname: '/category/[slug]', params: { slug: item.slug, name: item.name } })} />
+                <CategoryChip category={item} onPress={() => openCategory(item.slug)} />
               )}
               itemWidth={100}
               gap={HOME.chip.gap}
@@ -178,7 +184,7 @@ export default function HomeScreen() {
       <View style={[styles.header, { paddingTop: insets.top + HOME.headerTop, height: headerHeight }]}>
         <HomeHeader
           onSearch={() => go('/search')}
-          onFilters={() => go({ pathname: '/search', params: { filters: '1' } })}
+          onFilters={() => go('/search')}
           onBucketList={() => (session ? go('/bucket-list') : openLoginSheet())}
         />
       </View>

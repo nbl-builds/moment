@@ -11,8 +11,8 @@ const HEART_HIT_SLOP = 10;
 
 export interface ListingCardProps {
   listing: ListingCardData;
-  /** 'tall': Popular / Recently viewed (17:1126). 'short': Just for you (17:1169). */
-  size: 'tall' | 'short';
+  /** 'tall': Popular / Recently viewed (17:1126). 'short': Just for you (17:1169). 'wide': Search Results (22:2205). */
+  size: 'tall' | 'short' | 'wide';
   distanceKm?: number;
   saved: boolean;
   onPress: () => void;
@@ -35,7 +35,7 @@ export function ListingCard({ listing, size, distanceKm, saved, onPress, onToggl
   return (
     // The heart is a sibling of the card's pressable, not nested in it, so screen
     // readers reach it as its own button.
-    <View style={[styles.card, { height: v.height }]}>
+    <View style={[styles.card, { height: v.height }, size === 'wide' && styles.wide]}>
       <Pressable
         onPress={onPress}
         style={({ pressed }) => [styles.body, pressed && styles.pressed]}
@@ -64,11 +64,11 @@ export function ListingCard({ listing, size, distanceKm, saved, onPress, onToggl
           )}
         </View>
 
-        <Text variant="body16" weight="bold" color="black" numberOfLines={2} style={[styles.title, { marginTop: v.titleGap }]}>
+        <Text variant="body16" weight="bold" color="black" numberOfLines={v.titleLines} style={[styles.title, { marginTop: v.titleGap }]}>
           {listing.title}
         </Text>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: v.footerBottom }]}>
           <View style={styles.with}>
             {withAvatar ? (
               <Image source={{ uri: withAvatar }} style={styles.avatar} contentFit="cover" accessible={false} />
@@ -126,6 +126,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 23 },
     elevation: 2,
   },
+  wide: {
+    width: 'auto',
+    alignSelf: 'stretch',
+  },
   body: {
     flex: 1,
   },
@@ -172,7 +176,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingBottom: 8,
   },
   with: {
     flex: 1,
