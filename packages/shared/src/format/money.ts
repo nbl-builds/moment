@@ -121,6 +121,11 @@ const PRICE_UNIT_LABELS: Record<PriceUnit, string> = {
   per_booking: 'per booking',
 };
 
+/** "per person" / "per booking", for cards that show the unit under the price. */
+export function priceUnitLabel(unit: PriceUnit): string {
+  return PRICE_UNIT_LABELS[unit];
+}
+
 /** "Rs 4,500 per person" for listing cards. */
 export function formatListingPrice(
   amountMinor: number,

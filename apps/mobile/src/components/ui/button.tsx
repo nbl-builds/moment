@@ -46,6 +46,8 @@ export interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> 
   size?: ButtonSize;
   /** Leading icon. */
   icon?: IconName;
+  /** Icon box size; defaults to 24 (16 on the small "Recommend" button in Figma 18:1062). */
+  iconSize?: number;
   /**
    * `inline` (default): icon sits next to the centred label, as in the component.
    * `start`: icon pinned to the leading edge with the label centred (login sheet social buttons).
@@ -66,6 +68,7 @@ export function Button({
   variant = 'primary',
   size = 'large',
   icon,
+  iconSize = buttonIcon.size,
   iconPlacement = 'inline',
   iconUntinted,
   loading = false,
@@ -119,10 +122,10 @@ export function Button({
             {pressed && !v.pressedBackground && <View style={styles.pressedOverlay} pointerEvents="none" />}
             {icon && iconPlacement === 'start' && (
               <View style={styles.startIcon}>
-                <Icon name={icon} color={iconColor} />
+                <Icon name={icon} size={iconSize} color={iconColor} />
               </View>
             )}
-            {icon && iconPlacement === 'inline' && <Icon name={icon} color={iconColor} />}
+            {icon && iconPlacement === 'inline' && <Icon name={icon} size={iconSize} color={iconColor} />}
             <Text variant={s.textStyle} weight={v.labelWeight ?? 'bold'} color={labelColor} numberOfLines={1}>
               {label}
             </Text>

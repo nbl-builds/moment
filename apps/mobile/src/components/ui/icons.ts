@@ -48,6 +48,48 @@ export const icons = {
   mobile: { source: require('../../../assets/icons/mobile.svg'), glyph: { width: 14, height: 20 } },
   /** Figma: Button loading state ("Frame 15", 6:1702). */
   spinner: { source: require('../../../assets/icons/spinner.svg') },
+
+  // Home (Figma 13:1487, 17:1027)
+  /** "arrow-right" on section headers (15:1049). The glyph points up; draw it rotated 90°. */
+  'arrow-up': { source: require('../../../assets/icons/arrow-right.svg'), glyph: { width: 9.5, height: 13.5 } }, // 11.08 x 15.75 in Figma's 28pt box
+  /** "Huge-icon/interface/outline/search 03" in the search bar (52:9618). */
+  search: { source: require('../../../assets/icons/search.svg') },
+  /** "Icon/Solid/Filter" in the search bar (52:9619). */
+  filter: { source: require('../../../assets/icons/filter.svg') },
+  /** "huge-icon/health/outline/heart" next to the search bar (52:9621). */
+  heart: { source: require('../../../assets/icons/heart.svg') },
+  /** "vuesax/linear/heart" on card photos: white outline over a 50% black fill (13:1551). */
+  'heart-on-photo': { source: require('../../../assets/icons/heart-on-photo.svg'), multicolor: true },
+  /** "Huge-icon/health/solid/heart" (4:31324): a saved listing. */
+  'heart-solid': { source: require('../../../assets/icons/heart-solid.svg') },
+  /** Rating star on cards (13:1540), 14pt, its own amber. */
+  star: { source: require('../../../assets/icons/star.svg'), multicolor: true },
+  /** "location.fill" next to the distance on card photos (13:1544), 20pt white. */
+  'location-fill': { source: require('../../../assets/icons/location-fill.svg') },
+  /** "person.crop.circle.badge.questionmark" on the Adventure Quiz card (13:1499), 40pt. */
+  'quiz-badge': { source: require('../../../assets/icons/quiz-badge.svg') },
+  /** "Huge-icon/navigation maps/outline/location-add" on the Recommend button (18:1062), 16pt. */
+  'location-add': { source: require('../../../assets/icons/location-add.svg') },
+  /** More to explore chips (17:1261 ...). Figma draws four; the rest come from the Icons page. */
+  'category-adventure': { source: require('../../../assets/icons/category-adventure.svg'), glyph: { width: 24, height: 21 } },
+  'category-tours': { source: require('../../../assets/icons/category-tours.svg'), multicolor: true },
+  'category-food': { source: require('../../../assets/icons/category-food.svg') },
+  'category-wellness': { source: require('../../../assets/icons/category-wellness.svg') },
+  'category-arts': { source: require('../../../assets/icons/category-arts.svg') },
+  'category-day-trips': { source: require('../../../assets/icons/category-day-trips.svg') },
+  'category-water': { source: require('../../../assets/icons/category-water.svg') },
+
+  // Tab bar (outline, tinted: lime when active)
+  /** Figma "home" (13:1583), as an outline. */
+  'tab-home': { source: require('../../../assets/icons/tab-home.svg') },
+  /** Figma "moment" (13:1588): the Moment mark, for Bookings. */
+  'tab-bookings': { source: require('../../../assets/icons/tab-bookings.svg'), glyph: { width: 20.21, height: 17.82 } },
+  /** Figma "users" (13:1595). */
+  'tab-groups': { source: require('../../../assets/icons/tab-groups.svg') },
+  /** Figma Explore compass (13:1603), 30pt in the raised circle. */
+  'tab-explore': { source: require('../../../assets/icons/tab-explore.svg') },
+  /** "Huge-icon/user/outline/user" (4:14358): Profile for guests. */
+  'tab-profile': { source: require('../../../assets/icons/tab-profile.svg') },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;

@@ -16,7 +16,7 @@ export function AuthBypassBadge() {
   return (
     <View
       pointerEvents="none"
-      style={[styles.badge, { bottom: Math.max(insets.bottom - 26, spacing.xs) }]}
+      style={[styles.badge, { bottom: Math.max(insets.bottom - 32, spacing.xxs) }]}
       accessibilityLabel="Auth bypass is on"
     >
       <Text variant="body10" weight="bold" color="onThird">

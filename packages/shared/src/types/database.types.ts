@@ -3127,6 +3127,13 @@ export type Database = {
           starts_at: string;
         }[];
       };
+      listing_distances: {
+        Args: { p_lat: number; p_listing_ids: string[]; p_lng: number };
+        Returns: {
+          distance_km: number;
+          listing_id: string;
+        }[];
+      };
       recommended_listings: {
         Args: { p_city?: string; p_limit?: number };
         Returns: {
