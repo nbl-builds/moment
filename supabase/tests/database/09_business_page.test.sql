@@ -76,6 +76,8 @@ select pg_temp.logout();
 select is((select count(*)::int from public.business_hours where business_id = '00000000-0000-4000-b000-000000000002' and closes_at = '23:59'), 0, 'consumers cannot edit hours');
 
 -- Reviewable bookings: the dev user has an unreviewed completed visit at Saffron
+-- (drop any review left by trying the app locally; rolled back at the end).
+delete from public.reviews where booking_id = '00000000-0000-4000-8000-000000000098';
 select pg_temp.login('00000000-0000-4000-a000-000000000099');
 select is((select count(*)::int from public.reviewable_bookings('00000000-0000-4000-b000-000000000002')), 1, 'dev user can review Saffron Spa');
 select is_empty($$ select 1 from public.reviewable_bookings('00000000-0000-4000-b000-000000000005') $$, 'but not a business they never visited');
