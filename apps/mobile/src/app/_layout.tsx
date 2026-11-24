@@ -3,7 +3,13 @@ import { colors } from '@moment/shared';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BrandSplash } from '@/components/brand-splash';
+import { LoginSheetProvider } from '@/features/auth/login-sheet-provider';
+
+/** How long the splash stays up after the app has drawn it. */
+const SPLASH_HOLD_MS = 2000;
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,17 +20,31 @@ export default function RootLayout() {
     Manrope_600SemiBold,
     Manrope_700Bold,
   });
+  const [holdDone, setHoldDone] = useState(false);
 
   useEffect(() => {
-    if (fontsLoaded || fontError) SplashScreen.hideAsync();
-  }, [fontsLoaded, fontError]);
+    const timer = setTimeout(() => setHoldDone(true), SPLASH_HOLD_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
-  if (!fontsLoaded && !fontError) return null;
+  // The JS splash matches the native one exactly, so hide the native one as
+  // soon as ours is on screen: no flash between them.
+  const onSplashLayout = useCallback(() => {
+    SplashScreen.hideAsync();
+  }, []);
+
+  const appReady = fontsLoaded || Boolean(fontError);
+  const showSplash = !appReady || !holdDone;
 
   return (
-    <>
-      <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.secondary } }} />
-    </>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar style={showSplash ? 'dark' : 'light'} />
+      {appReady && (
+        <LoginSheetProvider>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.secondary } }} />
+        </LoginSheetProvider>
+      )}
+      {showSplash && <BrandSplash onLayout={onSplashLayout} />}
+    </GestureHandlerRootView>
   );
 }
