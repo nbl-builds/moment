@@ -6,13 +6,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheet } from '@/components/bottom-sheet';
 import { PickerSheet } from '@/components/picker-sheet';
 import { RangeCalendar } from '@/components/range-calendar';
-import { Button, Icon, Input, Slider, Text, Toggle } from '@/components/ui';
+import { Button, Icon, Input, RangeSlider, Slider, Text, Toggle } from '@/components/ui';
 import { useUserPlace } from '@/features/home/use-user-place';
 import {
   CATEGORY_GROUPS,
   datesLabel,
   decodeFilters,
-  DESTINATIONS,
+  DESTINATION_OPTIONS,
+  destinationLabel,
+  destinationValue,
+  parseDestination,
   DISTANCE,
   distanceLabel,
   EMPTY_FILTERS,
@@ -47,8 +50,8 @@ const CARD_RADIUS = 15;
 type Sheet = 'location' | 'date' | 'language' | null;
 
 /**
- * Filters. Opened from Home (search bar or filter icon) and from Search
- * Results (filter icon, prefilled). Apply shows the results.
+ * Filters. Opened from Home (filter icon), Search (filter icon, keeps the
+ * typed text) and Search Results (filter icon, prefilled). Apply shows the results.
  */
 export default function FiltersScreen() {
   const params = useLocalSearchParams<{ filters?: string; from?: string }>();
@@ -70,7 +73,7 @@ export default function FiltersScreen() {
     else router.replace(href);
   };
 
-  const dirty = encodeFilters(f) !== encodeFilters(EMPTY_FILTERS);
+  const dirty = encodeFilters({ ...f, query: null }) !== encodeFilters(EMPTY_FILTERS);
   // Three chips per row inside the card (Figma: 106pt each, 14pt apart).
   const chipWidth = (width - INSET * 2 - GAP.cardPadding * 2 - GAP.chipGap * 2) / 3;
 
@@ -84,13 +87,18 @@ export default function FiltersScreen() {
           <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close filters">
             <Icon name="close" size={28} color="secondary" />
           </Pressable>
-          {dirty && (
-            <Pressable onPress={() => setF(EMPTY_FILTERS)} hitSlop={10} accessibilityRole="button">
-              <Text variant="body14" weight="medium" color="secondaryTint2">
-                Clear all
-              </Text>
-            </Pressable>
-          )}
+          {/* Reset keeps the search text: it clears the filters only. */}
+          <Pressable
+            onPress={() => setF({ ...EMPTY_FILTERS, query: f.query })}
+            disabled={!dirty}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !dirty }}
+          >
+            <Text variant="body14" weight="semibold" color={dirty ? 'secondary' : 'textDisabled'}>
+              Reset
+            </Text>
+          </Pressable>
         </View>
         <Text variant="h3" color="secondary" style={styles.title}>
           Filters
@@ -101,7 +109,7 @@ export default function FiltersScreen() {
           <Text variant="body18" weight="bold" color="secondary">
             Host
           </Text>
-          <Toggle value={f.hostedOnly} onChange={(v) => update({ hostedOnly: v })} accessibilityLabel="Only listings with a local host" />
+          <Toggle value={f.hostedOnly} onChange={(v) => update({ hostedOnly: v })} accessibilityLabel="Show hosts instead of experiences" />
         </View>
 
         <View style={[styles.card, styles.padded]}>
@@ -135,7 +143,7 @@ export default function FiltersScreen() {
           <Input
             label="Destination"
             placeholder="Select your location"
-            value={f.city ?? ''}
+            value={destinationLabel(f) ?? ''}
             onPress={() => setSheet('location')}
             trailing={<Icon name="chevron-left" color="secondary" style={styles.flip} />}
           />
@@ -168,18 +176,20 @@ export default function FiltersScreen() {
             Price Range
           </Text>
           <View style={styles.slider}>
-            <Slider
-              value={f.maxPrice ?? PRICE.max}
+            <RangeSlider
+              low={f.minPrice ?? PRICE.min}
+              high={f.maxPrice ?? PRICE.max}
               min={PRICE.min}
               max={PRICE.max}
               step={PRICE.step}
-              onChange={(v) => update({ maxPrice: v >= PRICE.max ? null : v })}
+              onChange={(lo, hi) => update({ minPrice: lo <= PRICE.min ? null : lo, maxPrice: hi >= PRICE.max ? null : hi })}
               accessibilityLabel="Price range"
-              accessibilityValueText={priceLabel(f.maxPrice)}
+              lowValueText={priceLabel(f.minPrice ?? PRICE.min, null)}
+              highValueText={f.maxPrice === null ? 'No maximum' : priceLabel(null, f.maxPrice)}
             />
           </View>
           <Text variant="body15" weight="bold" color="secondary" style={styles.value}>
-            {priceLabel(f.maxPrice)}
+            {priceLabel(f.minPrice, f.maxPrice)}
           </Text>
 
           <Text variant="body14" weight="medium" color="secondary" style={styles.fieldLabel}>
@@ -223,12 +233,12 @@ export default function FiltersScreen() {
 
       <PickerSheet
         visible={sheet === 'location'}
-        title="Choose a location"
-        searchPlaceholder="Search cities"
-        options={DESTINATIONS.map((c) => ({ value: c, label: c }))}
-        selected={f.city}
+        title="Choose a destination"
+        searchPlaceholder="Search cities or areas"
+        options={DESTINATION_OPTIONS}
+        selected={f.city ? destinationValue(f.city, f.area) : null}
         anyLabel="Anywhere"
-        onSelect={(city) => update({ city })}
+        onSelect={(value) => update(parseDestination(value))}
         onClose={() => setSheet(null)}
       />
       <PickerSheet

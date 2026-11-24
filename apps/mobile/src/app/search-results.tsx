@@ -2,15 +2,28 @@ import { colors } from '@moment/shared';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Icon, Text } from '@/components/ui';
+import { HostCard } from '@/features/home/components/host-card';
 import { ListingCard } from '@/features/home/components/listing-card';
 import { Skeleton } from '@/features/home/components/skeleton';
 import { HOME } from '@/features/home/layout';
 import { useBucketList } from '@/features/home/use-bucket-list';
 import { useUserPlace } from '@/features/home/use-user-place';
-import { activeFilterChips, decodeFilters, EMPTY_FILTERS, encodeFilters, type SearchFilterState } from '@/features/search/filters';
+import type { HostCardData } from '@/features/home/use-home-data';
+import { FilterButton } from '@/features/search/components/filter-button';
+import { GroupChip } from '@/features/search/components/group-chip';
+import {
+  activeFilterChips,
+  activeFilterCount,
+  decodeFilters,
+  EMPTY_FILTERS,
+  encodeFilters,
+  hostCategoryLabel,
+  type SearchFilterState,
+} from '@/features/search/filters';
+import { searchHosts } from '@/features/search/mock';
 import { searchWithFilters, type SearchResult } from '@/features/search/search';
 import { api } from '@/lib/api';
 
@@ -24,7 +37,6 @@ const GAP = {
   cards: 20,
 } as const;
 const INSET = 20;
-const BADGE = 20;
 
 export default function SearchResultsScreen() {
   const params = useLocalSearchParams<{ filters?: string }>();
@@ -35,20 +47,31 @@ export default function SearchResultsScreen() {
 
   const categories = useQuery({ queryKey: ['categories', 'all'], queryFn: () => api.catalog.listCategories() });
 
+  const { width } = useWindowDimensions();
+  const hostMode = filters.hostedOnly;
+
   const results = useInfiniteQuery({
     queryKey: ['search', encodeFilters(filters), place.coords?.lat, place.coords?.lng],
     queryFn: ({ pageParam }) => searchWithFilters(filters, categories.data ?? [], place.coords, pageParam),
     initialPageParam: 0,
     getNextPageParam: (last) => last.nextOffset ?? undefined,
-    enabled: categories.isSuccess && ready,
+    enabled: categories.isSuccess && ready && !hostMode,
   });
+  // Filters > Host on: hosts instead of experiences (mock search, see features/search/mock.ts).
+  const hosts = useQuery({
+    queryKey: ['search-hosts', encodeFilters(filters)],
+    queryFn: () => searchHosts(filters, categories.data ?? []),
+    enabled: categories.isSuccess && hostMode,
+  });
+  const active = hostMode ? hosts : results;
 
   const items = results.data?.pages.flatMap((p) => p.items) ?? [];
+  const hostWidth = (width - INSET * 2 - HOME.hostGrid.gap) / 2;
   const distanceKm = (id: string) => results.data?.pages.find((p) => p.distances.has(id))?.distances.get(id);
   const chips = activeFilterChips(filters);
 
   const setFilters = (next: SearchFilterState) => router.setParams({ filters: encodeFilters(next) });
-  const openFilters = () => router.push({ pathname: '/search', params: { filters: encodeFilters(filters), from: 'results' } });
+  const openFilters = () => router.push({ pathname: '/filters', params: { filters: encodeFilters(filters), from: 'results' } });
 
   const header = (
     <View>
@@ -59,28 +82,13 @@ export default function SearchResultsScreen() {
         <Text variant="h3" color="secondary">
           Search Results
         </Text>
-        <Pressable onPress={openFilters} hitSlop={10} accessibilityRole="button" accessibilityLabel="Edit filters">
-          <Icon name="filter" />
-        </Pressable>
+        <FilterButton count={activeFilterCount(filters)} onPress={openFilters} />
       </View>
       <View style={styles.rule} />
       {chips.length > 0 && (
         <View style={styles.chips}>
           {chips.map((chip) => (
-            <View key={chip.key} style={styles.chip}>
-              <Text variant="body14" color="secondary">
-                {chip.label}
-              </Text>
-              <Pressable
-                onPress={() => setFilters(chip.clear(filters))}
-                hitSlop={10}
-                style={styles.badge}
-                accessibilityRole="button"
-                accessibilityLabel={`Remove ${chip.label}`}
-              >
-                <Icon name="close" size={16} color="white" />
-              </Pressable>
-            </View>
+            <GroupChip key={chip.key} label={chip.label} onRemove={() => setFilters(chip.clear(filters))} />
           ))}
         </View>
       )}
@@ -99,53 +107,77 @@ export default function SearchResultsScreen() {
     />
   );
 
+  const renderHost = ({ item, index }: { item: HostCardData; index: number }) => (
+    <HostCard
+      host={item}
+      index={index}
+      variant="grid"
+      width={hostWidth}
+      category={hostCategoryLabel(item, categories.data ?? [])}
+      onPress={() => router.push({ pathname: '/host/[id]', params: { id: item.id } })}
+    />
+  );
+
+  // Shared by the listing list and the host grid.
+  const common = {
+    keyExtractor: (item: { id: string }) => item.id,
+    ListHeaderComponent: header,
+    ItemSeparatorComponent: Separator,
+    contentContainerStyle: [styles.content, { paddingTop: insets.top + GAP.top, paddingBottom: insets.bottom + 24 }],
+    refreshing: active.isRefetching && !results.isFetchingNextPage,
+    onRefresh: () => void active.refetch(),
+    ListEmptyComponent:
+        active.isPending || categories.isPending ? (
+          <View style={styles.skeletons}>
+            <Skeleton width="100%" height={HOME.card.wide.height} radius={HOME.card.radius} />
+            <Skeleton width="100%" height={HOME.card.wide.height} radius={HOME.card.radius} />
+          </View>
+        ) : active.isError || categories.isError ? (
+          <View style={styles.state}>
+            <Text variant="h4" color="secondary" align="center">
+              Couldn’t load results
+            </Text>
+            <Text variant="body14" color="secondaryTint2" align="center">
+              Check your connection and try again.
+            </Text>
+            <Button label="Try again" size="small" variant="dark" onPress={() => (categories.isError ? categories.refetch() : active.refetch())} style={styles.stateButton} />
+          </View>
+        ) : (
+          <View style={styles.state}>
+            <Text variant="h4" color="secondary" align="center">
+              {hostMode ? 'No hosts match' : 'No matches yet'}
+            </Text>
+            <Text variant="body14" color="secondaryTint2" align="center">
+              Try removing a filter or searching another city.
+            </Text>
+            {chips.length > 0 && (
+              <Button label="Clear filters" size="small" variant="dark" onPress={() => setFilters({ ...EMPTY_FILTERS, query: activeFilterCount(filters) > 0 ? filters.query : null })} style={styles.stateButton} />
+            )}
+          </View>
+        ),
+  };
+
   return (
     <View style={styles.screen}>
-      <FlatList
-        data={items}
-        keyExtractor={(l) => l.id}
-        renderItem={renderItem}
-        ListHeaderComponent={header}
-        ItemSeparatorComponent={() => <View style={{ height: GAP.cards }} />}
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + GAP.top, paddingBottom: insets.bottom + 24 }]}
-        onEndReached={() => results.hasNextPage && !results.isFetchingNextPage && results.fetchNextPage()}
-        onEndReachedThreshold={0.6}
-        refreshing={results.isRefetching && !results.isFetchingNextPage}
-        onRefresh={() => results.refetch()}
-        ListEmptyComponent={
-          results.isPending || categories.isPending ? (
-            <View style={styles.skeletons}>
-              <Skeleton width="100%" height={HOME.card.wide.height} radius={HOME.card.radius} />
-              <Skeleton width="100%" height={HOME.card.wide.height} radius={HOME.card.radius} />
-            </View>
-          ) : results.isError || categories.isError ? (
-            <View style={styles.state}>
-              <Text variant="h4" color="secondary" align="center">
-                Couldn’t load results
-              </Text>
-              <Text variant="body14" color="secondaryTint2" align="center">
-                Check your connection and try again.
-              </Text>
-              <Button label="Try again" size="small" variant="dark" onPress={() => results.refetch()} style={styles.stateButton} />
-            </View>
-          ) : (
-            <View style={styles.state}>
-              <Text variant="h4" color="secondary" align="center">
-                No matches yet
-              </Text>
-              <Text variant="body14" color="secondaryTint2" align="center">
-                Try removing a filter or searching another city.
-              </Text>
-              {chips.length > 0 && (
-                <Button label="Clear filters" size="small" variant="dark" onPress={() => setFilters(EMPTY_FILTERS)} style={styles.stateButton} />
-              )}
-            </View>
-          )
-        }
-        ListFooterComponent={results.isFetchingNextPage ? <ActivityIndicator style={styles.more} color={colors.secondary} /> : undefined}
-      />
+      {hostMode ? (
+        <FlatList key="hosts" data={hosts.data ?? []} renderItem={renderHost} numColumns={2} columnWrapperStyle={styles.hostRow} {...common} />
+      ) : (
+        <FlatList
+          key="listings"
+          data={items}
+          renderItem={renderItem}
+          {...common}
+          onEndReached={() => results.hasNextPage && !results.isFetchingNextPage && results.fetchNextPage()}
+          onEndReachedThreshold={0.6}
+          ListFooterComponent={results.isFetchingNextPage ? <ActivityIndicator style={styles.more} color={colors.secondary} /> : undefined}
+        />
+      )}
     </View>
   );
+}
+
+function Separator() {
+  return <View style={{ height: GAP.cards }} />;
 }
 
 const styles = StyleSheet.create({
@@ -168,30 +200,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.divider,
   },
   chips: {
-    marginTop: GAP.ruleToChips,
+    marginTop: GAP.ruleToChips - 8,
     flexDirection: 'row',
     flexWrap: 'wrap',
     columnGap: 20,
-    rowGap: 14,
+    rowGap: 6,
   },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.secondaryTint5,
-  },
-  // Figma: a 20pt dark circle with a white cross, over the chip's top-right corner.
-  badge: {
-    position: 'absolute',
-    top: -8,
-    right: -12,
-    width: BADGE,
-    height: BADGE,
-    borderRadius: BADGE / 2,
-    backgroundColor: colors.secondary,
-    alignItems: 'center',
-    justifyContent: 'center',
+  hostRow: {
+    gap: HOME.hostGrid.gap,
   },
   listGap: {
     height: GAP.chipsToList,
