@@ -1,7 +1,7 @@
 import { colors } from '@moment/shared';
 import type { UseQueryResult } from '@tanstack/react-query';
-import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { useCallback, type ReactNode } from 'react';
+import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
+import { useCallback, useState, type ReactNode } from 'react';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,6 +23,7 @@ import { HOME } from '@/features/home/layout';
 import { useBucketList } from '@/features/home/use-bucket-list';
 import { useHomeData, type ListingCardData } from '@/features/home/use-home-data';
 import { OnboardingPermissions } from '@/features/permissions/onboarding-permissions';
+import { takePendingQuiz } from '@/features/quiz/model';
 import { EMPTY_FILTERS, encodeFilters, groupForCategorySlug } from '@/features/search/filters';
 import type { SeeAllKey } from '@/features/see-all/sections';
 
@@ -53,8 +54,29 @@ export default function HomeScreen() {
   };
   const seeAll = (section: SeeAllKey) => () => go({ pathname: '/see-all/[section]', params: { section } });
 
+  // A guest finished the quiz, then signed in: back to the quiz to submit their
+  // answers once the sign-up flow (and its permission sheets) is done. Only
+  // while Home is on screen: an earlier Home under the sign-in screens must not.
+  const signedIn = Boolean(session);
+  const [permissionsDone, setPermissionsDone] = useState(permissions !== '1');
+  useFocusEffect(
+    useCallback(() => {
+      if (!signedIn || !permissionsDone) return;
+      let active = true;
+      void takePendingQuiz({ peek: true }).then((ids) => {
+        if (active && ids) router.push({ pathname: '/quiz', params: { resume: '1' } });
+      });
+      return () => {
+        active = false;
+      };
+    }, [signedIn, permissionsDone]),
+  );
+
   // Ask once: drop the flag so a reload does not show the sheets again.
-  const onPermissionsFinished = useCallback(() => router.setParams({ permissions: undefined }), []);
+  const onPermissionsFinished = useCallback(() => {
+    setPermissionsDone(true);
+    router.setParams({ permissions: undefined });
+  }, []);
 
   const renderCard = (item: ListingCardData, size: 'tall' | 'short') => (
     <ListingCard
