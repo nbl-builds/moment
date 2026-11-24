@@ -38,7 +38,22 @@
           "imageWidth": 151,
           "resizeMode": "contain"
         }
-      ]
+      ],
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Moment to use Face ID so you can sign in quickly."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Moment uses your location to personalise recommendations and deals near you."
+        }
+      ],
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,
