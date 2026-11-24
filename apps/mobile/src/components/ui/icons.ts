@@ -26,6 +26,12 @@ export const icons = {
   'chevron-down': { source: require('../../../assets/icons/chevron-down.svg') },
   /** Figma: "chevron-left" back button (7:396). */
   'chevron-left': { source: require('../../../assets/icons/chevron-left.svg') },
+  /** Figma: "Huge-icon/interface/outline/eye" (12:1045): password visible. */
+  eye: { source: require('../../../assets/icons/eye.svg') },
+  /** Figma: "Huge-icon/interface/outline/eye-disable" on Enter Password (12:1043): password hidden. */
+  'eye-disable': { source: require('../../../assets/icons/eye-disable.svg') },
+  /** Figma: Facebook logo component (7:335) on Sign in with email. */
+  facebook: { source: require('../../../assets/icons/facebook.svg'), multicolor: true },
   /** Figma: Google logo component (7:308). 39.2 x 40 mark drawn 24pt tall. */
   google: {
     source: require('../../../assets/icons/google.svg'),

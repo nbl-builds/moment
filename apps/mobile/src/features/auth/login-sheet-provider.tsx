@@ -2,15 +2,15 @@ import { formatPkPhoneInput, phoneSignInSchema } from '@moment/shared';
 import { router } from 'expo-router';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { BottomSheet } from '@/components/bottom-sheet';
+import { showToast } from '@/components/toast';
 import { AUTH_BYPASS } from '@/lib/auth-bypass';
 import { LoginSheetContent } from './login-sheet-content';
 import { sendCode } from './otp';
+import { resetTo } from './sign-in-flow';
 
 interface OpenOptions {
   /** Pre-fill the phone field, e.g. "Edit" on the code screen. E.164 or national. */
   phone?: string;
-  /** Open on the email field with this address (dev auth bypass only, for now). */
-  email?: string;
 }
 
 interface LoginSheetContextValue {
@@ -27,14 +27,12 @@ const LoginSheetContext = createContext<LoginSheetContextValue | null>(null);
 export function LoginSheetProvider({ children }: { children: ReactNode }) {
   const [visible, setVisible] = useState(false);
   const [initialPhone, setInitialPhone] = useState('');
-  const [initialEmail, setInitialEmail] = useState<string | undefined>();
   // Remounts the content on every open so it starts from `initialPhone`.
   const [openCount, setOpenCount] = useState(0);
 
   const openLoginSheet = useCallback((options?: OpenOptions) => {
     // "+923084282001" -> "308 4282001", the format the phone field shows.
     setInitialPhone(options?.phone ? formatPkPhoneInput(options.phone) : '');
-    setInitialEmail(options?.email);
     setOpenCount((n) => n + 1);
     setVisible(true);
   }, []);
@@ -53,30 +51,38 @@ export function LoginSheetProvider({ children }: { children: ReactNode }) {
     router.push({ pathname: '/verify-code', params: { phone } });
   }, []);
 
-  // Email sign-in is built with its own section; until then only the dev bypass uses it.
-  const continueWithEmail = useCallback(async (email: string) => {
-    await sendCode({ email });
+  const continueWithEmail = useCallback(() => {
     setVisible(false);
-    router.push({ pathname: '/verify-code', params: { email } });
+    router.push('/sign-in-email');
+  }, []);
+
+  // Browsing without an account: Home as a guest.
+  const skip = useCallback(() => {
+    setVisible(false);
+    resetTo('/home');
   }, []);
 
   return (
     <LoginSheetContext.Provider value={value}>
       {children}
       <BottomSheet visible={visible} onRequestClose={closeLoginSheet} accessibilityLabel="Login or sign up">
-        {/* Email, Apple and Google are wired up with their own sections. */}
+        {/* Apple and Google are wired with the other providers before launch. */}
         <LoginSheetContent
           key={openCount}
           initialPhone={initialPhone}
-          initialEmail={initialEmail}
           onContinueWithPhone={continueWithPhone}
-          onContinueWithEmail={AUTH_BYPASS ? continueWithEmail : undefined}
-          onSkip={closeLoginSheet}
+          onContinueWithEmail={continueWithEmail}
+          onContinueWithApple={comingSoon}
+          onContinueWithGoogle={comingSoon}
+          onSkip={skip}
         />
       </BottomSheet>
     </LoginSheetContext.Provider>
   );
 }
+
+/** Social providers are wired at the end, with the SMS provider. */
+export const comingSoon = () => showToast('Coming soon');
 
 export function useLoginSheet(): LoginSheetContextValue {
   const ctx = useContext(LoginSheetContext);
