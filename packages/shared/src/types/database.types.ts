@@ -523,6 +523,7 @@ export type Database = {
       };
       bucket_list_items: {
         Row: {
+          bucket_list_id: string;
           business_id: string | null;
           created_at: string;
           id: string;
@@ -532,6 +533,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          bucket_list_id: string;
           business_id?: string | null;
           created_at?: string;
           id?: string;
@@ -540,6 +542,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          bucket_list_id?: string;
           business_id?: string | null;
           created_at?: string;
           id?: string;
@@ -556,6 +559,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "bucket_list_items_list_fk";
+            columns: ["bucket_list_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "bucket_lists";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
             foreignKeyName: "bucket_list_items_listing_id_fkey";
             columns: ["listing_id"];
             isOneToOne: false;
@@ -563,6 +573,34 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      bucket_lists: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          share_token: string;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          share_token?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          share_token?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       business_api_keys: {
         Row: {

@@ -31,6 +31,7 @@ export const LIMITS = {
   reviewPhotos: 6,
   reviewReply: 1000,
   bucketListNote: 500,
+  bucketListName: 60,
   recommendationName: { min: 2, max: 140 },
   recommendationNote: 1000,
   groupName: { min: 2, max: 80 },

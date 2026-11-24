@@ -65,6 +65,16 @@ export function getZonedParts(input: DateInput, timeZone: string = DEFAULT_TIMEZ
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
+/**
+ * "1/1/2023 - 9:00PM": date and time of an instant in a timezone, as on the
+ * Bucket List rows (Figma 24:2071).
+ */
+export function formatShortDateTime(input: DateInput, timeZone: string = DEFAULT_TIMEZONE): string {
+  const { year, month, day, hour, minute } = getZonedParts(input, timeZone);
+  const h12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${month}/${day}/${year} - ${h12}:${pad(minute)}${hour < 12 ? 'AM' : 'PM'}`;
+}
+
 /** Calendar date ("YYYY-MM-DD") of an instant in a timezone. Use for `get_available_times(p_date)`. */
 export function toLocalDate(input: DateInput, timeZone: string = DEFAULT_TIMEZONE): string {
   const { year, month, day } = getZonedParts(input, timeZone);

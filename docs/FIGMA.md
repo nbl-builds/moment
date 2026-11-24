@@ -74,7 +74,19 @@ All in `app/quiz.tsx` (one screen, components in `features/quiz/components`).
 | (no frame) typing a search | n/a | `app/search.tsx` |
 
 ## Bucket List
-22:2329, 22:2487, 24:1225, 24:1444, 24:1667, 24:2071, 24:2120, 24:2226, 24:2474, 25:1517, 25:1723
+| Frame | Node | Built |
+|---|---|---|
+| Bucket List, empty | 22:2329 | `app/bucket-list/index.tsx` |
+| Heart action sheet | 22:2487 | `features/bucket-list/bucket-sheets.tsx` |
+| Your Bucketlist (picker) | 24:1225 | `bucket-sheets.tsx` |
+| Give it a name | 24:1444 | `features/bucket-list/components/name-sheet.tsx` |
+| First item saved | 24:1667 | `bucket-sheets.tsx` |
+| Bucket List, all lists | 24:2071 | `app/bucket-list/index.tsx` |
+| One list | 24:2120 | `app/bucket-list/[id].tsx` |
+| Share sheet | 24:2226 | `[id].tsx` |
+| ••• menu | 24:2474 | `[id].tsx` |
+| Rename | 25:1517 | `name-sheet.tsx` |
+| Delete confirm | 25:1723 | `[id].tsx` |
 
 ## Recommend a place
 Recommend a service: 25:1941, 25:2025, 25:2067, 25:2148, 25:2198

@@ -5,7 +5,7 @@ import { Icon, Spinner } from './icon';
 import type { IconName } from './icons';
 import { Text, type FontWeightToken } from './text';
 
-export type ButtonVariant = 'primary' | 'dark' | 'light' | 'soft' | 'outline' | 'ghost';
+export type ButtonVariant = 'primary' | 'dark' | 'light' | 'soft' | 'muted' | 'danger' | 'outline' | 'ghost';
 export type ButtonSize = keyof typeof buttonSizes;
 
 interface VariantStyle {
@@ -23,6 +23,8 @@ interface VariantStyle {
  * - primary: lime; pressed and loading use P Shade 1 (component states).
  * - dark / light: the near-black "Start Now" and white "Share Link" instances on Home.
  * - soft: the grey "Continue with ..." buttons on the login sheet (medium label, radius 10).
+ * - muted: S Tint 5 with a dark label ("No, Wait", 25:1930).
+ * - danger: coral with a white label ("Yes, Delete", 25:1885).
  * - outline: the component's Ghost type (2pt border).
  * - ghost: the component's Tertiary type (no fill; 10% black when pressed).
  * Hover states have no mobile equivalent; disabled uses the component's Disabled fill.
@@ -32,6 +34,8 @@ const VARIANTS: Record<ButtonVariant, VariantStyle> = {
   dark: { background: 'secondary', pressedBackground: 'secondaryTint1', label: 'onSecondary' },
   light: { background: 'white', label: 'secondary' },
   soft: { background: 'secondaryTint6', label: 'secondary', labelWeight: 'medium', radius: 10 },
+  muted: { background: 'secondaryTint5', label: 'secondary' },
+  danger: { background: 'danger', label: 'onDanger' },
   outline: { border: 'outline', label: 'secondary' },
   ghost: { label: 'secondary' },
 };

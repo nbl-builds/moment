@@ -117,7 +117,8 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - Rating averages and counts on listings, businesses and staff are kept up to date by trigger.
 
 ### Consumer features
-- `bucket_list_items`: a listing or a business, plus a note.
+- `bucket_lists`: a user's named lists (name 1-60 characters, `share_token` for "Share a link", owner-only RLS). Existing saves were moved into a list named "My bucket list" per user.
+- `bucket_list_items`: a listing or a business in one list, plus a note. Unique per list, so the same listing can be in several lists; a composite FK (`bucket_list_id`, `user_id`) keeps items in their owner's lists. Deleting a list deletes its items. `api.bucketList.savedIds()` maps each saved listing to the lists holding it (filled hearts, ticks in the list picker).
 - `place_recommendations`: "Recommend a place", triaged by the Moment team.
 
 ### Quiz and badges
