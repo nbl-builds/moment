@@ -5,4 +5,6 @@ export { IconButton, type IconButtonProps, type IconButtonVariant } from './icon
 export { icons, type IconName } from './icons';
 export { Input, type InputProps } from './input';
 export { OtpInput, type OtpInputProps } from './otp-input';
+export { Slider, type SliderProps } from './slider';
 export { Text, textStyle, type FontWeightToken, type TextProps } from './text';
+export { Toggle, type ToggleProps } from './toggle';

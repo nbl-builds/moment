@@ -31,6 +31,10 @@ interface BottomSheetProps {
   onRequestClose: () => void;
   children: ReactNode;
   accessibilityLabel?: string;
+  /** Sheet colour; the pickers use the off-white page colour (Figma 22:1590). */
+  backgroundColor?: string;
+  /** Minimum height as a share of the window, for sheets with short content. */
+  minHeightRatio?: number;
 }
 
 /**
@@ -38,7 +42,14 @@ interface BottomSheetProps {
  * closes on a downward swipe or Android back. Content scrolls when it is
  * taller than the screen; dragging down from the top of the content closes it.
  */
-export function BottomSheet({ visible, onRequestClose, children, accessibilityLabel }: BottomSheetProps) {
+export function BottomSheet({
+  visible,
+  onRequestClose,
+  children,
+  accessibilityLabel,
+  backgroundColor,
+  minHeightRatio,
+}: BottomSheetProps) {
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [mounted, setMounted] = useState(visible);
@@ -118,7 +129,12 @@ export function BottomSheet({ visible, onRequestClose, children, accessibilityLa
         <View style={[styles.column, { paddingTop: insets.top + TOP_GAP }]} pointerEvents="box-none">
           <GestureDetector gesture={panGesture}>
             <Animated.View
-              style={[styles.sheet, sheetStyle]}
+              style={[
+                styles.sheet,
+                backgroundColor !== undefined && { backgroundColor },
+                minHeightRatio !== undefined && { minHeight: windowHeight * minHeightRatio },
+                sheetStyle,
+              ]}
               onLayout={(e) => {
                 sheetHeight.set(e.nativeEvent.layout.height);
               }}
