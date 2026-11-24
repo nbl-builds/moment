@@ -5,8 +5,11 @@ Keep this file current: tick items as they land and update **Next up** so any se
 ## Next up
 - Decide maps provider (Mapbox vs Google Maps) before Explore work
 - Confirm exact "Third" orange hex from Figma (`packages/shared/src/tokens/colors.ts` has a placeholder)
-- Phase 1 remaining: Supabase Auth providers (phone OTP via a Pakistan SMS provider, email, Apple, Google, Facebook). The client side is ready in `api.auth`; this is provider config in `supabase/config.toml` and the dashboard
-- Auth screens: "Sign Up / Screens with phone", "Sign In Screens with Email", "Forgot Screens" (plan first, then build with the UI primitives and `@moment/shared` schemas)
+- Phase 1 remaining: Supabase Auth providers for production (a Pakistan SMS provider for phone OTP, email, Apple, Google, Facebook). Locally, phone OTP works with the test numbers in `supabase/config.toml` (`+92 308 4282001` / `051518`, `+92 300 1234567` / `123456`)
+- Next auth sections: "Sign Up with email" (Figma row 2: 10:1049 onwards), "Sign In Screens with Email" (12:845, 12:979) and "Forgot Screens" (13:1141, 13:1256). Open questions: Facebook button and Skip on the login sheet, how email sign-in tells new from returning users, where the reset link lands, copy typos in Figma
+- Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
+- Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
+- Replace the placeholder `/home` with the Customer Dashboard; keep `OnboardingPermissions` on top of it after sign up
 - Icons: Figma's "Huge Icons" page is not the npm Hugeicons library, so icons are exported from Figma per screen into `apps/mobile/assets/icons` and registered in `components/ui/icons.ts`
 - Figma fields with no column yet (add a migration when the screens are built): profile pronouns and emergency contact, group "Who can see likes?", recommendation type (experience vs business; stored in the note for now)
 - Search by distance and date (`near`, `maxDistanceKm`, `date`, `sort: 'distance'`) needs a search RPC; `catalog.searchListings` throws `unsupported` for these until then. Build it with the Explore map
@@ -44,8 +47,10 @@ Keep this file current: tick items as they land and update **Next up** so any se
 
 ## Phase 2: Consumer app core (mobile)
 - [x] Splash, onboarding carousel, "Login or sign up" sheet (UI only)
-- [ ] Sign up / sign in screens, passcode + Face ID
-- [ ] Location and notification permissions
+- [x] Phone sign up: login sheet -> verification code (resend cooldown, wrong-code state, Edit) -> Finish signing up (new users only) -> Face ID (on-device, SecureStore) -> location and notification sheets -> Home placeholder
+- [ ] Email sign up / sign in, Forgot password, Apple / Google
+- [ ] Passcode entry screens
+- [x] Location and notification permissions (prompts only; push token registration comes with notifications)
 - [ ] Home dashboard (Popular Activities, Top Hosts, Just For You)
 - [ ] Search and filters
 - [ ] Business detail, Experience detail, Host profile
