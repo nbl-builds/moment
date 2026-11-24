@@ -23,6 +23,8 @@ async function call<R extends AuthResult>(promise: Promise<R>): Promise<AuthData
 
 export type OAuthProvider = 'apple' | 'google' | 'facebook';
 
+export type EmailSignInMethod = 'password' | 'code' | 'new';
+
 export function createAuthApi(db: MomentSupabaseClient) {
   return {
     getSession: async (): Promise<Session | null> => (await call(db.auth.getSession())).session,
@@ -91,6 +93,16 @@ export function createAuthApi(db: MomentSupabaseClient) {
     exchangeCodeForSession: (code: string) => call(db.auth.exchangeCodeForSession(code)),
 
     signOut: () => call(db.auth.signOut().then((r) => ({ data: null, error: r.error }))).then(() => undefined),
+
+    /**
+     * Which step follows the email on "Login or sign up" (Figma 12:845):
+     * 'password' -> Enter Password, 'code' -> email code (account without a
+     * password), 'new' -> email code, then Create password and Finish signing up.
+     */
+    emailSignInMethod: async (email: string): Promise<EmailSignInMethod> => {
+      const method = await unwrap(db.rpc('email_sign_in_method', { p_email: email }));
+      return method === 'password' || method === 'code' ? method : 'new';
+    },
 
     /**
      * True while a signed-in user has not finished sign up ("Finish signing up"),
