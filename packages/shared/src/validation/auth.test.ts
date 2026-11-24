@@ -109,6 +109,9 @@ describe('Sign Up Finishing', () => {
       'Date of birth cannot be in the future',
     );
     expect(firstError(completeSignUpSchema.safeParse({ ...valid, dateOfBirth: '1995-02-30' }))).toBe('Enter a valid date');
+    // Empty or malformed values fail cleanly instead of reaching the age checks.
+    expect(firstError(completeSignUpSchema.safeParse({ ...valid, dateOfBirth: '' }))).toBe('Date of birth is required');
+    expect(firstError(completeSignUpSchema.safeParse({ ...valid, dateOfBirth: '23/03/1996' }))).toBe('Enter a valid date');
   });
 
   it('requires a strong password on the password variant', () => {
