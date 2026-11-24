@@ -1019,3 +1019,172 @@ update public.staff_members
 set rating_avg = 4.6 + (abs(hashtext(display_name)) % 5) / 10.0,
     rating_count = 20 + abs(hashtext(display_name || '#reviews')) % 180
 where is_host;
+
+-- ---------------------------------------------------------------------------
+-- Business page (Figma "Business Look"): dev user, opening hours, gallery,
+-- verified badges, services for every business, membership plans, and reviews
+-- with photos (each backed by a completed booking).
+-- ---------------------------------------------------------------------------
+
+-- The dev auth bypass user (+92 300 1234567, test_otp 123456), already signed up,
+-- so a fresh database doesn't ask to "Finish signing up" again.
+select pg_temp.seed_user('00000000-0000-4000-a000-000000000099', 'dev@moment.test', 'Ali Raza', '+923001234567');
+update public.profile_private
+set first_name = 'Ali', last_name = 'Raza', date_of_birth = '1995-03-14', sign_up_completed_at = now()
+where user_id = '00000000-0000-4000-a000-000000000099';
+update public.profiles set home_city = 'Islamabad' where id = '00000000-0000-4000-a000-000000000099';
+
+update public.businesses set is_verified = true
+where slug in ('saffron-spa', 'margalla-trails', 'androon-walks', 'karachi-coastal', 'clifton-barber', 'ayeshas-lahori-kitchen');
+
+-- Opening hours (Asia/Karachi wall clock). 0 = Sunday.
+insert into public.business_hours (business_id, weekday, opens_at, closes_at)
+select b.id, d.weekday, d.opens::time, d.closes::time
+from public.businesses b
+join (values
+  -- Venues: 10-9 Monday to Saturday, 12-8 on Sunday
+  ('venue', 1, '10:00', '21:00'), ('venue', 2, '10:00', '21:00'), ('venue', 3, '10:00', '21:00'),
+  ('venue', 4, '10:00', '21:00'), ('venue', 5, '10:00', '21:00'), ('venue', 6, '10:00', '21:00'), ('venue', 0, '12:00', '20:00'),
+  -- Operators run early hikes and late food walks: 6 am to 11 pm every day
+  ('operator', 0, '06:00', '23:00'), ('operator', 1, '06:00', '23:00'), ('operator', 2, '06:00', '23:00'), ('operator', 3, '06:00', '23:00'),
+  ('operator', 4, '06:00', '23:00'), ('operator', 5, '06:00', '23:00'), ('operator', 6, '06:00', '23:00'),
+  -- Home hosts: Tuesday to Sunday afternoons and evenings
+  ('host', 2, '11:00', '20:00'), ('host', 3, '11:00', '20:00'), ('host', 4, '11:00', '20:00'),
+  ('host', 5, '11:00', '20:00'), ('host', 6, '11:00', '20:00'), ('host', 0, '11:00', '20:00')
+) as d(kind, weekday, opens, closes) on d.kind = b.kind::text
+where b.slug <> 'clifton-barber';
+-- The barber closes for Friday prayers and stays open past midnight on Saturday.
+insert into public.business_hours (business_id, weekday, opens_at, closes_at) values
+  ('00000000-0000-4000-b000-000000000007', 1, '10:00', '22:00'), ('00000000-0000-4000-b000-000000000007', 2, '10:00', '22:00'),
+  ('00000000-0000-4000-b000-000000000007', 3, '10:00', '22:00'), ('00000000-0000-4000-b000-000000000007', 4, '10:00', '22:00'),
+  ('00000000-0000-4000-b000-000000000007', 5, '10:00', '12:30'), ('00000000-0000-4000-b000-000000000007', 5, '14:30', '22:00'),
+  ('00000000-0000-4000-b000-000000000007', 6, '12:00', '01:00');
+
+-- Hero gallery: Figma's business photos for the venues, listing photos for the rest.
+insert into public.business_photos (business_id, url, sort_order)
+select b.id, 'storage://seed-media/' || p.path, p.ord
+from public.businesses b
+join (values
+  ('saffron-spa', 'business/spa-1.jpg', 1), ('saffron-spa', 'business/spa-2.jpg', 2), ('saffron-spa', 'business/spa-3.jpg', 3), ('saffron-spa', 'listings/spa-facial.jpg', 4),
+  ('gulberg-glow', 'business/spa-2.jpg', 1), ('gulberg-glow', 'listings/spa-facial.jpg', 2), ('gulberg-glow', 'business/spa-3.jpg', 3),
+  ('clifton-barber', 'business/spa-3.jpg', 1), ('clifton-barber', 'business/spa-1.jpg', 2),
+  ('margalla-trails', 'listings/old-town-walk.jpg', 1), ('margalla-trails', 'listings/kids-adventure.jpg', 2), ('margalla-trails', 'listings/plane-window.jpg', 3),
+  ('androon-walks', 'listings/old-town-walk.jpg', 1), ('androon-walks', 'listings/museum-gallery.jpg', 2), ('androon-walks', 'listings/night-market.jpg', 3),
+  ('ayeshas-lahori-kitchen', 'listings/family-cooking.jpg', 1), ('ayeshas-lahori-kitchen', 'listings/kids-cooking.jpg', 2),
+  ('karachi-coastal', 'listings/street-drinks.jpg', 1), ('karachi-coastal', 'listings/food-tasting.jpg', 2), ('karachi-coastal', 'listings/night-market.jpg', 3),
+  ('hunza-heights', 'listings/plane-window.jpg', 1), ('hunza-heights', 'listings/kids-adventure.jpg', 2)
+) as p(slug, path, ord) on p.slug = b.slug::text;
+
+-- Services (appointment listings) so every business has a Services tab.
+insert into public.listings (
+  id, business_id, type, booking_mode, slug, title, summary, description, category_id, location_id,
+  city, duration_minutes, min_guests, max_guests, price_amount, price_unit, instant_book, cancellation_policy, languages, status
+)
+select v.id::uuid, b.id, 'service', 'appointment', v.slug, v.title, v.summary, v.summary, pg_temp.cat(v.category), bl.id,
+       bl.city, v.minutes, 1, v.max_guests, v.price, v.unit::public.price_unit, true, 'moderate', '{en,ur}', 'published'
+from (values
+  ('00000000-0000-4000-e000-000000000049', 'saffron-spa', 'hot-stone-massage', 'Hot Stone Massage', 'Warm basalt stones melt away tension in the back and shoulders.', 'spa-massage', 75, 1, 1100000, 'per_booking'),
+  ('00000000-0000-4000-e000-000000000050', 'saffron-spa', 'express-cleanup-facial', 'Express Cleanup Facial', 'A quick deep clean and glow, 30 minutes.', 'skin-care', 30, 1, 350000, 'per_booking'),
+  ('00000000-0000-4000-e000-000000000051', 'gulberg-glow', 'bridal-trial-makeup', 'Bridal Trial Makeup', 'Try your wedding look with our senior artist.', 'skin-care', 90, 1, 1500000, 'per_booking'),
+  ('00000000-0000-4000-e000-000000000052', 'clifton-barber', 'kids-haircut', 'Kids'' Haircut', 'For under-12s, with a lollipop at the end.', 'hair', 30, 1, 150000, 'per_booking'),
+  ('00000000-0000-4000-e000-000000000053', 'margalla-trails', 'private-trail-guide', 'Private Trail Guide (3 hours)', 'Your own guide on any Margalla trail, at your pace.', 'outdoor-adventure', 180, 6, 600000, 'per_booking'),
+  ('00000000-0000-4000-e000-000000000054', 'margalla-trails', 'gear-rental-day', 'Hiking Gear Rental (1 day)', 'Poles, headlamp and a daypack, ready at the trailhead.', 'outdoor-adventure', 60, 1, 120000, 'per_person'),
+  ('00000000-0000-4000-e000-000000000055', 'androon-walks', 'private-heritage-guide', 'Private Heritage Guide (2 hours)', 'A historian for your family or friends, any route in the Walled City.', 'tours-walks', 120, 8, 500000, 'per_booking'),
+  ('00000000-0000-4000-e000-000000000056', 'ayeshas-lahori-kitchen', 'private-dinner-at-home', 'Private Dinner at Home', 'A four-course Lahori dinner cooked for your group.', 'food-drink', 150, 8, 1200000, 'per_booking'),
+  ('00000000-0000-4000-e000-000000000057', 'karachi-coastal', 'private-boat-hire', 'Private Boat Hire (2 hours)', 'A boat and crew for sunset in the creek or a swim off Churna.', 'water-activities', 120, 10, 1800000, 'per_booking'),
+  ('00000000-0000-4000-e000-000000000058', 'hunza-heights', 'private-jeep-day', 'Private Jeep with Driver (1 day)', 'Attabad, Passu and the Hussaini bridge on your own schedule.', 'day-trips', 480, 4, 2200000, 'per_booking')
+) as v(id, slug_b, slug, title, summary, category, minutes, max_guests, price, unit)
+join public.businesses b on b.slug = v.slug_b
+join public.business_locations bl on bl.business_id = b.id and bl.is_primary;
+
+insert into public.listing_media (business_id, listing_id, url, alt, sort_order)
+select l.business_id, l.id, 'storage://seed-media/listings/' || m.file, l.title, 0
+from public.listings l
+join (values
+  ('00000000-0000-4000-e000-000000000049', 'spa-facial.jpg'), ('00000000-0000-4000-e000-000000000050', 'spa-facial.jpg'),
+  ('00000000-0000-4000-e000-000000000051', 'spa-facial.jpg'), ('00000000-0000-4000-e000-000000000052', 'street-drinks.jpg'),
+  ('00000000-0000-4000-e000-000000000053', 'kids-adventure.jpg'), ('00000000-0000-4000-e000-000000000054', 'plane-window.jpg'),
+  ('00000000-0000-4000-e000-000000000055', 'old-town-walk.jpg'), ('00000000-0000-4000-e000-000000000056', 'family-cooking.jpg'),
+  ('00000000-0000-4000-e000-000000000057', 'food-tasting.jpg'), ('00000000-0000-4000-e000-000000000058', 'plane-window.jpg')
+) as m(id, file) on m.id::uuid = l.id;
+
+-- Options on a few services (length or add-ons).
+insert into public.listing_options (business_id, listing_id, name, description, price_amount, duration_minutes, sort_order)
+select l.business_id, l.id, o.name, o.description, o.price, o.minutes, o.ord
+from public.listings l
+join (values
+  ('00000000-0000-4000-e000-000000000021', '60 minutes', 'Full body, medium pressure', 800000, 60, 1),
+  ('00000000-0000-4000-e000-000000000021', '90 minutes', 'Full body with scalp and feet', 1100000, 90, 2),
+  ('00000000-0000-4000-e000-000000000028', 'With hair wash', null, 250000, 40, 1),
+  ('00000000-0000-4000-e000-000000000053', 'Add lunch at Monal', 'Lunch for up to 6 at the top', 900000, 240, 1)
+) as o(listing, name, description, price, minutes, ord) on o.listing::uuid = l.id;
+
+-- A membership plan for every business that doesn't have one.
+insert into public.membership_plans (business_id, name, description, price_amount, interval, benefits, included_sessions, discount_percent, sort_order)
+select b.id, v.name, v.description, v.price, v.period::public.membership_interval, v.benefits::jsonb, v.sessions, v.discount, 1
+from (values
+  ('gulberg-glow', 'Glow Monthly', 'A blow-dry every week and 15% off colour and nails.', 900000, 'month', '{"perks": ["4 x blow-dry", "15% off colour", "15% off nails"]}', 4, 15),
+  ('margalla-trails', 'Trail Pass', 'Join any group hike for a year and bring a friend once a month.', 2500000, 'year', '{"perks": ["Unlimited group hikes", "Monthly guest pass", "10% off private guides"]}', null, 10),
+  ('androon-walks', 'Walled City Friend', 'Four guided walks a year and 10% off food walks.', 1200000, 'year', '{"perks": ["4 heritage walks", "10% off food walks"]}', 4, 10),
+  ('ayeshas-lahori-kitchen', 'Kitchen Club', 'One cooking class a month and recipe cards for every class.', 600000, 'month', '{"perks": ["1 class a month", "Recipe cards", "Spice box on joining"]}', 1, 0),
+  ('karachi-coastal', 'Sea Pass', 'Two water trips a month and priority on Churna weekends.', 1800000, 'month', '{"perks": ["2 water trips", "Priority weekend booking", "Free snorkel hire"]}', 2, 10),
+  ('hunza-heights', 'Hunza Season Pass', 'Two day trips in the summer season and 15% off jeep hire.', 3500000, 'one_time', '{"perks": ["2 day trips", "15% off jeep hire"]}', 2, 15),
+  ('saffron-spa', 'Saffron Glow Monthly', 'One facial a month and 15% off skin care.', 600000, 'month', '{"perks": ["1 facial a month", "15% off skin care"]}', 1, 15)
+) as v(slug, name, description, price, period, benefits, sessions, discount)
+join public.businesses b on b.slug = v.slug;
+
+-- Past bookings for more reviews (3 per business) and two for the dev user to review.
+insert into public.bookings (
+  id, business_id, consumer_id, listing_id, location_id, starts_at, ends_at, guest_count, status,
+  contact_name, contact_phone, contact_email, subtotal_amount, discount_amount, total_amount, source, created_at
+)
+select v.id::uuid, l.business_id, v.consumer::uuid, l.id, l.location_id,
+       pg_temp.pk(pg_temp.today() - v.days_ago, '16:00'), pg_temp.pk(pg_temp.today() - v.days_ago, '16:00') + make_interval(mins => l.duration_minutes),
+       1, 'completed', p.display_name, '+92300' || right(v.consumer, 7), null, l.price_amount, 0, l.price_amount, 'app', now() - make_interval(days => v.days_ago + 3)
+from (values
+  ('00000000-0000-4000-8000-000000000011', '00000000-0000-4000-a000-000000000023', '00000000-0000-4000-e000-000000000049', 20),
+  ('00000000-0000-4000-8000-000000000012', '00000000-0000-4000-a000-000000000024', '00000000-0000-4000-e000-000000000024', 16),
+  ('00000000-0000-4000-8000-000000000013', '00000000-0000-4000-a000-000000000026', '00000000-0000-4000-e000-000000000023', 11),
+  ('00000000-0000-4000-8000-000000000014', '00000000-0000-4000-a000-000000000021', '00000000-0000-4000-e000-000000000025', 22),
+  ('00000000-0000-4000-8000-000000000015', '00000000-0000-4000-a000-000000000026', '00000000-0000-4000-e000-000000000051', 13),
+  ('00000000-0000-4000-8000-000000000016', '00000000-0000-4000-a000-000000000023', '00000000-0000-4000-e000-000000000028', 9),
+  ('00000000-0000-4000-8000-000000000017', '00000000-0000-4000-a000-000000000021', '00000000-0000-4000-e000-000000000052', 17),
+  ('00000000-0000-4000-8000-000000000018', '00000000-0000-4000-a000-000000000022', '00000000-0000-4000-e000-000000000053', 25),
+  ('00000000-0000-4000-8000-000000000019', '00000000-0000-4000-a000-000000000026', '00000000-0000-4000-e000-000000000054', 14),
+  ('00000000-0000-4000-8000-000000000020', '00000000-0000-4000-a000-000000000024', '00000000-0000-4000-e000-000000000055', 19),
+  ('00000000-0000-4000-8000-000000000021', '00000000-0000-4000-a000-000000000025', '00000000-0000-4000-e000-000000000055', 8),
+  ('00000000-0000-4000-8000-000000000022', '00000000-0000-4000-a000-000000000021', '00000000-0000-4000-e000-000000000056', 21),
+  ('00000000-0000-4000-8000-000000000023', '00000000-0000-4000-a000-000000000023', '00000000-0000-4000-e000-000000000056', 10),
+  ('00000000-0000-4000-8000-000000000024', '00000000-0000-4000-a000-000000000022', '00000000-0000-4000-e000-000000000057', 12),
+  ('00000000-0000-4000-8000-000000000025', '00000000-0000-4000-a000-000000000026', '00000000-0000-4000-e000-000000000057', 26),
+  ('00000000-0000-4000-8000-000000000026', '00000000-0000-4000-a000-000000000021', '00000000-0000-4000-e000-000000000058', 30),
+  ('00000000-0000-4000-8000-000000000027', '00000000-0000-4000-a000-000000000024', '00000000-0000-4000-e000-000000000058', 28),
+  -- The dev user's visits, not reviewed yet ("Write a review" is enabled for these)
+  ('00000000-0000-4000-8000-000000000098', '00000000-0000-4000-a000-000000000099', '00000000-0000-4000-e000-000000000021', 6),
+  ('00000000-0000-4000-8000-000000000099', '00000000-0000-4000-a000-000000000099', '00000000-0000-4000-e000-000000000053', 4)
+) as v(id, consumer, listing, days_ago)
+join public.listings l on l.id = v.listing::uuid
+join public.profiles p on p.id = v.consumer::uuid;
+
+insert into public.reviews (booking_id, author_id, rating, body, photos, created_at)
+select v.booking::uuid, b.consumer_id, v.rating, v.body, v.photos::text[], now() - make_interval(days => v.days_ago)
+from (values
+  ('00000000-0000-4000-8000-000000000011', 5, 'The hot stones were heavenly. Best massage I have had in Islamabad, and the room smelled of jasmine.', '{storage://seed-media/reviews/spa-room.jpg,storage://seed-media/reviews/spa-stones.jpg}', 18),
+  ('00000000-0000-4000-8000-000000000012', 4, 'My skin was glowing for days. Booking was easy, but parking outside is tight.', '{storage://seed-media/reviews/spa-facial.jpg}', 14),
+  ('00000000-0000-4000-8000-000000000013', 5, 'The hammam ritual is worth every rupee. Ask for Mehwish.', '{}', 9),
+  ('00000000-0000-4000-8000-000000000014', 4, 'Great blow-dry that lasted the whole wedding weekend.', '{}', 20),
+  ('00000000-0000-4000-8000-000000000015', 3, 'Lovely trial look, though it ran 40 minutes over.', '{storage://seed-media/reviews/spa-facial.jpg}', 11),
+  ('00000000-0000-4000-8000-000000000016', 5, 'Clean fade, quick service, fair price. My new regular.', '{}', 7),
+  ('00000000-0000-4000-8000-000000000017', 4, 'My son loved it and sat still for once.', '{}', 15),
+  ('00000000-0000-4000-8000-000000000018', 5, 'Our guide took us up Trail 5 at sunrise and knew every bird by name.', '{storage://seed-media/listings/kids-adventure.jpg}', 23),
+  ('00000000-0000-4000-8000-000000000019', 4, 'Gear was in good shape. The headlamp saved us on the way down.', '{}', 12),
+  ('00000000-0000-4000-8000-000000000020', 5, 'Private walk through Delhi Gate with stories I had never heard. Highly recommend.', '{storage://seed-media/listings/old-town-walk.jpg}', 17),
+  ('00000000-0000-4000-8000-000000000021', 2, 'Good guide but we started late and missed the mosque before closing.', '{}', 6),
+  ('00000000-0000-4000-8000-000000000022', 5, 'Ayesha cooked a feast for our family reunion. The haleem was unreal.', '{storage://seed-media/listings/family-cooking.jpg}', 19),
+  ('00000000-0000-4000-8000-000000000023', 4, 'Warm hosts and generous portions. Dessert could have been sweeter.', '{}', 8),
+  ('00000000-0000-4000-8000-000000000024', 5, 'Sunset in the creek with chai on board. Magical.', '{storage://seed-media/listings/food-tasting.jpg}', 10),
+  ('00000000-0000-4000-8000-000000000025', 3, 'Boat was fine, but the crew arrived 30 minutes late.', '{}', 24),
+  ('00000000-0000-4000-8000-000000000026', 5, 'Our driver knew every viewpoint. Passu cones at golden hour!', '{storage://seed-media/listings/plane-window.jpg}', 28),
+  ('00000000-0000-4000-8000-000000000027', 4, 'Comfortable jeep and a careful driver on the KKH.', '{}', 26)
+) as v(booking, rating, body, photos, days_ago)
+join public.bookings b on b.id = v.booking::uuid;
