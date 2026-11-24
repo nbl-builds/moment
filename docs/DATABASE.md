@@ -62,6 +62,7 @@ RLS helpers live in the `private` schema (not exposed through the API), are `sec
 - `profile_private`: email, phone, first and last name, date of birth, locale, notification preferences, and `sign_up_completed_at` (set by "Finish signing up"; while it is null the app shows that screen after sign in, see `api.auth.needsSignUp()`). Owner only.
 - `platform_admins`: super admins.
 - A trigger on `auth.users` creates `profiles` and `profile_private` at sign-up.
+- `email_sign_in_method(email)` (callable signed out) returns `password`, `code` or `new`, so the app can route "Login or sign up" with email to Enter Password, an email code, or sign up. It reveals whether an email has an account; that is an accepted product trade-off. Add rate limiting (e.g. an edge function or API gateway rule) before launch.
 
 ### Businesses and team
 - `businesses`: name, slug, kind (`host | operator | venue`), status (`draft | pending_review | active | suspended`), currency, timezone, ratings. Anyone signed in can create one (as `draft`); the creator becomes owner. Only super admins change `status`.

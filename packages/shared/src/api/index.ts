@@ -44,5 +44,5 @@ export type MomentApi = ReturnType<typeof createMomentApi>;
 export { LISTING_CARD_SELECT, HOST_CARD_SELECT, isUuid, type PageOptions } from './catalog';
 export { BOOKING_LIST_SELECT, PAST_STATUSES, UPCOMING_STATUSES } from './bookings';
 export type { ChatMessageEvent } from './social';
-export type { OAuthProvider } from './auth';
+export type { EmailSignInMethod, OAuthProvider } from './auth';
 export * from './errors';

@@ -3082,6 +3082,7 @@ export type Database = {
           key_prefix: string;
         }[];
       };
+      email_sign_in_method: { Args: { p_email: string }; Returns: string };
       find_matching_groups: {
         Args: {
           p_city?: string;

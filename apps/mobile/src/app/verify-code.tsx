@@ -7,6 +7,7 @@ import { Button, Icon, OtpInput, Text } from '@/components/ui';
 import { useLoginSheet } from '@/features/auth/login-sheet-provider';
 import { sendCode, verifyCode, type OtpTarget } from '@/features/auth/otp';
 import { resetTo, routeAfterSignIn } from '@/features/auth/sign-in-flow';
+import { useCountdown } from '@/hooks/use-countdown';
 
 // Figma: "Sign In OTP" — empty (7:1034), code entered (9:603), wrong code (9:728).
 // Vertical positions are measured in the 428 x 926 frame below the 44pt status bar.
@@ -29,7 +30,8 @@ const RESEND_COOLDOWN_S = 60;
 const WRONG_CODE = 'Wrong verification code';
 
 export default function VerifyCodeScreen() {
-  const { phone, email } = useLocalSearchParams<{ phone?: string; email?: string }>();
+  /** `next=create-password`: a new email sign-up continues to Create password. */
+  const { phone, email, next } = useLocalSearchParams<{ phone?: string; email?: string; next?: string }>();
   const target: OtpTarget = email ? { email } : { phone: phone ?? '' };
   const sentTo = email ?? phone ?? '';
   const insets = useSafeAreaInsets();
@@ -53,7 +55,11 @@ export default function VerifyCodeScreen() {
     setVerifying(true);
     try {
       await verifyCode(target, code);
-      resetTo(await routeAfterSignIn());
+      resetTo(
+        next === 'create-password' && email
+          ? { pathname: '/create-password', params: { email } }
+          : await routeAfterSignIn(),
+      );
     } catch (e) {
       setError(e instanceof ApiError && e.code === 'invalid' ? WRONG_CODE : messageOf(e));
     } finally {
@@ -63,7 +69,8 @@ export default function VerifyCodeScreen() {
 
   const onEdit = () => {
     router.back();
-    openLoginSheet(email ? { email } : { phone });
+    // The email screen is underneath with the address still typed; the phone sheet reopens.
+    if (!email) openLoginSheet({ phone });
   };
 
   const onResend = async () => {
@@ -165,26 +172,6 @@ export default function VerifyCodeScreen() {
 
 function messageOf(e: unknown): string {
   return e instanceof Error && e.message ? e.message : 'Something went wrong. Please try again.';
-}
-
-/** Seconds left on a countdown that starts on mount. */
-function useCountdown(seconds: number) {
-  const [endsAt, setEndsAt] = useState(() => Date.now() + seconds * 1000);
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  return {
-    remaining: Math.max(0, Math.ceil((endsAt - now) / 1000)),
-    restart: () => {
-      const t = Date.now();
-      setNow(t);
-      setEndsAt(t + seconds * 1000);
-    },
-  };
 }
 
 /** Whether the keyboard is up, to place Continue 25pt above it as in Figma. */

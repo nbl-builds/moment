@@ -150,6 +150,12 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
       expect(typeof (await phoneApi.auth.needsSignUp())).toBe('boolean');
     });
 
+    it('tells which step follows the email', async () => {
+      expect(await anon.auth.emailSignInMethod(SEED.consumer)).toBe('password');
+      expect(await anon.auth.emailSignInMethod(SEED.consumer.toUpperCase())).toBe('password');
+      expect(await anon.auth.emailSignInMethod(`nobody.${Date.now()}@moment.test`)).toBe('new');
+    });
+
     it('maps wrong passwords to a friendly error', async () => {
       await expectApiError(
         newApi().auth.signInWithPassword({ email: myEmail, password: 'wrong-password1' }),
