@@ -5,8 +5,8 @@ import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View }
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Icon, OtpInput, Text } from '@/components/ui';
 import { useLoginSheet } from '@/features/auth/login-sheet-provider';
+import { sendCode, verifyCode, type OtpTarget } from '@/features/auth/otp';
 import { resetTo, routeAfterSignIn } from '@/features/auth/sign-in-flow';
-import { api } from '@/lib/api';
 
 // Figma: "Sign In OTP" — empty (7:1034), code entered (9:603), wrong code (9:728).
 // Vertical positions are measured in the 428 x 926 frame below the 44pt status bar.
@@ -29,7 +29,9 @@ const RESEND_COOLDOWN_S = 60;
 const WRONG_CODE = 'Wrong verification code';
 
 export default function VerifyCodeScreen() {
-  const { phone = '' } = useLocalSearchParams<{ phone: string }>();
+  const { phone, email } = useLocalSearchParams<{ phone?: string; email?: string }>();
+  const target: OtpTarget = email ? { email } : { phone: phone ?? '' };
+  const sentTo = email ?? phone ?? '';
   const insets = useSafeAreaInsets();
   const { openLoginSheet } = useLoginSheet();
 
@@ -50,7 +52,7 @@ export default function VerifyCodeScreen() {
     if (!complete || verifying) return;
     setVerifying(true);
     try {
-      await api.auth.verifyPhoneOtp({ phone, code });
+      await verifyCode(target, code);
       resetTo(await routeAfterSignIn());
     } catch (e) {
       setError(e instanceof ApiError && e.code === 'invalid' ? WRONG_CODE : messageOf(e));
@@ -61,7 +63,7 @@ export default function VerifyCodeScreen() {
 
   const onEdit = () => {
     router.back();
-    openLoginSheet({ phone });
+    openLoginSheet(email ? { email } : { phone });
   };
 
   const onResend = async () => {
@@ -70,7 +72,7 @@ export default function VerifyCodeScreen() {
     setCode('');
     setError(null);
     try {
-      await api.auth.sendPhoneOtp(phone);
+      await sendCode(target);
     } catch (e) {
       setError(messageOf(e));
     }
@@ -89,14 +91,14 @@ export default function VerifyCodeScreen() {
 
         <View style={styles.sentRow}>
           <Text variant="body15" weight="medium" color="secondaryTint2">
-            Sent to {phone}
+            Sent to {sentTo}
           </Text>
           <Pressable
             onPress={onEdit}
             style={styles.edit}
             hitSlop={8}
             accessibilityRole="button"
-            accessibilityLabel="Edit phone number"
+            accessibilityLabel={email ? 'Edit email' : 'Edit phone number'}
           >
             <View style={styles.dot} />
             <Text variant="body15" weight="bold" color="black">
@@ -187,7 +189,9 @@ function useCountdown(seconds: number) {
 
 /** Whether the keyboard is up, to place Continue 25pt above it as in Figma. */
 function useKeyboardVisible(): boolean {
-  const [visible, setVisible] = useState(true); // the code field autofocuses
+  // Starts hidden: the show event arrives when the autofocused field brings the
+  // keyboard up, and never does with a hardware keyboard.
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
     // iOS has "will" events (in step with the animation); Android only "did".
     const [showEvent, hideEvent] =

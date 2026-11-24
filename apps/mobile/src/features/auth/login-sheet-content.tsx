@@ -36,13 +36,15 @@ type SignInMethod = 'phone' | 'email';
 export interface LoginSheetContentProps {
   /** Phone number to start with (e.g. after "Edit" on the code screen). National format. */
   initialPhone?: string;
+  /** Start on the email field with this address. */
+  initialEmail?: string;
   /**
    * Called with the typed national number. Throw an Error to show its message
    * under the field; the button shows a spinner until it settles.
    */
   onContinueWithPhone?: (nationalNumber: string) => Promise<void>;
-  /** Called with a valid, normalised (trimmed, lowercased) email. */
-  onContinueWithEmail?: (email: string) => void;
+  /** Called with a valid, normalised (trimmed, lowercased) email. Throw to show an error. */
+  onContinueWithEmail?: (email: string) => Promise<void> | void;
   onContinueWithApple?: () => void;
   onContinueWithGoogle?: () => void;
   onSkip?: () => void;
@@ -57,6 +59,7 @@ export interface LoginSheetContentProps {
  */
 export function LoginSheetContent({
   initialPhone = '',
+  initialEmail,
   onContinueWithPhone,
   onContinueWithEmail,
   onContinueWithApple,
@@ -66,11 +69,11 @@ export function LoginSheetContent({
   onOpenPrivacy,
 }: LoginSheetContentProps) {
   const insets = useSafeAreaInsets();
-  const [method, setMethod] = useState<SignInMethod>('phone');
+  const [method, setMethod] = useState<SignInMethod>(initialEmail ? 'email' : 'phone');
   const [phone, setPhone] = useState(initialPhone);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail ?? '');
   const [emailError, setEmailError] = useState<string | null>(null);
 
   const validateEmail = (value: string) => {
@@ -100,7 +103,15 @@ export function LoginSheetContent({
       return;
     }
     const valid = validateEmail(email);
-    if (valid) onContinueWithEmail?.(valid);
+    if (!valid || !onContinueWithEmail || sending) return;
+    setSending(true);
+    try {
+      await onContinueWithEmail(valid);
+    } catch (e) {
+      setEmailError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
+    } finally {
+      setSending(false);
+    }
   };
 
   const toggleMethod = () => setMethod((m) => (m === 'phone' ? 'email' : 'phone'));
