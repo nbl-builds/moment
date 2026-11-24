@@ -14,7 +14,7 @@ export const palette = {
   nearBlackTint3: '#828586', // Figma: Secondary Color / S Tint 3
   nearBlackTint5: '#CCCFD0', // Figma: Secondary Color / S Tint 5
   nearBlackTint6: '#F1F3F4', // Figma: Secondary Color / S Tint 6
-  orange: '#FF8A3D', // TODO: confirm exact "Third" orange hex from Figma
+  orange: '#FE8A29', // Figma: Third Color / Third Color
   black: '#1A1A1A',
   white: '#FFFFFF',
   pureBlack: '#000000', // Figma: Black Color / Black Color
@@ -22,6 +22,10 @@ export const palette = {
   redTint: '#FFEEEE', // Figma: error field and OTP cell fill (7:949, 9:728)
   redBorder: '#FFA7A7', // Figma: error field and OTP cell border
   slate: '#6E7198', // Figma: Button page, Ghost border and disabled fill
+  offWhite: '#F6F6F6', // Figma: Dashboard background (13:1487)
+  greenShade2: '#99B847', // Figma: Green Color / Green Shade 2 (prices)
+  blackTint1: '#232323', // Figma: Black Color / Black Tint 1
+  blackTint2: '#464646', // Figma: Black Color / Black Tint 2
 } as const;
 
 /** Semantic colour roles used by components. */
@@ -48,6 +52,13 @@ export const colors = {
   white: palette.white,
 
   background: palette.white,
+  /** Light grey page behind cards (Home). */
+  backgroundMuted: palette.offWhite,
+  /** Listing prices on cards. */
+  price: palette.greenShade2,
+  blackTint1: palette.blackTint1,
+  blackTint2: palette.blackTint2,
+
   surface: palette.white,
   text: palette.black,
   textInverse: palette.white,
@@ -82,3 +93,13 @@ export function withAlpha(hex: string, alpha: number): string {
   const [r, g, b] = [m[1], m[2], m[3]].map((h) => parseInt(h ?? '0', 16));
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+/** Promo banner backgrounds on Home (Figma 13:1492 and its neighbours). */
+export const promoColors = {
+  teal: '#06B3C4',
+  blue: '#77B5FE',
+  coral: '#DE725B',
+} as const;
+
+/** Tile colours behind host cut-out photos on Top Hosts (Figma 17:1075 ...), used in turn. */
+export const hostTileColors = ['#FFEAA7', '#A29BFE', '#74B9FF', '#FF7675'] as const;
