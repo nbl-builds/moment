@@ -49,7 +49,7 @@ export default function OnboardingScreen() {
     if (index < lastIndex) listRef.current?.scrollToIndex({ index: index + 1, animated: true });
     else openLoginSheet();
   };
-  const onSkip = openLoginSheet;
+  const onSkip = () => openLoginSheet();
 
   return (
     <View style={styles.container}>
