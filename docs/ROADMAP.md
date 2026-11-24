@@ -10,7 +10,7 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Dev auth bypass for testing screens: `EXPO_PUBLIC_AUTH_BYPASS=1` in `apps/mobile/.env.local` (dev builds only; see `.env.example`). Remove it, or keep it dev-only, when the production SMS provider is wired
 - Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
 - Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
-- Next screens behind Home's placeholder routes: Experience / Business details (`/listing/[id]`), host profile (`/host/[id]`), "See all" lists (`/see-all/[section]`), Bucket List, Adventure Quiz, Recommend a place, and the Bookings / Explore / Groups / Profile tabs
+- Next screens behind Home's placeholder routes: Experience / Business details (`/listing/[id]`), host profile (`/host/[id]`), Bucket List, Adventure Quiz, Recommend a place, and the Bookings / Explore / Groups / Profile tabs
 - Promo banners are static in `apps/mobile/src/features/home/promos.ts`; move them to `platform_settings` when the team needs to change them without a release
 - "Recently viewed" is stored on the device (AsyncStorage); move it to the server if it should follow the user
 - Seed photos are the Figma images in `supabase/seed-media` (local only). Real listings need media upload in the business portal
@@ -31,7 +31,7 @@ One branch per section (`feat/<section>`), merged into `staging`. Frames: `docs/
 - [ ] 4. Booking Status Screens
 - [ ] 5. Bucket List + Recommend a place
 - [ ] 6. Customer Dashboard (Adventure Quiz) + personality badge
-- [ ] 7. Customer Dashboard (Section Screens): "See all" lists
+- [x] 7. Customer Dashboard (Section Screens): "See all" lists (with Search typing screen and Filters updates)
 - [ ] 8. Explore Screens
 - [ ] 9. Group Screens
 - [ ] 10. Profile Screens (General, Support, Legal)
@@ -39,6 +39,7 @@ One branch per section (`feat/<section>`), merged into `staging`. Frames: `docs/
 ## To wire after UI
 Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`). Swap each for the `api.*` call when the backend lands.
 - **Search: date availability** (`features/search/mock.ts` `availableListingIds`): every listing counts as available. Needs an availability search RPC (slots + staff schedules)
+- **Search: host mode** (`features/search/mock.ts` `searchHosts`): Filters > Host shows hosts; loads the top 100 hosts and filters on the device by name, category, city, language and rating (area, distance, price and dates ignored). Needs a `search_hosts` RPC
 - **Search: distance and date paging**: with a distance or date filter, Search Results filters one page of 50 on the device (real `listing_distances`). Move both into the search RPC so they page on the server
 
 ---
@@ -78,6 +79,8 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - [x] Home dashboard: pinned search, promo carousel, Adventure Quiz card, Popular activities, Top Hosts, Just for you, More to explore, Recently viewed, Local fun, Must-trys, "Are we missing something?"; real data, PKR prices, km distances, bucket-list hearts, pull to refresh, skeletons
 - [x] Floating tab bar (Home, Bookings, Explore, Groups, Profile) that shrinks on scroll; other tabs are placeholders
 - [x] Search and filters (Figma "Search Filter": Filters, location / date / language sheets, Search Results with removable chips; Home search, filter icon and category chips lead here)
+- [x] Search screen (`/search`): text field, recent searches on the device (clearable), popular categories, filter icon; prefix full-text search. Filters moved to `/filters`: Host mode shows hosts, price min–max range slider, "Choose a destination" with cities and areas (real `area` filter), Reset, active-filter count on filter icons
+- [x] Home "See all" screens (`/see-all/[section]`): Popular activities, Top Hosts (2-column grid), Just For You, Explore, Local fun, Must-trys, Recently viewed; category chips filter in place
 - [ ] Business detail, Experience detail, Host profile
 - [ ] Bucket List, Recommend a place
 
