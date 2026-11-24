@@ -8,7 +8,7 @@ import { ApiError, fromPostgrestError, unwrap, unwrapRequired, type MomentSupaba
 
 /** Fields a listing card needs (Home rails, search results, bucket list). */
 export const LISTING_CARD_SELECT = `
-  id, slug, title, summary, type, booking_mode, city, price_amount, price_unit, currency,
+  id, slug, title, summary, type, booking_mode, city, category_id, price_amount, price_unit, currency,
   duration_minutes, rating_avg, rating_count, booking_count, instant_book,
   business:businesses!inner(id, slug, name, logo_url, kind),
   media:listing_media(url, alt, sort_order),
@@ -17,7 +17,8 @@ export const LISTING_CARD_SELECT = `
 
 export const HOST_CARD_SELECT = `
   id, display_name, title, avatar_url, bio, languages, rating_avg, rating_count,
-  business:businesses!inner(id, slug, name, kind)
+  business:businesses!inner(id, slug, name, kind),
+  listings:listing_staff(listing:listings(id, city, booking_count, category_id))
 ` as const;
 
 export interface PageOptions {
@@ -128,11 +129,19 @@ export function createCatalogApi(db: MomentSupabaseClient) {
         );
         q = q.in('id', [...new Set(hosted.map((l) => l.listing_id))]);
       }
-      if (filters.query) q = q.textSearch('search_vector', filters.query, { type: 'websearch', config: 'simple' });
+      if (filters.query) {
+        // Prefix match on every word, so "kay" finds "kayaking" while typing.
+        const words = filters.query.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+        if (words.length) q = q.textSearch('search_vector', words.map((w) => `${w}:*`).join(' & '), { config: 'simple' });
+      }
       if (filters.type) q = q.eq('type', filters.type);
       if (filters.categoryId) q = q.eq('category_id', filters.categoryId);
       if (filters.categoryIds?.length) q = q.in('category_id', filters.categoryIds);
       if (filters.city) q = q.eq('city', filters.city);
+      if (filters.area) {
+        const locations = await unwrap(db.from('business_locations').select('id').eq('area', filters.area));
+        q = q.in('location_id', locations.map((l) => l.id));
+      }
       if (filters.language) q = q.contains('languages', [filters.language]);
       if (filters.priceMin !== undefined) q = q.gte('price_amount', filters.priceMin);
       if (filters.priceMax !== undefined) q = q.lte('price_amount', filters.priceMax);
