@@ -371,6 +371,39 @@ insert into public.listings (
    pg_temp.cat('grooming'), '00000000-0000-4000-c000-000000000009', null, 'Karachi',
    75, 1, 1, 300000, 'per_booking', true, 'flexible', '{ur,en}', '{}', '{}', 'published');
 
+-- More experiences so every Home rail is full in each city (local dev data).
+insert into public.listings (
+  id, business_id, type, booking_mode, slug, title, summary, description, category_id, location_id,
+  meeting_point, city, duration_minutes, min_guests, max_guests, price_amount, price_unit,
+  instant_book, cancellation_policy, languages, includes, excludes, status
+)
+select ('00000000-0000-4000-e000-0000000000' || v.n)::uuid, v.business_id::uuid, 'experience', 'slot', v.slug, v.title, v.summary,
+       v.summary, pg_temp.cat(v.category), v.location_id::uuid, pg_temp.pt(v.lat, v.lng), v.city,
+       v.minutes, 1, v.max_guests, v.price, 'per_person', true, 'flexible', '{en,ur}', '{Local host}', '{Transport}', 'published'
+from (values
+  -- Islamabad: Margalla Trails Co.
+  ('31', '00000000-0000-4000-b000-000000000001', '00000000-0000-4000-c000-000000000001', 'Islamabad', 'lok-virsa-heritage-museum', 'Lok Virsa Heritage Museum Tour', 'Crafts, music and costumes from every province under one roof.', 'tours-walks', 33.6895, 73.0681, 120, 15, 250000),
+  ('32', '00000000-0000-4000-b000-000000000001', '00000000-0000-4000-c000-000000000001', 'Islamabad', 'daman-e-koh-family-evening', 'Daman-e-Koh Family Evening', 'Monkeys, city views and corn on the cob as the lights come on.', 'outdoor-adventure', 33.7420, 73.0570, 150, 20, 150000),
+  ('33', '00000000-0000-4000-b000-000000000001', '00000000-0000-4000-c000-000000000001', 'Islamabad', 'melody-food-street-tasting', 'Melody Food Street Tasting Walk', 'Chapli kebab, halwa puri and doodh patti in old Melody market.', 'food-drink', 33.7097, 73.0846, 150, 10, 300000),
+  ('34', '00000000-0000-4000-b000-000000000001', '00000000-0000-4000-c000-000000000001', 'Islamabad', 'little-chefs-islamabad', 'Little Chefs Cooking Class', 'Kids make their own pizza and kheer, then eat it all.', 'food-drink', 33.7180, 73.0610, 120, 12, 400000),
+  ('35', '00000000-0000-4000-b000-000000000001', '00000000-0000-4000-c000-000000000001', 'Islamabad', 'skardu-fly-in-day-trip', 'Fly to Skardu: Shangrila Day Trip', 'Morning flight over the Karakoram, a day by the lakes, home for dinner.', 'day-trips', 33.6167, 72.8333, 720, 8, 4500000),
+  ('36', '00000000-0000-4000-b000-000000000001', '00000000-0000-4000-c000-000000000001', 'Islamabad', 'blue-area-night-bites', 'Blue Area Night Bites & Chai', 'Late-night karahi, BBQ and the city''s best chai dhabas.', 'food-drink', 33.7077, 73.0498, 120, 10, 280000),
+  -- Lahore: Androon Walks and Ayesha's kitchen
+  ('37', '00000000-0000-4000-b000-000000000003', '00000000-0000-4000-c000-000000000004', 'Lahore', 'lahore-museum-wonder-house', 'Lahore Museum: The Wonder House', 'Gandhara art and Mughal miniatures with a historian.', 'tours-walks', 31.5680, 74.3080, 120, 15, 300000),
+  ('38', '00000000-0000-4000-b000-000000000003', '00000000-0000-4000-c000-000000000004', 'Lahore', 'fort-road-food-street-dinner', 'Fort Road Food Street Dinner', 'Rooftop dinner facing Badshahi Mosque, lit up at night.', 'food-drink', 31.5867, 74.3103, 150, 12, 500000),
+  ('39', '00000000-0000-4000-b000-000000000003', '00000000-0000-4000-c000-000000000004', 'Lahore', 'gawalmandi-late-night-bites', 'Gawalmandi Late-Night Bites', 'Siri paye, tawa chicken and falooda after dark.', 'food-drink', 31.5745, 74.3150, 120, 10, 350000),
+  ('40', '00000000-0000-4000-b000-000000000004', '00000000-0000-4000-c000-000000000005', 'Lahore', 'family-baking-afternoon', 'Family Baking Afternoon', 'Bake naan khatai and cake rusks together in a Lahori kitchen.', 'food-drink', 31.4834, 74.3262, 150, 8, 600000),
+  ('41', '00000000-0000-4000-b000-000000000004', '00000000-0000-4000-c000-000000000005', 'Lahore', 'kids-pizza-workshop', 'Kids'' Pizza Workshop', 'Dough, toppings and a lot of flour for 6 to 12 year olds.', 'food-drink', 31.4834, 74.3262, 120, 10, 450000),
+  ('42', '00000000-0000-4000-b000-000000000003', '00000000-0000-4000-c000-000000000004', 'Lahore', 'jallo-park-family-day', 'Jallo Park Family Day Out', 'Boating, the wildlife park and a picnic lunch.', 'outdoor-adventure', 31.5813, 74.4829, 240, 20, 200000),
+  -- Karachi: Karachi outdoors operator
+  ('43', '00000000-0000-4000-b000-000000000006', '00000000-0000-4000-c000-000000000008', 'Karachi', 'mohatta-palace-museum-visit', 'Mohatta Palace Museum Visit', 'Pink Jodhpur stone, art exhibitions and Clifton''s old mansions.', 'tours-walks', 24.8136, 67.0330, 120, 15, 250000),
+  ('44', '00000000-0000-4000-b000-000000000006', '00000000-0000-4000-c000-000000000008', 'Karachi', 'port-grand-night-market', 'Port Grand Night Market', 'Harbour lights, street food and live music on the old bridge.', 'food-drink', 24.8414, 66.9888, 150, 12, 300000),
+  ('45', '00000000-0000-4000-b000-000000000006', '00000000-0000-4000-c000-000000000008', 'Karachi', 'do-darya-seafood-evening', 'Do Darya Seafood Evening', 'Sunset over the Arabian Sea with fresh grilled fish.', 'food-drink', 24.7866, 67.0567, 150, 10, 650000),
+  ('46', '00000000-0000-4000-b000-000000000006', '00000000-0000-4000-c000-000000000007', 'Karachi', 'clifton-beach-family-day', 'Clifton Beach Family Day', 'Camel rides, kites and gola ganda by the sea.', 'outdoor-adventure', 24.8133, 67.0256, 180, 20, 200000),
+  ('47', '00000000-0000-4000-b000-000000000006', '00000000-0000-4000-c000-000000000008', 'Karachi', 'boat-basin-street-food', 'Boat Basin Street Food Crawl', 'Bun kebab, chaat and paan along Khayaban-e-Saadi.', 'food-drink', 24.8277, 67.0331, 120, 10, 300000),
+  ('48', '00000000-0000-4000-b000-000000000006', '00000000-0000-4000-c000-000000000008', 'Karachi', 'karachi-kids-cooking', 'Karachi Kids'' Cooking Club', 'Little cooks make biryani and gulab jamun.', 'food-drink', 24.8556, 67.0148, 120, 10, 450000)
+) as v(n, business_id, location_id, city, slug, title, summary, category, lat, lng, minutes, max_guests, price);
+
 -- Price tiers and variants
 insert into public.listing_options (id, business_id, listing_id, name, price_amount, duration_minutes, sort_order) values
   ('00000000-0000-4000-f000-000000000001', '00000000-0000-4000-b000-000000000002', '00000000-0000-4000-e000-000000000021', '60 minutes', 800000, 60, 1),
@@ -378,10 +411,37 @@ insert into public.listing_options (id, business_id, listing_id, name, price_amo
   ('00000000-0000-4000-f000-000000000003', '00000000-0000-4000-b000-000000000003', '00000000-0000-4000-e000-000000000006', 'Adult', 550000, null, 1),
   ('00000000-0000-4000-f000-000000000004', '00000000-0000-4000-b000-000000000003', '00000000-0000-4000-e000-000000000006', 'Child (under 12)', 300000, null, 2);
 
--- Placeholder images until media upload is built
+-- Listing photos: images exported from Figma, uploaded to the local seed-media
+-- bucket by `supabase seed buckets`. Stored as storage refs, resolved by the app.
 insert into public.listing_media (business_id, listing_id, url, alt, sort_order)
-select l.business_id, l.id, 'https://picsum.photos/seed/' || l.slug || '-' || n || '/1200/800', l.title, n
-from public.listings l cross join generate_series(1, 3) n;
+select l.business_id, l.id, 'storage://seed-media/listings/' || photo || '.jpg', l.title, n
+from public.listings l
+left join (values
+  ('margalla-sunrise-hike', 'old-town-walk'), ('saidpur-faisal-golden-hour', 'old-town-walk'),
+  ('rawal-lake-kayaking', 'kids-adventure'), ('walled-city-food-walk', 'night-market'),
+  ('badshahi-lahore-fort-tour', 'museum-gallery'), ('wagah-border-ceremony', 'old-town-walk'),
+  ('truck-art-workshop', 'museum-gallery'), ('lahori-home-cooking-class', 'family-cooking'),
+  ('sandspit-mangrove-kayaking', 'kids-adventure'), ('churna-island-snorkeling', 'plane-window'),
+  ('burns-road-food-crawl', 'street-drinks'), ('eagles-nest-sunrise-trek', 'plane-window'),
+  ('lok-virsa-heritage-museum', 'museum-gallery'), ('daman-e-koh-family-evening', 'kids-adventure'),
+  ('melody-food-street-tasting', 'food-tasting'), ('little-chefs-islamabad', 'kids-cooking'),
+  ('skardu-fly-in-day-trip', 'plane-window'), ('blue-area-night-bites', 'street-drinks'),
+  ('lahore-museum-wonder-house', 'museum-gallery'), ('fort-road-food-street-dinner', 'night-market'),
+  ('gawalmandi-late-night-bites', 'street-drinks'), ('family-baking-afternoon', 'family-cooking'),
+  ('kids-pizza-workshop', 'kids-cooking'), ('jallo-park-family-day', 'kids-adventure'),
+  ('mohatta-palace-museum-visit', 'museum-gallery'), ('port-grand-night-market', 'night-market'),
+  ('do-darya-seafood-evening', 'food-tasting'), ('clifton-beach-family-day', 'kids-adventure'),
+  ('boat-basin-street-food', 'street-drinks'), ('karachi-kids-cooking', 'kids-cooking')
+) as cover(slug, first_photo) on cover.slug = l.slug
+cross join lateral (
+  -- Cover first, then two more for the gallery. Services (spa, salon) use the spa photo.
+  select n,
+         case when l.type = 'service' then 'spa-facial'
+              when n = 1 then coalesce(cover.first_photo, 'old-town-walk')
+              else (array['old-town-walk', 'food-tasting', 'night-market', 'museum-gallery', 'family-cooking'])[1 + (abs(hashtext(l.slug)) + n) % 5]
+         end as photo
+  from generate_series(1, 3) n
+) g;
 
 -- Tags
 insert into public.listing_tags (business_id, listing_id, tag_id)
@@ -874,3 +934,85 @@ insert into public.legal_acceptances (user_id, document_id)
 select u.id, d.id
 from auth.users u cross join public.legal_documents d
 where d.type in ('terms', 'privacy');
+
+-- ---------------------------------------------------------------------------
+-- Home dashboard (local dev): tags and hosts for the extra experiences,
+-- photos from the seed-media bucket, curation and display ratings.
+-- ---------------------------------------------------------------------------
+insert into public.listing_tags (business_id, listing_id, tag_id)
+select l.business_id, l.id, t.id
+from (values
+  ('lok-virsa-heritage-museum', '{heritage,culture,history,family-friendly}'),
+  ('daman-e-koh-family-evening', '{nature,family-friendly,photography}'),
+  ('melody-food-street-tasting', '{food,street-food}'),
+  ('little-chefs-islamabad', '{cooking,food,family-friendly}'),
+  ('skardu-fly-in-day-trip', '{adventure,nature,photography}'),
+  ('blue-area-night-bites', '{food,street-food,nightlife}'),
+  ('lahore-museum-wonder-house', '{heritage,history,art,culture}'),
+  ('fort-road-food-street-dinner', '{food,heritage,nightlife}'),
+  ('gawalmandi-late-night-bites', '{food,street-food,nightlife}'),
+  ('family-baking-afternoon', '{cooking,food,family-friendly}'),
+  ('kids-pizza-workshop', '{cooking,family-friendly}'),
+  ('jallo-park-family-day', '{nature,family-friendly,water}'),
+  ('mohatta-palace-museum-visit', '{heritage,art,history}'),
+  ('port-grand-night-market', '{food,nightlife,street-food}'),
+  ('do-darya-seafood-evening', '{food,water}'),
+  ('clifton-beach-family-day', '{water,family-friendly}'),
+  ('boat-basin-street-food', '{food,street-food,nightlife}'),
+  ('karachi-kids-cooking', '{cooking,family-friendly}'),
+  -- Curation for the "Local fun" and "Must-trys" rails, three per city.
+  ('daman-e-koh-family-evening', '{local-fun}'), ('blue-area-night-bites', '{local-fun}'), ('rawal-lake-kayaking', '{local-fun}'),
+  ('fort-road-food-street-dinner', '{local-fun}'), ('jallo-park-family-day', '{local-fun}'), ('gawalmandi-late-night-bites', '{local-fun}'),
+  ('port-grand-night-market', '{local-fun}'), ('clifton-beach-family-day', '{local-fun}'), ('boat-basin-street-food', '{local-fun}'),
+  ('margalla-sunrise-hike', '{must-try}'), ('lok-virsa-heritage-museum', '{must-try}'), ('melody-food-street-tasting', '{must-try}'),
+  ('walled-city-food-walk', '{must-try}'), ('badshahi-lahore-fort-tour', '{must-try}'), ('lahore-museum-wonder-house', '{must-try}'),
+  ('burns-road-food-crawl', '{must-try}'), ('mohatta-palace-museum-visit', '{must-try}'), ('do-darya-seafood-evening', '{must-try}')
+) as v(slug, tags)
+join public.listings l on l.slug = v.slug
+join public.tags t on t.slug = any (v.tags::text[])
+on conflict do nothing;
+
+insert into public.listing_staff (business_id, listing_id, staff_id)
+select l.business_id, l.id, s.id
+from (values
+  ('lok-virsa-heritage-museum', 'Hira Abbasi'), ('daman-e-koh-family-evening', 'Faraz Khan'),
+  ('melody-food-street-tasting', 'Hira Abbasi'), ('little-chefs-islamabad', 'Hira Abbasi'),
+  ('skardu-fly-in-day-trip', 'Faraz Khan'), ('blue-area-night-bites', 'Faraz Khan'),
+  ('lahore-museum-wonder-house', 'Nadia Butt'), ('fort-road-food-street-dinner', 'Usama Tariq'),
+  ('gawalmandi-late-night-bites', 'Usama Tariq'), ('family-baking-afternoon', 'Ayesha Siddiqui'),
+  ('kids-pizza-workshop', 'Ayesha Siddiqui'), ('jallo-park-family-day', 'Nadia Butt'),
+  ('mohatta-palace-museum-visit', 'Shehzad Ali'), ('port-grand-night-market', 'Kamran Baloch'),
+  ('do-darya-seafood-evening', 'Kamran Baloch'), ('clifton-beach-family-day', 'Shehzad Ali'),
+  ('boat-basin-street-food', 'Kamran Baloch'), ('karachi-kids-cooking', 'Shehzad Ali')
+) as v(slug, staff_name)
+join public.listings l on l.slug = v.slug
+join public.staff_members s on s.business_id = l.business_id and s.display_name = v.staff_name
+on conflict do nothing;
+
+-- Hosts get the cut-out photos from Figma (shown on coloured tiles); other staff round avatars.
+update public.staff_members s
+set avatar_url = case
+  when s.is_host then 'storage://seed-media/hosts/host-' || (1 + (n.rn - 1) % 4) || '.png'
+  else 'storage://seed-media/avatars/avatar-' || (1 + (n.rn - 1) % 2) || '.png'
+end
+from (select id, row_number() over (partition by is_host order by id) as rn from public.staff_members) n
+where n.id = s.id;
+
+-- Spa and salon logos (shown on service cards: "With Saffron Spa").
+update public.businesses
+set logo_url = case when slug = 'saffron-spa' then 'storage://seed-media/logos/serenity.png'
+                    else 'storage://seed-media/logos/beauty.png' end
+where kind = 'venue';
+
+-- Display ratings so cards and hosts look like a live app. Real reviews
+-- recalculate these (reviews trigger) as soon as they are added.
+update public.listings
+set rating_avg = 4.5 + (abs(hashtext(slug)) % 6) / 10.0,
+    rating_count = 12 + abs(hashtext(slug || '#reviews')) % 230,
+    popularity_score = round(((4.5 + (abs(hashtext(slug)) % 6) / 10.0) * ln(13 + abs(hashtext(slug || '#reviews')) % 230))::numeric, 4)
+where status = 'published';
+
+update public.staff_members
+set rating_avg = 4.6 + (abs(hashtext(display_name)) % 5) / 10.0,
+    rating_count = 20 + abs(hashtext(display_name || '#reviews')) % 180
+where is_host;
