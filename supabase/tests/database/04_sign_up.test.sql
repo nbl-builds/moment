@@ -1,4 +1,5 @@
 -- "Finish signing up": private name fields and the sign-up-completed marker.
+-- Uses its own numbers, not the test_otp ones, which may already exist locally.
 begin;
 create extension if not exists pgtap with schema extensions;
 select no_plan();
@@ -20,12 +21,12 @@ select has_column('public', 'profile_private', 'last_name', 'profile_private has
 select has_column('public', 'profile_private', 'sign_up_completed_at', 'profile_private has sign_up_completed_at');
 
 -- A phone sign-up starts unfinished, with the phone normalised to E.164.
-select pg_temp.mk_user('44444444-0000-4000-a000-000000000001', '923084282001');
-select pg_temp.mk_user('44444444-0000-4000-a000-000000000002', '923001234567');
+select pg_temp.mk_user('44444444-0000-4000-a000-000000000001', '923990000001');
+select pg_temp.mk_user('44444444-0000-4000-a000-000000000002', '923990000002');
 
 select is(
   (select phone from public.profile_private where user_id = '44444444-0000-4000-a000-000000000001'),
-  '+923084282001', 'phone sign-up stores the number in E.164');
+  '+923990000001', 'phone sign-up stores the number in E.164');
 select ok(
   (select sign_up_completed_at is null from public.profile_private where user_id = '44444444-0000-4000-a000-000000000001'),
   'a new user has not finished sign up');
