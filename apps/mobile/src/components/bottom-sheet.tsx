@@ -49,17 +49,20 @@ export function BottomSheet({ visible, onRequestClose, children, accessibilityLa
   /** Pan translation at the moment the content was scrolled back to the top. */
   const dragStart = useSharedValue(0);
 
+  // Mount as soon as it should show (state update during render, not in an effect).
+  if (visible && !mounted) setMounted(true);
+
   useEffect(() => {
     if (visible) {
-      setMounted(true);
-      translateY.value = withTiming(0, OPEN_TIMING);
+      translateY.set(withTiming(0, OPEN_TIMING));
     } else if (mounted) {
-      translateY.value = withTiming(sheetHeight.value, CLOSE_TIMING, (finished) => {
-        if (finished) scheduleOnRN(setMounted, false);
-      });
+      translateY.set(
+        withTiming(sheetHeight.get(), CLOSE_TIMING, (finished) => {
+          if (finished) scheduleOnRN(setMounted, false);
+        }),
+      );
     }
-    // Animate only when visibility changes.
-  }, [visible]);
+  }, [visible, mounted, translateY, sheetHeight]);
 
   useEffect(() => {
     if (!visible) return;
@@ -77,28 +80,28 @@ export function BottomSheet({ visible, onRequestClose, children, accessibilityLa
     simultaneousWith: scrollGesture,
     onActivate: () => {
       'worklet';
-      dragStart.value = 0;
+      dragStart.set(0);
     },
     onUpdate: (e) => {
       'worklet';
       // While the content is scrolled, let it scroll; start moving the sheet once it reaches the top.
       if (scrollOffset.value > 0) {
-        dragStart.value = e.translationY;
+        dragStart.set(e.translationY);
         return;
       }
-      translateY.value = Math.max(0, e.translationY - dragStart.value);
+      translateY.set(Math.max(0, e.translationY - dragStart.get()));
     },
     onDeactivate: (e) => {
       'worklet';
       if (translateY.value === 0) return;
       const shouldClose = translateY.value > sheetHeight.value * CLOSE_DISTANCE_RATIO || e.velocityY > CLOSE_VELOCITY;
       if (shouldClose) scheduleOnRN(onRequestClose);
-      else translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
+      else translateY.set(withSpring(0, { damping: 20, stiffness: 200 }));
     },
   });
 
   const onScroll = useAnimatedScrollHandler((e) => {
-    scrollOffset.value = e.contentOffset.y;
+    scrollOffset.set(e.contentOffset.y);
   });
 
   const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }));
@@ -117,7 +120,7 @@ export function BottomSheet({ visible, onRequestClose, children, accessibilityLa
             <Animated.View
               style={[styles.sheet, sheetStyle]}
               onLayout={(e) => {
-                sheetHeight.value = e.nativeEvent.layout.height;
+                sheetHeight.set(e.nativeEvent.layout.height);
               }}
               accessibilityLabel={accessibilityLabel}
             >
