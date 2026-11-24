@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthBypassBadge } from '@/components/auth-bypass-badge';
 import { BrandSplash } from '@/components/brand-splash';
+import { ToastHost } from '@/components/toast';
 import { LoginSheetProvider } from '@/features/auth/login-sheet-provider';
 
 /** How long the splash stays up after the app has drawn it. */
@@ -47,6 +48,7 @@ export default function RootLayout() {
       )}
       {showSplash && <BrandSplash onLayout={onSplashLayout} />}
       {appReady && !showSplash && <AuthBypassBadge />}
+      {appReady && <ToastHost />}
     </GestureHandlerRootView>
   );
 }
