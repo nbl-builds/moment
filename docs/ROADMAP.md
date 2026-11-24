@@ -4,7 +4,6 @@ Keep this file current: tick items as they land and update **Next up** so any se
 
 ## Next up
 - Decide maps provider (Mapbox vs Google Maps) before Explore work
-- Confirm exact "Third" orange hex from Figma (`packages/shared/src/tokens/colors.ts` has a placeholder)
 - Phase 1 remaining: Supabase Auth providers for production (a Pakistan SMS provider for phone OTP, email, Apple, Google, Facebook). Locally, phone OTP works with the test numbers in `supabase/config.toml` (`+92 308 4282001` / `051518`, `+92 300 1234567` / `123456`)
 - Sign-in providers at the end: a Pakistan SMS provider (production phone OTP), Apple, Google and Facebook (buttons show "Coming soon" today), and production SMTP for auth emails (templates in `supabase/templates`)
 - Before launch: rate-limit `email_sign_in_method` (it reveals whether an email has an account), and set `moment://**` as a redirect URL on the hosted project
@@ -12,10 +11,13 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Dev auth bypass for testing screens: `EXPO_PUBLIC_AUTH_BYPASS=1` in `apps/mobile/.env.local` (dev builds only; see `.env.example`). Remove it, or keep it dev-only, when the production SMS provider is wired
 - Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
 - Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
-- Replace the placeholder `/home` with the Customer Dashboard; keep `OnboardingPermissions` on top of it after sign up
+- Next screens behind Home's placeholder routes: Experience / Business details (`/listing/[id]`), host profile (`/host/[id]`), Search and filters (`/search`, `/category/[slug]`), "See all" lists (`/see-all/[section]`), Bucket List, Adventure Quiz, Recommend a place, and the Bookings / Explore / Groups / Profile tabs
+- Promo banners are static in `apps/mobile/src/features/home/promos.ts`; move them to `platform_settings` when the team needs to change them without a release
+- "Recently viewed" is stored on the device (AsyncStorage); move it to the server if it should follow the user
+- Seed photos are the Figma images in `supabase/seed-media` (local only). Real listings need media upload in the business portal
 - Icons: Figma's "Huge Icons" page is not the npm Hugeicons library, so icons are exported from Figma per screen into `apps/mobile/assets/icons` and registered in `components/ui/icons.ts`
 - Figma fields with no column yet (add a migration when the screens are built): profile pronouns and emergency contact, group "Who can see likes?", recommendation type (experience vs business; stored in the note for now)
-- Search by distance and date (`near`, `maxDistanceKm`, `date`, `sort: 'distance'`) needs a search RPC; `catalog.searchListings` throws `unsupported` for these until then. Build it with the Explore map
+- Search by distance and date (`near`, `maxDistanceKm`, `date`, `sort: 'distance'`) needs a search RPC; `catalog.searchListings` throws `unsupported` for these until then. Build it with the Explore map (card distances already use `listing_distances`)
 - Set the same password rule (8+ characters, letters and digits) on the hosted Supabase project under Auth settings; `config.toml` only covers local
 - Check the date helpers on Hermes devices (they use `Intl.DateTimeFormat` with `timeZone`, verified on Node only)
 - Choose payment providers for Pakistan (JazzCash, Easypaisa, Safepay, PayFast...) and the payout model (`direct` vs `platform_collect`); the schema supports both
@@ -56,7 +58,8 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - [ ] Apple / Google / Facebook sign-in (wired with the providers at the end)
 - [ ] Passcode entry screens
 - [x] Location and notification permissions (prompts only; push token registration comes with notifications)
-- [ ] Home dashboard (Popular Activities, Top Hosts, Just For You)
+- [x] Home dashboard: pinned search, promo carousel, Adventure Quiz card, Popular activities, Top Hosts, Just for you, More to explore, Recently viewed, Local fun, Must-trys, "Are we missing something?"; real data, PKR prices, km distances, bucket-list hearts, pull to refresh, skeletons
+- [x] Floating tab bar (Home, Bookings, Explore, Groups, Profile) that shrinks on scroll; other tabs are placeholders
 - [ ] Search and filters
 - [ ] Business detail, Experience detail, Host profile
 - [ ] Bucket List, Recommend a place
