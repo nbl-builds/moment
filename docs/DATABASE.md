@@ -67,7 +67,10 @@ RLS helpers live in the `private` schema (not exposed through the API), are `sec
 ### Businesses and team
 - `businesses`: name, slug, kind (`host | operator | venue`), status (`draft | pending_review | active | suspended`), currency, timezone, ratings. Anyone signed in can create one (as `draft`); the creator becomes owner. Only super admins change `status`.
 - `business_private`: legal name, tax ID (NTN), contact, payout model override. Owner only.
-- `business_locations`: address, city, PostGIS `geo` point, timezone.
+- `business_locations`: address, city, PostGIS `geo` point, timezone. `business_location_points(business_id)` returns them as lat/lng (map pin, distance).
+- `businesses.is_verified`: the verified badge on the business page; set by admins.
+- `business_hours`: opening periods per weekday (0 = Sunday), wall-clock in the business's timezone (Asia/Karachi). Several periods a day are allowed (a prayer break); a period whose close is not after its open runs past midnight. No rows for a day = closed. `business_is_open(business_id, at)` answers "Open now"; `openingStatus()` in `@moment/shared` does the same on the device. Public read for active businesses; owners and managers edit.
+- `business_photos`: the business page's hero gallery, in `sort_order`. Public read for active businesses; owners and managers edit.
 - `business_members`: user, role (`owner | manager | staff`), status (`invited | active`).
 - `staff_members`: people who deliver services or host experiences. `user_id` is optional (a stylist may never log in). `is_host` makes a public host profile; `is_bookable` makes them selectable for appointments.
 - `staff_schedules`: weekly working hours per staff member.
@@ -114,6 +117,8 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 ### Reviews
 - `reviews`: one per booking, only for your own completed booking. Business, listing and staff are filled from the booking by trigger. Status (`published | hidden | flagged`) is changed by super admins only.
 - `reply_to_review` RPC for business replies.
+- `reviewable_bookings(business_id)`: the signed-in user's completed, not-yet-reviewed bookings at a business. Empty means "You can review after your visit".
+- Review photos go to the `review-photos` bucket and their public URLs into `reviews.photos`.
 - Rating averages and counts on listings, businesses and staff are kept up to date by trigger.
 
 ### Consumer features
@@ -164,6 +169,7 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - `avatars` (public read, users write their own folder `<user_id>/...`)
 - `business-media` (public read, owners and managers write `<business_id>/...`)
 - `chat-attachments` (private, conversation participants, `<conversation_id>/...`)
+- `review-photos` (public read, users write their own folder `<user_id>/...`)
 - `seed-media` (local dev only, public): images exported from Figma in `supabase/seed-media`, uploaded on `supabase db reset`. Media columns may hold `storage://<bucket>/<path>` references; the API client resolves them to public URLs for the app's own Supabase host.
 
 ## Indexes
@@ -189,6 +195,8 @@ pnpm db:types    # regenerate packages/shared/src/types/database.types.ts
 - `01_tenant_isolation`: anon, consumer, staff, manager, owner and super admin each get exactly their permissions; businesses never see each other's data.
 - `02_bookings`: capacity and overbooking, idempotent retries, appointment double-booking (RPC and exclusion constraint), coupons, cancellation and status rules.
 - `03_social_and_payments`: reviews only for completed bookings, business replies, chat and realtime access, groups and joining rules, cash payments vs provider payments.
+- `04`-`08`: sign up, email sign-in, Home dashboard, Adventure Quiz, bucket lists.
+- `09_business_page`: opening hours and `business_is_open` (split days, past midnight), gallery and hours RLS, seed coverage, review-photo uploads, `reviewable_bookings`, location points.
 
 ### Seed data (local only)
 Every account uses password `password123`. Emails end in `@moment.test`.
@@ -196,6 +204,7 @@ Every account uses password `password123`. Emails end in `@moment.test`.
 | Account | Role |
 |---|---|
 | admin@moment.test | Super admin |
+| dev@moment.test | The dev auth bypass user (+92 300 1234567, code 123456), already signed up, with unreviewed visits to Saffron Spa and Margalla Trails |
 | owner.margalla@ | Owner, Margalla Trails Co. (Islamabad) |
 | owner.saffron@ | Owner, Saffron Spa & Wellness (Islamabad) |
 | manager.saffron@ | Manager, Saffron Spa |

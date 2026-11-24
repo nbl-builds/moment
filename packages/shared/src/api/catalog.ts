@@ -201,14 +201,18 @@ export function createCatalogApi(db: MomentSupabaseClient) {
           .from('businesses')
           .select(
             `id, slug, name, kind, tagline, description, logo_url, cover_url, phone, email, website,
-            rating_avg, rating_count, currency, timezone,
+            rating_avg, rating_count, currency, timezone, is_verified,
             locations:business_locations(id, name, address_line1, address_line2, area, city, province, is_primary),
             staff:staff_members(id, display_name, title, avatar_url, is_host, is_bookable, rating_avg, rating_count),
-            plans:membership_plans(id, name, description, price_amount, currency, interval, benefits, discount_percent, included_sessions, sort_order)`,
+            plans:membership_plans(id, name, description, price_amount, currency, interval, benefits, discount_percent, included_sessions, sort_order),
+            hours:business_hours(weekday, opens_at, closes_at),
+            photos:business_photos(url, alt, sort_order)`,
           )
           .eq(column, idOrSlug)
           .eq('staff_members.is_active', true)
           .eq('membership_plans.is_active', true)
+          .order('sort_order', { referencedTable: 'business_photos' })
+          .order('sort_order', { referencedTable: 'membership_plans' })
           .maybeSingle(),
         'Business',
       );
@@ -219,6 +223,50 @@ export function createCatalogApi(db: MomentSupabaseClient) {
       let q = db.from('listings').select(LISTING_CARD_SELECT).eq('business_id', businessId).eq('status', 'published');
       if (type) q = q.eq('type', type);
       return unwrap(q.order('booking_count', { ascending: false }).range(...range(page)));
+    },
+
+    /** Map pin and distance: the business's locations as lat/lng, primary first. */
+    businessLocationPoints: (businessId: string) => unwrap(db.rpc('business_location_points', { p_business_id: businessId })),
+
+    /**
+     * Business page "Services" tab: bookable services with their options and
+     * category (for the sub-filter chips), most booked first.
+     */
+    listBusinessServices: (businessId: string) =>
+      unwrap(
+        db
+          .from('listings')
+          .select(
+            `${LISTING_CARD_SELECT}, category:categories(id, slug, name),
+            options:listing_options(id, name, description, price_amount, duration_minutes, sort_order, is_active)`,
+          )
+          .eq('business_id', businessId)
+          .eq('status', 'published')
+          .eq('type', 'service')
+          .eq('listing_options.is_active', true)
+          .order('booking_count', { ascending: false })
+          .order('sort_order', { referencedTable: 'listing_options' })
+          .order('sort_order', { referencedTable: 'listing_media' }),
+      ),
+
+    /** One membership plan (Membership Details). */
+    getMembershipPlan: (planId: string) =>
+      unwrapRequired(
+        db
+          .from('membership_plans')
+          .select('id, business_id, name, description, price_amount, currency, interval, benefits, discount_percent, included_sessions, business:businesses(id, slug, name)')
+          .eq('id', planId)
+          .eq('is_active', true)
+          .maybeSingle(),
+        'Membership plan',
+      ),
+
+    /** Star filter chips on Reviews: how many published reviews have each rating. */
+    reviewStats: async (businessId: string) => {
+      const rows = await unwrap(db.from('reviews').select('rating').eq('business_id', businessId).eq('status', 'published'));
+      const counts: Record<1 | 2 | 3 | 4 | 5, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      for (const r of rows) counts[r.rating as 1 | 2 | 3 | 4 | 5] += 1;
+      return { total: rows.length, counts };
     },
 
     /** "About the host" (About and Listings tabs). */
@@ -236,7 +284,7 @@ export function createCatalogApi(db: MomentSupabaseClient) {
     /** Published reviews with author name and avatar, newest first. */
     listReviews: (
       target: { listingId: string } | { businessId: string } | { staffId: string },
-      page: PageOptions = {},
+      page: PageOptions & { rating?: number } = {},
     ) => {
       let q = db
         .from('reviews')
@@ -247,6 +295,7 @@ export function createCatalogApi(db: MomentSupabaseClient) {
       if ('listingId' in target) q = q.eq('listing_id', target.listingId);
       else if ('businessId' in target) q = q.eq('business_id', target.businessId);
       else q = q.eq('staff_id', target.staffId);
+      if (page.rating) q = q.eq('rating', page.rating);
       return unwrap(q.order('created_at', { ascending: false }).range(...range(page)));
     },
 

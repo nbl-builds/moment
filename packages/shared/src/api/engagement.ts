@@ -2,7 +2,7 @@ import { toGeoPoint } from '../types';
 import type { BucketListItemForm, BucketListNameForm, RecommendPlace } from '../validation/discovery';
 import type { ReviewForm } from '../validation/social';
 import { LISTING_CARD_SELECT } from './catalog';
-import { requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
+import { ApiError, requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
 
 // Bucket List, Recommend a place, reviews and the Adventure Quiz.
 
@@ -167,6 +167,24 @@ export function createEngagementApi(db: MomentSupabaseClient) {
         ),
 
       remove: (reviewId: string) => unwrap(db.from('reviews').delete().eq('id', reviewId)),
+
+      /**
+       * My completed visits to this business that have no review yet, newest
+       * first. Empty means "You can review after your visit".
+       */
+      reviewableBookings: (businessId: string) => unwrap(db.rpc('reviewable_bookings', { p_business_id: businessId })),
+
+      /**
+       * Uploads one review photo to `review-photos/<user_id>/...` and returns its
+       * public URL, ready for `photos` on `create`.
+       */
+      uploadPhoto: async (file: { body: ArrayBuffer; contentType: string; extension: string }) => {
+        const userId = await requireUserId(db);
+        const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${file.extension}`;
+        const { error } = await db.storage.from('review-photos').upload(path, file.body, { contentType: file.contentType });
+        if (error) throw new ApiError('network', `Could not upload the photo: ${error.message}`, undefined, undefined, error);
+        return db.storage.from('review-photos').getPublicUrl(path).data.publicUrl;
+      },
     },
 
     quiz: {
