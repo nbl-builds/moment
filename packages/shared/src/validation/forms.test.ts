@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bucketListItemSchema, recommendPlaceSchema, searchFiltersSchema } from './discovery';
+import { bucketListItemSchema, bucketListNameSchema, recommendPlaceSchema, searchFiltersSchema } from './discovery';
 import { personalInfoSchema, splitDisplayName, toDisplayName } from './profile';
 import {
   createGroupSchema,
@@ -64,10 +64,17 @@ describe('recommend a place', () => {
 
 describe('bucket list', () => {
   it('needs exactly one target', () => {
-    expect(bucketListItemSchema.safeParse({ listingId: ID }).success).toBe(true);
-    expect(bucketListItemSchema.safeParse({ businessId: ID }).success).toBe(true);
-    expect(bucketListItemSchema.safeParse({}).success).toBe(false);
-    expect(bucketListItemSchema.safeParse({ listingId: ID, businessId: ID2 }).success).toBe(false);
+    expect(bucketListItemSchema.safeParse({ bucketListId: ID2, listingId: ID }).success).toBe(true);
+    expect(bucketListItemSchema.safeParse({ bucketListId: ID2, businessId: ID }).success).toBe(true);
+    expect(bucketListItemSchema.safeParse({ listingId: ID }).success).toBe(false);
+    expect(bucketListItemSchema.safeParse({ bucketListId: ID2 }).success).toBe(false);
+    expect(bucketListItemSchema.safeParse({ bucketListId: ID2, listingId: ID, businessId: ID2 }).success).toBe(false);
+  });
+
+  it('names a list (1-60 characters)', () => {
+    expect(bucketListNameSchema.safeParse({ name: 'I love nature' }).success).toBe(true);
+    expect(bucketListNameSchema.safeParse({ name: '   ' }).success).toBe(false);
+    expect(bucketListNameSchema.safeParse({ name: 'x'.repeat(61) }).success).toBe(false);
   });
 });
 

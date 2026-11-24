@@ -70,9 +70,16 @@ export const recommendPlaceSchema = z.object({
 export type RecommendPlaceInput = z.input<typeof recommendPlaceSchema>;
 export type RecommendPlace = z.output<typeof recommendPlaceSchema>;
 
-/** Saving to the Bucket List: exactly one of a listing or a business. */
+/** "Give it a name" / "Rename" (Figma 24:1444, 25:1517). */
+export const bucketListNameSchema = z.object({
+  name: requiredText('Name', { max: LIMITS.bucketListName }),
+});
+export type BucketListNameForm = z.output<typeof bucketListNameSchema>;
+
+/** Saving to a bucket list: exactly one of a listing or a business. */
 export const bucketListItemSchema = z
   .object({
+    bucketListId: uuidSchema,
     listingId: uuidSchema.optional(),
     businessId: uuidSchema.optional(),
     note: optionalText(LIMITS.bucketListNote, 'Note'),

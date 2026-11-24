@@ -325,13 +325,35 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
   });
 
   describe('engagement, groups, chat and account', () => {
-    it('manages the bucket list', async () => {
-      const item = await me.bucketList.add({ listingId: SEED.sunriseHike, note: 'With cousins' });
-      expect((await me.bucketList.savedIds()).listings.get(SEED.sunriseHike)).toBe(item.id);
-      const listed = await me.bucketList.list();
-      expect(listed[0]?.listing?.title).toBeTruthy();
-      await me.bucketList.remove(item.id);
-      expect((await me.bucketList.savedIds()).listings.size).toBe(0);
+    it('manages bucket lists', async () => {
+      const nature = await me.bucketList.createList({ name: 'I love nature' });
+      const food = await me.bucketList.createList({ name: 'Food trips' });
+
+      // One listing in two lists: the heart stays filled until it leaves both.
+      const item = await me.bucketList.addItem({ bucketListId: nature.id, listingId: SEED.sunriseHike, note: 'With cousins' });
+      await me.bucketList.addItem({ bucketListId: food.id, listingId: SEED.sunriseHike });
+      expect((await me.bucketList.savedIds()).listings.get(SEED.sunriseHike)?.sort()).toEqual([nature.id, food.id].sort());
+
+      const lists = await me.bucketList.lists();
+      const row = lists.find((l) => l.id === nature.id);
+      expect(row?.itemCount).toBe(1);
+      expect(row?.thumbnailUrl).toBeTruthy();
+
+      const detail = await me.bucketList.getList(nature.id);
+      expect(detail.items[0]?.listing?.title).toBeTruthy();
+
+      await me.bucketList.renameList(nature.id, { name: 'Mountains' });
+      expect((await me.bucketList.getList(nature.id)).name).toBe('Mountains');
+
+      await me.bucketList.removeListing(food.id, SEED.sunriseHike);
+      expect((await me.bucketList.savedIds()).listings.get(SEED.sunriseHike)).toEqual([nature.id]);
+
+      await me.bucketList.moveItem(item.id, food.id);
+      expect((await me.bucketList.savedIds()).listings.get(SEED.sunriseHike)).toEqual([food.id]);
+
+      await me.bucketList.deleteList(food.id);
+      await me.bucketList.deleteList(nature.id);
+      expect((await me.bucketList.savedIds()).listings.has(SEED.sunriseHike)).toBe(false);
     });
 
     it('recommends a place', async () => {

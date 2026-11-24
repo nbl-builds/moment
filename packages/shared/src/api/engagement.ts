@@ -1,50 +1,114 @@
 import { toGeoPoint } from '../types';
-import type { BucketListItemForm, RecommendPlace } from '../validation/discovery';
+import type { BucketListItemForm, BucketListNameForm, RecommendPlace } from '../validation/discovery';
 import type { ReviewForm } from '../validation/social';
-import { LISTING_CARD_SELECT, type PageOptions } from './catalog';
+import { LISTING_CARD_SELECT } from './catalog';
 import { requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
 
 // Bucket List, Recommend a place, reviews and the Adventure Quiz.
 
 export function createEngagementApi(db: MomentSupabaseClient) {
   return {
+    /**
+     * Bucket lists (Figma "Bucket List"): named lists of saved experiences and
+     * businesses. A listing can be in several lists; a heart is filled while it
+     * is in any of them.
+     */
     bucketList: {
-      list: async ({ limit = 50, offset = 0 }: PageOptions = {}) => {
+      /** All my lists, newest first, with item count and the first item's photo for the thumbnail. */
+      lists: async () => {
         const userId = await requireUserId(db);
-        return unwrap(
+        const rows = await unwrap(
           db
-            .from('bucket_list_items')
-            .select(`id, note, created_at, listing:listings(${LISTING_CARD_SELECT}), business:businesses(id, slug, name, logo_url, cover_url, rating_avg, rating_count)`)
+            .from('bucket_lists')
+            .select(
+              `id, name, share_token, created_at, updated_at,
+              count:bucket_list_items(count),
+              first:bucket_list_items(created_at, listing:listings(media:listing_media(url, sort_order)), business:businesses(cover_url, logo_url))`,
+            )
             .eq('user_id', userId)
             .order('created_at', { ascending: false })
-            .range(offset, offset + limit - 1),
+            .order('created_at', { referencedTable: 'first', ascending: true })
+            .limit(1, { referencedTable: 'first' }),
         );
+        return rows.map(({ count, first, ...list }) => {
+          const item = first[0];
+          const media = [...(item?.listing?.media ?? [])].sort((a, b) => a.sort_order - b.sort_order);
+          return {
+            ...list,
+            itemCount: count[0]?.count ?? 0,
+            thumbnailUrl: media[0]?.url ?? item?.business?.cover_url ?? item?.business?.logo_url ?? null,
+          };
+        });
       },
 
-      add: async (form: BucketListItemForm) => {
+      /** One list with its items (listing cards), oldest first. */
+      getList: (listId: string) =>
+        unwrapRequired(
+          db
+            .from('bucket_lists')
+            .select(
+              `id, name, share_token, created_at, updated_at,
+              items:bucket_list_items(id, note, created_at, listing:listings(${LISTING_CARD_SELECT}), business:businesses(id, slug, name, logo_url, cover_url, rating_avg, rating_count))`,
+            )
+            .eq('id', listId)
+            .order('created_at', { referencedTable: 'bucket_list_items', ascending: true })
+            .maybeSingle(),
+          'Bucket list',
+        ),
+
+      createList: async (form: BucketListNameForm) => {
+        const userId = await requireUserId(db);
+        return unwrap(db.from('bucket_lists').insert({ user_id: userId, name: form.name }).select('id, name, share_token, created_at, updated_at').single());
+      },
+
+      renameList: (listId: string, form: BucketListNameForm) =>
+        unwrap(db.from('bucket_lists').update({ name: form.name }).eq('id', listId).select('id, name').single()),
+
+      /** Deletes the list and everything saved in it. */
+      deleteList: (listId: string) => unwrap(db.from('bucket_lists').delete().eq('id', listId)),
+
+      addItem: async (form: BucketListItemForm) => {
         const userId = await requireUserId(db);
         return unwrap(
           db
             .from('bucket_list_items')
-            .insert({ user_id: userId, listing_id: form.listingId ?? null, business_id: form.businessId ?? null, note: form.note ?? null })
+            .insert({
+              bucket_list_id: form.bucketListId,
+              user_id: userId,
+              listing_id: form.listingId ?? null,
+              business_id: form.businessId ?? null,
+              note: form.note ?? null,
+            })
             .select()
             .single(),
         );
       },
 
+      /** Takes a listing out of one list (other lists keep it). */
+      removeListing: (listId: string, listingId: string) =>
+        unwrap(db.from('bucket_list_items').delete().eq('bucket_list_id', listId).eq('listing_id', listingId)),
+
+      removeItem: (itemId: string) => unwrap(db.from('bucket_list_items').delete().eq('id', itemId)),
+
+      moveItem: (itemId: string, toListId: string) =>
+        unwrap(db.from('bucket_list_items').update({ bucket_list_id: toListId }).eq('id', itemId).select().single()),
+
       updateNote: (itemId: string, note: string | null) =>
         unwrap(db.from('bucket_list_items').update({ note }).eq('id', itemId)),
 
-      remove: (itemId: string) => unwrap(db.from('bucket_list_items').delete().eq('id', itemId)),
-
-      /** Ids already saved, to fill the heart icons on cards. */
+      /** What is saved where, to fill hearts and tick lists: id -> list ids holding it. */
       savedIds: async () => {
         const userId = await requireUserId(db);
-        const rows = await unwrap(db.from('bucket_list_items').select('id, listing_id, business_id').eq('user_id', userId));
-        return {
-          listings: new Map(rows.filter((r) => r.listing_id).map((r) => [r.listing_id as string, r.id])),
-          businesses: new Map(rows.filter((r) => r.business_id).map((r) => [r.business_id as string, r.id])),
-        };
+        const rows = await unwrap(
+          db.from('bucket_list_items').select('bucket_list_id, listing_id, business_id').eq('user_id', userId),
+        );
+        const listings = new Map<string, string[]>();
+        const businesses = new Map<string, string[]>();
+        for (const r of rows) {
+          const [map, key] = r.listing_id ? [listings, r.listing_id] : [businesses, r.business_id as string];
+          map.set(key, [...(map.get(key) ?? []), r.bucket_list_id]);
+        }
+        return { listings, businesses };
       },
     },
 
