@@ -8,6 +8,7 @@ export const fontFamily = {
   medium: 'Manrope_500Medium',
   semibold: 'Manrope_600SemiBold',
   bold: 'Manrope_700Bold',
+  extrabold: 'Manrope_800ExtraBold',
 } as const;
 
 /** CSS font-family name (web). */
@@ -18,6 +19,7 @@ export const fontWeight = {
   medium: '500',
   semibold: '600',
   bold: '700',
+  extrabold: '800',
 } as const;
 
 export const textStyles = {
@@ -27,6 +29,8 @@ export const textStyles = {
   h2: { fontSize: 28, lineHeight: 1.2, fontWeight: fontWeight.bold, letterSpacing: 0 },
   /** Figma: Mobile Headings / Mobile H3. */
   h3: { fontSize: 24, lineHeight: 1.5, fontWeight: fontWeight.bold, letterSpacing: 0 },
+  /** Figma: Mobile App Headings / H1 Mobile Extra Bold (quiz temperature, 20:2527). Use with weight "extrabold". */
+  display32: { fontSize: 32, lineHeight: 1.4, fontWeight: fontWeight.extrabold, letterSpacing: 0.32 },
   h4: { fontSize: 20, lineHeight: 1.2, fontWeight: fontWeight.bold, letterSpacing: 0 },
   /** Figma: Body XX-Large - 18. */
   body18: { fontSize: 18, lineHeight: 1.5, fontWeight: fontWeight.regular, letterSpacing: 0 },
