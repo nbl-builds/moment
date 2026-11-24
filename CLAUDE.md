@@ -47,6 +47,9 @@ Planned: gamification (personality badges, group progress).
 - Never commit secrets. Use `.env.local` files and keep `.env.example` up to date
 - Small, focused commits with clear messages
 - Keep `docs/ROADMAP.md` updated: mark features done and note what's next, so any session can pick up where the last stopped
+- Never push to `main` (live). Work on feature branches, merge them into `staging` and push `staging`
+- Mobile first: do not touch `apps/web` until mobile app development is done. Changes in `packages/shared` and `supabase/` are fine when mobile needs them
+- Match Figma exactly (frames are 428 x 926; test on the iPhone 18 Pro Max simulator). The "App Design" page (node 2:30) is huge: fetch it section by section, never whole
 
 ## Dev workflow
 - Mobile: `pnpm --filter mobile start`, then scan the QR code with Expo Go (Android phone) or use the iOS Simulator
