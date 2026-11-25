@@ -157,3 +157,23 @@ Groups 48:3071, 48:6213, 48:6274 (long) · My Groups 48:3142 · Create new group
 General: Profile 48:3255, 48:3423, 48:3951 · Personal Information 48:3617, 48:3686 · Transactions 48:3728 · Notifications 48:4018 · Add loc 48:4398 · Business Summary variants 48:6140, 48:5297, 48:5379, 48:5415, 48:5832, 48:5607, 48:5660, 48:5703
 Support: Get started 48:6483 · FAQ 48:5465, 48:5505 · Give us feedback 48:6365, 48:6410 · Invite a friend 48:5873 · 48:5969, 48:5772
 Legal: Privacy Policy 48:5551 · Terms & Conditions 48:5579
+
+| Screen | Frame | Code |
+|---|---|---|
+| Profile tab, top / full | 48:3423, 48:3255 | `app/(tabs)/profile.tsx`, `features/profile/components/menu-card.tsx` |
+| Notifications | 48:4018 | `app/notifications.tsx` |
+| Show profile, unverified / verified | 48:3951, 48:6140 | `app/me/index.tsx` (+ `app/me/verify.tsx`, no frame) |
+| Edit personal info | 48:3617 | `app/me/edit.tsx` |
+| Adventure Quiz badge | 48:3686 | `app/me/badge.tsx` |
+| Choose Location sheet | 48:4398 | `features/profile/components/location-sheet.tsx` |
+| Wallet, All Transactions | 48:5297, 48:3728 | `app/wallet.tsx`, `features/wallet/` |
+| Payment Method (empty), Add payment sheet | 48:5379, 48:5703 | `app/payment-methods.tsx`, `features/payment-methods/` |
+| Privacy & Sharing | 48:5832 | `app/privacy.tsx` |
+| Offers | 48:5415 | `app/offers.tsx` |
+| Invite friends, My Recent Invites | 48:5873, 48:5969 | `app/invite.tsx`, `features/referrals/` |
+| Get started | 48:6483 | `app/get-started.tsx` |
+| FAQ, answer sheet | 48:5465, 48:5505 | `app/help.tsx`, `features/support/faq.ts` |
+| Give us feedback | 48:6365, 48:6410 | `app/feedback.tsx` |
+| Follow us sheet | 48:5772 | `features/profile/components/follow-us-sheet.tsx` |
+| Privacy Policy, Terms (not matched yet: built in our style from `legal_documents`) | 48:5551, 48:5579 | `app/legal/[type].tsx` |
+| Membership, Contact Moment Support (no frames) | | `app/memberships.tsx`, `app/support.tsx` |

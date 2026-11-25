@@ -160,6 +160,15 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - `find_people(query, limit)`: security definer, signed-in users only. Matches display name (`ilike`) or an exact phone (`03xx...` and `923xx...` normalised to `+92`); never returns the caller. Returns only id, name and avatar.
 - Invites are `group_members` rows with status `invited`; the invitee joins (`active`) or declines (`left`).
 
+### Profile (Figma "Profile Screens")
+- `profile_private` also has `pronouns`, `emergency_contact_name` / `_relation` / `_phone` (+92 only; name and phone together) and `privacy_prefs` (`profile_public`, `likes_visible_to_groups`, `bookings_visible_to_hosts`; stored, not enforced yet).
+- `profiles.identity_verified_at`: the verified tick. Users can't set it (no column grant); Moment sets it after checking the CNIC.
+- `saved_payment_methods`: method (`card | jazzcash | easypaisa`), brand, last4, expiry (cards only), holder, provider and provider token. Never the full number. Own rows only (read, add, remove). One default per user (partial unique index): the first method becomes default, removing the default promotes the newest, `set_default_payment_method(id)` switches it.
+- `saved_coupons` (user, coupon): Offers > Apply. Only public, active coupons can be saved. Confirm Reservation pre-applies the best fitting one.
+- Notifications are created by triggers: `bookings_notify` (requested, confirmed, completed, cancelled; `data.booking_id`), `payments_notify` (succeeded) and `refunds_notify` (succeeded; wallet or original method).
+- Public `platform_settings`: `referrals.reward_amount`, `app.social_links`, `app.support`, `app.store_urls`.
+- Support chat uses `support_tickets` / `support_messages` (`api.support.openTicket`, `reply`); feedback tickets have subjects starting "Feedback:".
+
 ### Chat
 - `conversations` (`direct | business | group`), `conversation_participants`, `messages`.
 - Business conversations are a shared inbox: every active member of the business can read and reply (as the business).
@@ -188,6 +197,7 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - `business-media` (public read, owners and managers write `<business_id>/...`)
 - `chat-attachments` (private, conversation participants, `<conversation_id>/...`)
 - `review-photos` (public read, users write their own folder `<user_id>/...`)
+- `avatars` also holds profile photos uploaded from Show profile (`api.profile.uploadAvatar`).
 - `group-covers` (public read, users write their own folder `<user_id>/...`)
 - `seed-media` (local dev only, public): images exported from Figma in `supabase/seed-media`, uploaded on `supabase db reset`. Media columns may hold `storage://<bucket>/<path>` references; the API client resolves them to public URLs for the app's own Supabase host.
 
@@ -216,6 +226,7 @@ pnpm db:types    # regenerate packages/shared/src/types/database.types.ts
 - `03_social_and_payments`: reviews only for completed bookings, business replies, chat and realtime access, groups and joining rules, cash payments vs provider payments.
 - `04`-`08`: sign up, email sign-in, Home dashboard, Adventure Quiz, bucket lists.
 - `10_booking_flow`: quotes and coupon reasons, sold-out and private slots, services cart (coupon once, idempotent, all or nothing), calendar days, phone sync.
+- `15_profile_account`: personal details checks, verified flag not user-settable, saved payment methods (own only, one default, promotion), saved coupons (public only), booking notifications, public config.
 - `14_groups`: likes and likes visibility, match requests (who can send, accept and withdraw), `group_matches`, `group_recommendations`, `find_people` (no guests, phone formats), invites, covers bucket.
 - `09_business_page`: opening hours and `business_is_open` (split days, past midnight), gallery and hours RLS, seed coverage, review-photo uploads, `reviewable_bookings`, location points.
 
