@@ -620,9 +620,9 @@ select pg_temp.act_as(null);
 -- Coupons and memberships
 -- ---------------------------------------------------------------------------
 insert into public.coupons (id, business_id, code, title, description, discount_type, discount_value, max_discount_amount, min_subtotal_amount, per_user_limit, ends_at, is_public) values
-  ('00000000-0000-4000-8100-000000000001', null, 'WELCOME10', '10% off your first booking', 'Up to PKR 1,000 off any experience or service.', 'percent', 10, 100000, 0, 1, now() + interval '180 days', true),
+  ('00000000-0000-4000-8100-000000000001', null, 'WELCOME10', '10% off your first booking', 'Up to Rs 1,000 off any experience or service.', 'percent', 10, 100000, 0, 1, now() + interval '180 days', true),
   ('00000000-0000-4000-8100-000000000002', '00000000-0000-4000-b000-000000000002', 'SAFFRON20', '20% off weekday massages', 'Saffron Spa weekday offer.', 'percent', 20, null, 500000, 2, now() + interval '60 days', true),
-  ('00000000-0000-4000-8100-000000000003', '00000000-0000-4000-b000-000000000006', 'KARACHI500', 'PKR 500 off coastal trips', 'On bookings over PKR 5,000.', 'fixed', 50000, null, 500000, 1, now() + interval '90 days', true),
+  ('00000000-0000-4000-8100-000000000003', '00000000-0000-4000-b000-000000000006', 'KARACHI500', 'Rs 500 off coastal trips', 'On bookings over Rs 5,000.', 'fixed', 50000, null, 500000, 1, now() + interval '90 days', true),
   ('00000000-0000-4000-8100-000000000004', '00000000-0000-4000-b000-000000000003', 'ANDROONVIP', 'Friends of Androon Walks', 'Private code for repeat guests.', 'percent', 15, 150000, 0, 3, null, false);
 
 insert into public.membership_plans (id, business_id, name, description, price_amount, interval, benefits, included_sessions, discount_percent, sort_order) values
@@ -878,7 +878,7 @@ insert into public.messages (conversation_id, sender_id, sender_business_id, bod
   ('00000000-0000-4000-6000-000000000002', '00000000-0000-4000-a000-000000000022', null,
    'Did you try the mangrove kayaking? Thinking of booking it for my sister.', now() - interval '2 days'),
   ('00000000-0000-4000-6000-000000000002', '00000000-0000-4000-a000-000000000024', null,
-   'Yes! Go on a Sunday, it is quieter. Use KARACHI500 for PKR 500 off.', now() - interval '47 hours');
+   'Yes! Go on a Sunday, it is quieter. Use KARACHI500 for Rs 500 off.', now() - interval '47 hours');
 
 insert into public.messages (conversation_id, sender_id, body, created_at)
 select c.id, v.sender::uuid, v.body, now() - v.ago::interval
@@ -919,8 +919,8 @@ insert into public.notifications (user_id, type, title, body, data, read_at, cre
   ('00000000-0000-4000-a000-000000000021', 'new_message', 'Androon Walks replied', 'About 2 km in total with rest stops...', '{"screen": "chat", "conversation_id": "00000000-0000-4000-6000-000000000001"}', null, now() - interval '22 hours'),
   ('00000000-0000-4000-a000-000000000021', 'review_reply', 'Androon Walks replied to your review', 'Shukriya Hamza!...', '{"screen": "review"}', null, now() - interval '10 days'),
   ('00000000-0000-4000-a000-000000000026', 'group_invite', 'You''re invited to Lahore Food Squad', 'Hamza invited you to join.', '{"screen": "group", "group_id": "00000000-0000-4000-7000-000000000002"}', null, now() - interval '3 days'),
-  ('00000000-0000-4000-a000-000000000026', 'refund', 'Refund added to your wallet', 'PKR 4,500 for Rawal Lake Morning Kayaking.', '{"screen": "wallet"}', null, now()),
-  ('00000000-0000-4000-a000-000000000025', 'offer', 'PKR 500 off coastal trips', 'Use KARACHI500 on Karachi Coastal Co. bookings.', '{"screen": "offers"}', null, now() - interval '2 days');
+  ('00000000-0000-4000-a000-000000000026', 'refund', 'Refund added to your wallet', 'Rs 4,500 for Rawal Lake Morning Kayaking.', '{"screen": "wallet"}', null, now()),
+  ('00000000-0000-4000-a000-000000000025', 'offer', 'Rs 500 off coastal trips', 'Use KARACHI500 on Karachi Coastal Co. bookings.', '{"screen": "offers"}', null, now() - interval '2 days');
 
 insert into public.support_tickets (id, user_id, business_id, booking_id, subject, status) values
   ('00000000-0000-4000-5000-000000000001', '00000000-0000-4000-a000-000000000025', '00000000-0000-4000-b000-000000000006', '00000000-0000-4000-8000-000000000008', 'Marked as no-show but I was stuck in traffic', 'open');
@@ -1650,8 +1650,8 @@ where n.user_id = '00000000-0000-4000-a000-000000000099'
 
 insert into public.notifications (user_id, type, title, body, data, created_at) values
   ('00000000-0000-4000-a000-000000000099', 'offer', '10% off your first booking', 'Use WELCOME10 on any experience or service, up to Rs 1,000 off.', '{"screen": "offers"}', now() - interval '9 days'),
-  ('00000000-0000-4000-a000-000000000099', 'refund', 'Refund added to your wallet', 'PKR 4,500 for Rawal Lake Morning Kayaking is in your Moment wallet.', '{"screen": "wallet"}', now() - interval '2 hours'),
-  ('00000000-0000-4000-a000-000000000099', 'payment_received', 'Deposit received', 'PKR 5,000 from JazzCash was added to your wallet.', '{"screen": "wallet"}', now() - interval '20 days');
+  ('00000000-0000-4000-a000-000000000099', 'refund', 'Refund added to your wallet', 'Rs 4,500 for Rawal Lake Morning Kayaking is in your Moment wallet.', '{"screen": "wallet"}', now() - interval '2 hours'),
+  ('00000000-0000-4000-a000-000000000099', 'payment_received', 'Deposit received', 'Rs 5,000 from JazzCash was added to your wallet.', '{"screen": "wallet"}', now() - interval '20 days');
 
 update public.notifications
 set read_at = created_at + interval '1 hour'

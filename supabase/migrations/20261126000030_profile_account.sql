@@ -228,7 +228,7 @@ begin
   insert into public.notifications (user_id, type, title, body, data)
   values (
     new.payer_id, 'payment_received', 'Payment received',
-    'We received ' || new.currency || ' ' || to_char(new.amount / 100.0, 'FM999,999,990') || '.',
+    'We received ' || case when new.currency = 'PKR' then 'Rs ' else new.currency || ' ' end || to_char(new.amount / 100.0, 'FM999,999,990') || '.',
     jsonb_build_object('screen', case when new.booking_id is null then 'wallet' else 'booking' end, 'booking_id', new.booking_id)
   );
   return null;
@@ -258,7 +258,7 @@ begin
   values (
     v_payment.payer_id, 'refund',
     case when new.to_wallet then 'Refund added to your wallet' else 'Refund on its way' end,
-    new.currency || ' ' || to_char(new.amount / 100.0, 'FM999,999,990')
+    case when new.currency = 'PKR' then 'Rs ' else new.currency || ' ' end || to_char(new.amount / 100.0, 'FM999,999,990')
       || case when new.to_wallet then ' is in your Moment wallet.' else ' is going back to your payment method.' end,
     jsonb_build_object('screen', case when new.to_wallet then 'wallet' else 'booking' end, 'booking_id', v_payment.booking_id)
   );
