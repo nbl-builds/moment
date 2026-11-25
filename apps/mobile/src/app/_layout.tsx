@@ -11,6 +11,7 @@ import { BrandSplash } from '@/components/brand-splash';
 import { ToastHost } from '@/components/toast';
 import { LoginSheetProvider } from '@/features/auth/login-sheet-provider';
 import { BucketSheetsProvider } from '@/features/bucket-list/bucket-sheets';
+import { useLiveBookings } from '@/features/bookings/queries';
 import { queryClient } from '@/lib/query-client';
 
 /** How long the splash stays up after the app has drawn it. */
@@ -56,7 +57,14 @@ export default function RootLayout() {
         {showSplash && <BrandSplash onLayout={onSplashLayout} />}
         {appReady && !showSplash && <AuthBypassBadge />}
         {appReady && <ToastHost />}
+        {appReady && <LiveBookings />}
       </GestureHandlerRootView>
     </QueryClientProvider>
   );
+}
+
+/** Keeps bookings and chat badges live on every screen (private user:<id> Realtime topic). */
+function LiveBookings() {
+  useLiveBookings();
+  return null;
 }

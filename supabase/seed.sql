@@ -1385,3 +1385,95 @@ from (values
   (null, 'SUMMER24', 'Summer 2024', 'Last summer''s deal.', 'percent', 25, null, 0, now() - interval '200 days', now() - interval '100 days', false)
 ) as v(slug, code, title, description, dtype, value, max_discount, min_spend, starts, ends, public)
 left join public.businesses b on b.slug = v.slug;
+
+-- ---------------------------------------------------------------------------
+-- Booking Status (Bookings tab, All Bookings, Reservation details, Chat):
+-- the dev user has bookings in every status, two upcoming at Saffron (the
+-- "pick a reservation" sheet), a visit last year (year filter), and chats
+-- with Saffron (3 unread) and Margalla Trails (all read).
+-- ---------------------------------------------------------------------------
+create function pg_temp.free_time(p_listing uuid, p_from int) returns timestamptz language sql as $$
+  select t.starts_at from generate_series(p_from, p_from + 10) d
+  cross join lateral public.get_available_times(p_listing, pg_temp.today() + d) t
+  order by t.starts_at limit 1;
+$$;
+create function pg_temp.listing(p_slug text) returns uuid language sql as $$
+  select id from public.listings where slug = p_slug;
+$$;
+
+select pg_temp.act_as('00000000-0000-4000-a000-000000000099');
+-- Saffron: a massage and a facial back to back in 3 days (confirmed), and a hammam in 9 days (confirmed)
+select count(*) from public.create_bookings(
+  jsonb_build_array(
+    jsonb_build_object('listing_id', pg_temp.listing('swedish-massage'), 'starts_at', pg_temp.free_time(pg_temp.listing('swedish-massage'), 3)),
+    jsonb_build_object('listing_id', pg_temp.listing('hydrating-gold-facial'),
+      'starts_at', pg_temp.free_time(pg_temp.listing('swedish-massage'), 3) + interval '60 minutes')),
+  p_notes => 'Medium pressure please, and a quiet room.', p_idempotency_key => 'dev-saffron-visit');
+select public.create_booking(
+  p_listing_id => pg_temp.listing('moroccan-hammam-ritual'),
+  p_starts_at => pg_temp.free_time(pg_temp.listing('moroccan-hammam-ritual'), 9),
+  p_idempotency_key => 'dev-saffron-hammam');
+-- Margalla Trails: Saidpur walk for 2 in 5 days (confirmed)
+select public.create_booking(
+  p_listing_id => pg_temp.listing('saidpur-faisal-golden-hour'),
+  p_slot_id => pg_temp.next_slot(pg_temp.listing('saidpur-faisal-golden-hour'), interval '5 days'),
+  p_guest_count => 2, p_notes => 'One of us is vegetarian.', p_idempotency_key => 'dev-saidpur');
+-- Karachi Coastal: mangrove kayaking request (pending, the owner accepts)
+select public.create_booking(
+  p_listing_id => pg_temp.listing('sandspit-mangrove-kayaking'),
+  p_slot_id => pg_temp.next_slot(pg_temp.listing('sandspit-mangrove-kayaking'), interval '6 days'),
+  p_guest_count => 1, p_idempotency_key => 'dev-sandspit');
+-- Rawal Lake kayaking, cancelled by the dev user
+select public.cancel_booking((public.create_booking(
+  p_listing_id => pg_temp.listing('rawal-lake-kayaking'),
+  p_slot_id => pg_temp.next_slot(pg_temp.listing('rawal-lake-kayaking'), interval '8 days'),
+  p_guest_count => 1, p_idempotency_key => 'dev-rawal')).id, 'Plans changed');
+-- Androon heritage walk, cancelled by the business
+create temp table dev_androon as
+select (public.create_booking(
+  p_listing_id => '00000000-0000-4000-e000-000000000005',
+  p_slot_id => pg_temp.next_slot('00000000-0000-4000-e000-000000000005', interval '10 days'),
+  p_guest_count => 2, p_idempotency_key => 'dev-androon')).id;
+select pg_temp.act_as('00000000-0000-4000-a000-000000000006');
+select public.update_booking_status((select id from dev_androon), 'cancelled_by_business', 'Our guide is unwell that day, sorry. Please pick another date.');
+select pg_temp.act_as(null);
+
+-- A visit to The Clifton Barber last year (All Bookings year filter)
+insert into public.bookings (
+  business_id, consumer_id, listing_id, location_id, starts_at, ends_at, guest_count, status,
+  contact_name, contact_phone, subtotal_amount, discount_amount, total_amount, source, created_at
+)
+select l.business_id, '00000000-0000-4000-a000-000000000099', l.id, l.location_id,
+       pg_temp.pk((date_trunc('year', now()) - interval '2 months')::date, '18:00'),
+       pg_temp.pk((date_trunc('year', now()) - interval '2 months')::date, '18:00') + make_interval(mins => l.duration_minutes),
+       1, 'completed', 'Ali Raza', '+923001234567', l.price_amount, 0, l.price_amount, 'app',
+       pg_temp.pk((date_trunc('year', now()) - interval '2 months')::date, '18:00') - interval '3 days'
+from public.listings l where l.slug = 'classic-haircut';
+
+-- Chats: Saffron wrote three times since the dev user last read; Margalla is read.
+select pg_temp.act_as('00000000-0000-4000-a000-000000000099');
+create temp table dev_chats as
+select (public.start_business_conversation('00000000-0000-4000-b000-000000000002')).id as saffron,
+       (public.start_business_conversation('00000000-0000-4000-b000-000000000001')).id as margalla;
+select pg_temp.act_as(null);
+insert into public.messages (conversation_id, sender_id, sender_business_id, body, created_at)
+select c.saffron, v.sender::uuid, v.biz::uuid, v.body, now() - v.ago
+from dev_chats c, (values
+  ('00000000-0000-4000-a000-000000000099', null, 'Salam! Can I bring my own massage oil?', interval '26 hours'),
+  ('00000000-0000-4000-a000-000000000005', '00000000-0000-4000-b000-000000000002', 'Wa alaikum salam Ali! Of course, bring it along.', interval '25 hours'),
+  ('00000000-0000-4000-a000-000000000099', null, 'Great, thank you 🙏', interval '24 hours'),
+  ('00000000-0000-4000-a000-000000000005', '00000000-0000-4000-b000-000000000002', 'Your massage and facial are confirmed.', interval '3 hours'),
+  ('00000000-0000-4000-a000-000000000005', '00000000-0000-4000-b000-000000000002', 'Please arrive 10 minutes early to change.', interval '3 hours' - interval '1 minute'),
+  ('00000000-0000-4000-a000-000000000005', '00000000-0000-4000-b000-000000000002', 'Parking is behind the building 🚗', interval '2 hours')
+) as v(sender, biz, body, ago);
+insert into public.messages (conversation_id, sender_id, sender_business_id, body, created_at)
+select c.margalla, v.sender::uuid, v.biz::uuid, v.body, now() - v.ago
+from dev_chats c, (values
+  ('00000000-0000-4000-a000-000000000099', null, 'Is the Saidpur walk OK for my 60-year-old father?', interval '3 days'),
+  ('00000000-0000-4000-a000-000000000002', '00000000-0000-4000-b000-000000000001', 'Yes, it''s an easy walk on flat streets. See you there!', interval '3 days' - interval '20 minutes')
+) as v(sender, biz, body, ago);
+-- The dev user read Margalla's reply, but not Saffron's last three.
+update public.conversation_participants set last_read_at = now() - interval '24 hours'
+where user_id = '00000000-0000-4000-a000-000000000099' and conversation_id = (select saffron from dev_chats);
+update public.conversation_participants set last_read_at = now()
+where user_id = '00000000-0000-4000-a000-000000000099' and conversation_id = (select margalla from dev_chats);

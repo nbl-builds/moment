@@ -24,14 +24,15 @@ type Picked = { uri: string; mimeType: string };
  * Photos upload to Supabase Storage on submit.
  */
 export default function WriteReviewScreen() {
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  /** `bookingId`: review that visit (Reservation details > Write a review); else the latest one. */
+  const { slug, bookingId } = useLocalSearchParams<{ slug: string; bookingId?: string }>();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const business = useBusiness(slug);
   const biz = business.data;
   const location = useBusinessLocation(biz?.id);
   const reviewable = useReviewableBookings(biz?.id);
-  const visit = reviewable.data?.[0];
+  const visit = reviewable.data?.find((v) => v.booking_id === bookingId) ?? reviewable.data?.[0];
 
   const [rating, setRating] = useState(0);
   const [body, setBody] = useState('');

@@ -3,7 +3,7 @@ import type { Message } from '../types';
 import type { CreateGroupForm, FeedbackForm, SendMessageForm } from '../validation/social';
 import { FEEDBACK_TOPIC_LABELS } from '../validation/social';
 import type { PageOptions } from './catalog';
-import { requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
+import { ApiError, requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
 
 // Groups, chat and support.
 
@@ -156,6 +156,65 @@ export function createChatApi(db: MomentSupabaseClient) {
           .eq('conversation_id', conversationId)
           .eq('user_id', userId),
       );
+    },
+
+    /**
+     * Uploads a photo to `chat-attachments/<conversation_id>/...` (participants
+     * only) and returns the attachment to pass to `send`.
+     */
+    uploadAttachment: async (conversationId: string, file: { body: ArrayBuffer; contentType: string; extension: string }) => {
+      const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${file.extension}`;
+      const { error } = await db.storage.from('chat-attachments').upload(path, file.body, { contentType: file.contentType });
+      if (error) throw new ApiError('network', `Could not upload the photo: ${error.message}`, undefined, undefined, error);
+      return { path, mimeType: file.contentType };
+    },
+
+    /** A short-lived URL for a chat attachment (the bucket is private). */
+    attachmentUrl: async (path: string, expiresInSeconds = 3600) => {
+      const { data, error } = await db.storage.from('chat-attachments').createSignedUrl(path, expiresInSeconds);
+      if (error) throw new ApiError('network', error.message, undefined, undefined, error);
+      return data.signedUrl;
+    },
+
+    /**
+     * A conversation's live channel: new and edited messages from the server,
+     * plus "typing" events other participants broadcast. `typing()` tells the
+     * others you are typing (throttle it). Call `leave()` when done.
+     */
+    join: (
+      conversationId: string,
+      on: { message?: (event: ChatMessageEvent) => void; typing?: (e: { userId: string }) => void },
+      me?: string,
+    ) => {
+      let channel: RealtimeChannel | undefined;
+      let closed = false;
+      void db.realtime.setAuth().then(() => {
+        if (closed) return;
+        channel = db
+          .channel(`conversation:${conversationId}`, { config: { private: true, broadcast: { self: false } } })
+          .on('broadcast', { event: 'INSERT' }, ({ payload }) => {
+            const record = (payload as { record?: Message }).record;
+            if (record) on.message?.({ type: 'INSERT', message: record });
+          })
+          .on('broadcast', { event: 'UPDATE' }, ({ payload }) => {
+            const record = (payload as { record?: Message }).record;
+            if (record) on.message?.({ type: 'UPDATE', message: record });
+          })
+          .on('broadcast', { event: 'typing' }, ({ payload }) => {
+            const userId = (payload as { userId?: string }).userId;
+            if (userId && userId !== me) on.typing?.({ userId });
+          })
+          .subscribe();
+      });
+      return {
+        typing: () => {
+          if (channel && me) void channel.send({ type: 'broadcast', event: 'typing', payload: { userId: me } });
+        },
+        leave: () => {
+          closed = true;
+          if (channel) void db.removeChannel(channel);
+        },
+      };
     },
 
     /**

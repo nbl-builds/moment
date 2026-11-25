@@ -72,7 +72,8 @@ function openInMaps(business: Business, point: { lat: number; lng: number } | nu
  * expanded, after which the tabs stay pinned (sticky) and the content scrolls.
  */
 export default function BusinessScreen() {
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  /** `tab=services`: the Cart opens the business on its Services tab, with the saved cart. */
+  const { slug, tab: startTab } = useLocalSearchParams<{ slug: string; tab?: string }>();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const reduceMotion = useReducedMotion();
@@ -90,7 +91,7 @@ export default function BusinessScreen() {
   const cart = useServiceCart(biz?.id);
   const reviewable = useReviewableBookings(biz?.id);
 
-  const [tab, setTab] = useState<BusinessTab>('Popular');
+  const [tab, setTab] = useState<BusinessTab>(startTab === 'services' ? 'Services' : 'Popular');
   const [serviceFilter, setServiceFilter] = useState<string>('all');
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const reviews = useBusinessReviews(biz?.id, ratingFilter);

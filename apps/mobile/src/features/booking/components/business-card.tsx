@@ -1,13 +1,18 @@
 import { colors, formatDistanceKm } from '@moment/shared';
 import { Image } from 'expo-image';
-import { StyleSheet, View } from 'react-native';
+import type { ReactNode } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon, Text } from '@/components/ui';
 import { api } from '@/lib/api';
 import { BOOK } from '../layout';
 
 const B = BOOK.business;
 
-/** Business at the top of Confirm Reservation (47:5143): logo, name, distance, rating. */
+/**
+ * Business card (Confirm Reservation 47:5143, Bookings 52:8565, All Bookings
+ * 52:9094, Cart 52:8991): logo, name, distance (or a line of text), rating,
+ * an optional note after the rating and an optional trailing badge or icon.
+ */
 export function BusinessCard({
   name,
   logoUrl,
@@ -15,6 +20,11 @@ export function BusinessCard({
   distanceKm,
   area,
   rating,
+  line,
+  note,
+  trailing,
+  onPress,
+  accessibilityLabel,
 }: {
   name: string;
   logoUrl: string | null;
@@ -23,11 +33,19 @@ export function BusinessCard({
   /** Shown instead of the distance when we don't know where the user is. */
   area: string | null;
   rating: number;
+  /** Replaces the distance row with plain text (All Bookings: the date). */
+  line?: string;
+  /** Short grey text after the rating pill (Cart: "2 services · Rs 14,500"). */
+  note?: string;
+  trailing?: ReactNode;
+  onPress?: () => void;
+  accessibilityLabel?: string;
 }) {
   const logo = api.media.url(logoUrl);
   const where = distanceKm !== null ? formatDistanceKm(distanceKm) : area;
-  return (
-    <View style={styles.card} accessible accessibilityLabel={`${name}${where ? `, ${where}` : ''}, rated ${rating.toFixed(1)}`}>
+  const label = accessibilityLabel ?? `${name}${line ? `, ${line}` : where ? `, ${where}` : ''}, rated ${rating.toFixed(1)}${note ? `, ${note}` : ''}`;
+  const body = (
+    <>
       <View style={styles.logo}>
         {logo && <Image source={logo} style={StyleSheet.absoluteFill} contentFit="cover" />}
       </View>
@@ -38,21 +56,49 @@ export function BusinessCard({
           </Text>
           {verified && <Icon name="verified" size={15} />}
         </View>
-        {where && (
-          <View style={styles.row}>
-            <Icon name="location-fill" size={20} color="secondary" />
-            <Text variant="body12" weight="medium" color="secondaryTint2" numberOfLines={1}>
-              {where}
+        {line ? (
+          <Text variant="body12" weight="medium" color="secondaryTint2" numberOfLines={1} style={styles.line}>
+            {line}
+          </Text>
+        ) : (
+          where && (
+            <View style={styles.row}>
+              <Icon name="location-fill" size={20} color="secondary" />
+              <Text variant="body12" weight="medium" color="secondaryTint2" numberOfLines={1}>
+                {where}
+              </Text>
+            </View>
+          )
+        )}
+        <View style={styles.ratingRow}>
+          <View style={styles.rating}>
+            <Icon name="star" size={14} />
+            <Text variant="subText12" weight="semibold" color="secondaryTint2">
+              {rating.toFixed(1)}
             </Text>
           </View>
-        )}
-        <View style={styles.rating}>
-          <Icon name="star" size={14} />
-          <Text variant="subText12" weight="semibold" color="secondaryTint2">
-            {rating.toFixed(1)}
-          </Text>
+          {note && (
+            <Text variant="body12" weight="medium" color="secondaryTint2" numberOfLines={1} style={styles.note}>
+              {note}
+            </Text>
+          )}
         </View>
       </View>
+      {trailing && <View style={styles.trailing}>{trailing}</View>}
+    </>
+  );
+  return onPress ? (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      {body}
+    </Pressable>
+  ) : (
+    <View style={styles.card} accessible accessibilityLabel={label}>
+      {body}
     </View>
   );
 }
@@ -92,8 +138,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
   },
-  rating: {
+  pressed: {
+    opacity: 0.9,
+  },
+  line: {
+    marginTop: 10,
+  },
+  ratingRow: {
     marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  note: {
+    flexShrink: 1,
+  },
+  trailing: {
+    alignSelf: 'center',
+    marginRight: 9,
+  },
+  rating: {
     alignSelf: 'flex-start',
     height: 24,
     paddingHorizontal: 8,

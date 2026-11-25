@@ -3,6 +3,7 @@ import { addDaysToLocalDate, localDateTimeToIso } from '../format/datetime';
 import type { Enums } from '../types';
 import { toCreateBookingArgs, type CancelBooking, type CreateBookingForm, type CreateCartForm } from '../validation/booking';
 import type { PageOptions } from './catalog';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
 
 // Booking flow and Bookings list. All writes go through RPCs (`create_booking`,
@@ -12,7 +13,8 @@ import { requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from
 export const BOOKING_LIST_SELECT = `
   id, code, status, payment_status, starts_at, ends_at, guest_count, total_amount, currency, source,
   listing:listings!inner(id, slug, title, type, duration_minutes, media:listing_media(url, alt, sort_order)),
-  business:businesses!inner(id, slug, name, logo_url, timezone)
+  business:businesses!inner(id, slug, name, logo_url, cover_url, timezone, is_verified, rating_avg, rating_count),
+  location:business_locations(area, city)
 ` as const;
 
 export const UPCOMING_STATUSES: Enums<'booking_status'>[] = ['pending', 'confirmed'];
@@ -154,12 +156,44 @@ export function createBookingsApi(db: MomentSupabaseClient) {
             staff:staff_members(id, display_name, avatar_url, title),
             items:booking_items(id, option_id, name, quantity, unit_amount, total_amount),
             events:booking_events(id, from_status, to_status, note, created_at),
-            review:reviews(id, rating, body, created_at)`,
+            review:reviews(id, rating, body, created_at),
+            payments:payments(id, method, method_summary, provider, status, amount, created_at)`,
           )
           .eq('id', bookingId)
           .maybeSingle(),
         'Booking',
       ),
+
+    /** Bookings tab badges: unread messages per business conversation (signed-in user). */
+    unreadByBusiness: () => unwrap(db.rpc('my_business_unread')),
+
+    /**
+     * Live updates for the signed-in user on the private `user:<id>` channel:
+     * `booking` when one of my bookings changes status or time, `message` when
+     * someone else writes in one of my conversations. Returns an unsubscribe function.
+     */
+    subscribeMine: (
+      userId: string,
+      on: {
+        booking?: (e: { booking_id: string; business_id: string; status: Enums<'booking_status'>; starts_at: string }) => void;
+        message?: (e: { conversation_id: string; business_id: string | null; message_id: string }) => void;
+      },
+    ): (() => void) => {
+      let channel: RealtimeChannel | undefined;
+      let closed = false;
+      void db.realtime.setAuth().then(() => {
+        if (closed) return;
+        channel = db
+          .channel(`user:${userId}`, { config: { private: true } })
+          .on('broadcast', { event: 'booking' }, ({ payload }) => on.booking?.(payload as never))
+          .on('broadcast', { event: 'message' }, ({ payload }) => on.message?.(payload as never))
+          .subscribe();
+      });
+      return () => {
+        closed = true;
+        if (channel) void db.removeChannel(channel);
+      };
+    },
 
     getByCode: (code: string) =>
       unwrapRequired(db.from('bookings').select(BOOKING_LIST_SELECT).eq('code', code.toUpperCase()).maybeSingle(), 'Booking'),
