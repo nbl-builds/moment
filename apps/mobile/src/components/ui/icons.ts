@@ -160,6 +160,28 @@ export const icons = {
   'share-email': { source: require('../../../assets/icons/share-email.svg') },
   'share-link-copy': { source: require('../../../assets/icons/share-link-copy.svg'), glyph: { width: 17.6, height: 17.6 } },
   'share-more': { source: require('../../../assets/icons/share-more.svg') },
+
+  // Booking Flow (Figma 47:3637 ... 48:7876)
+  /** Clock before a session's time (47:4198), 14pt. */
+  clock: { source: require('../../../assets/icons/clock.svg') },
+  /** Guest stepper minus / plus (47:4596), 28pt in a 32pt grey circle. */
+  minus: { source: require('../../../assets/icons/minus.svg') },
+  'plus-thin': { source: require('../../../assets/icons/plus-thin.svg') },
+  /** Payment Method row (47:5143). */
+  creditcard: { source: require('../../../assets/icons/creditcard.svg') },
+  /** Small chevron (18pt) at the end of rows; points down, rotate for right. */
+  'chevron-small': { source: require('../../../assets/icons/chevron-small.svg') },
+  /** Promo code row (47:5143). */
+  ticket: { source: require('../../../assets/icons/ticket.svg') },
+  /** Promo applied / invalid (48:7600, 48:7743): keep their green and red. */
+  'check-circle': { source: require('../../../assets/icons/check-circle.svg'), multicolor: true },
+  'x-circle': { source: require('../../../assets/icons/x-circle.svg'), multicolor: true },
+  /** Moment mark on "Contact Moment Support" (47:5143): 19 x 17 in a 28pt box. */
+  'moment-mark': { source: require('../../../assets/icons/moment-mark.svg'), glyph: { width: 16.5, height: 14.5 } },
+  /** White check in the success sheet (47:5045), 56pt. */
+  'check-large': { source: require('../../../assets/icons/check-large.svg') },
+  /** Open-in-new arrow on session cards (47:4198): 21pt glyph in a 28pt box. */
+  'open-external': { source: require('../../../assets/icons/open-external.svg'), glyph: { width: 18, height: 18 } },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;
