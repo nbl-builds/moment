@@ -1,39 +1,30 @@
+import { colors } from '@moment/shared';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
-import { Button } from '@/components/ui';
-import { openBusiness } from '@/features/business/navigation';
-import { recordListingView } from '@/features/home/recently-viewed';
+import { ActivityIndicator, View } from 'react-native';
 import { ComingNext } from '@/features/placeholders/coming-next';
 import { api } from '@/lib/api';
 
-/** Placeholder for Experience / Business details. Opening it counts as "Recently viewed". */
-export default function ListingPlaceholder() {
+/**
+ * Old links to `/listing/<id or slug>`: experiences go to Experience details,
+ * services to their business on the Services tab.
+ */
+export default function ListingRedirect() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const listing = useQuery({ queryKey: ['listing', id], queryFn: () => api.catalog.getListing(id) });
+  const l = listing.data;
 
   useEffect(() => {
-    if (id) recordListingView(id).catch(() => undefined);
-  }, [id]);
+    if (!l) return;
+    if (l.type === 'service') router.replace({ pathname: '/business/[slug]', params: { slug: l.business.slug, tab: 'services' } });
+    else router.replace({ pathname: '/experience/[id]', params: { id: l.id } });
+  }, [l]);
 
+  if (listing.isError) return <ComingNext title="Not found" note="This listing isn’t available any more." />;
   return (
-    <ComingNext title={listing.data?.title ?? 'Experience details'} note="Experience details, the host and booking come next.">
-      {listing.data?.booking_mode === 'slot' && (
-        <Button
-          label="Check availability"
-          onPress={() => listing.data && router.push({ pathname: '/booking/dates/[listingId]', params: { listingId: listing.data.id } })}
-          style={{ marginTop: 24 }}
-        />
-      )}
-      {listing.data && (
-        <Button
-          label={`Visit ${listing.data.business.name}`}
-          variant="dark"
-          size="small"
-          onPress={() => openBusiness(listing.data.business.slug)}
-          style={{ alignSelf: 'flex-start', marginTop: 24 }}
-        />
-      )}
-    </ComingNext>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.backgroundMuted }}>
+      <ActivityIndicator color={colors.secondary} />
+    </View>
   );
 }

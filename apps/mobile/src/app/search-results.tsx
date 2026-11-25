@@ -25,7 +25,7 @@ import {
 } from '@/features/search/filters';
 import { searchHosts } from '@/features/search/mock';
 import { searchWithFilters, type SearchResult } from '@/features/search/search';
-import { openHost } from '@/features/business/navigation';
+import { openHost, openListing } from '@/features/business/navigation';
 import { api } from '@/lib/api';
 
 // Figma: "Search Results" (22:2173). Measured in the 428 x 926 frame below the 44pt status bar.
@@ -103,7 +103,7 @@ export default function SearchResultsScreen() {
       size="wide"
       distanceKm={distanceKm(item.id)}
       saved={bucket.isSaved(item.id)}
-      onPress={() => router.push({ pathname: '/listing/[id]', params: { id: item.id } })}
+      onPress={() => openListing(item)}
       onToggleSaved={() => bucket.toggle(item.id)}
     />
   );

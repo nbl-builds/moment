@@ -1,6 +1,7 @@
 import { colors } from '@moment/shared';
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
+import { openListing } from '@/features/business/navigation';
 import { useState } from 'react';
 import { FlatList, Pressable, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -99,7 +100,7 @@ export default function BucketListDetailScreen() {
             size="wide"
             distanceKm={distances.data?.get(item.listing.id)}
             saved={bucket.isSaved(item.listing.id)}
-            onPress={() => router.push({ pathname: '/listing/[id]', params: { id: item.listing.id } })}
+            onPress={() => openListing(item.listing!)}
             onToggleSaved={() => bucket.toggle(item.listing.id)}
           />
         )}
