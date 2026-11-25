@@ -27,6 +27,7 @@ returns table (
   area text,
   city text,
   category_name text,
+  category_slugs text[],
   from_price integer,
   distance_km numeric,
   affinity numeric
@@ -62,6 +63,10 @@ as $$
         where l.business_id = b.id and l.type = 'service' and l.status = 'published'
         group by c.name order by count(*) desc, c.name limit 1
       ) as category_name,
+      array(
+        select distinct c.slug::text from public.listings l join public.categories c on c.id = l.category_id
+        where l.business_id = b.id and l.type = 'service' and l.status = 'published' order by 1
+      ) as category_slugs,
       (
         select min(l.price_amount)::integer from public.listings l
         where l.business_id = b.id and l.type = 'service' and l.status = 'published'
@@ -90,7 +95,7 @@ as $$
       and exists (select 1 from public.listings l where l.business_id = b.id and l.type = 'service' and l.status = 'published')
   )
   select v.id, v.slug, v.name, v.logo_url, v.cover_url, v.rating_avg, v.rating_count, v.currency,
-         v.area, v.city, v.category_name, v.from_price, v.distance_km, v.affinity
+         v.area, v.city, v.category_name, v.category_slugs, v.from_price, v.distance_km, v.affinity
   from venues v
   where (select point from here) is not null or p_city is null or v.city = p_city
   order by

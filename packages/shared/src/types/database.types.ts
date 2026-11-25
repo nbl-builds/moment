@@ -3448,6 +3448,7 @@ export type Database = {
           affinity: number;
           area: string;
           category_name: string;
+          category_slugs: string[];
           city: string;
           cover_url: string;
           currency: string;
