@@ -182,6 +182,33 @@ export const icons = {
   'check-large': { source: require('../../../assets/icons/check-large.svg') },
   /** Open-in-new arrow on session cards (47:4198): 21pt glyph in a 28pt box. */
   'open-external': { source: require('../../../assets/icons/open-external.svg'), glyph: { width: 18, height: 18 } },
+
+  // Booking Status (Figma 52:8373 ... 52:9442)
+  /** Header cart and ••• on Bookings (52:8565), 28pt. */
+  cart: { source: require('../../../assets/icons/cart.svg') },
+  'more-dots': { source: require('../../../assets/icons/more-dots.svg'), glyph: { width: 24, height: 6 } },
+  /** Filter on All Bookings (52:9094). */
+  sliders: { source: require('../../../assets/icons/sliders.svg') },
+  'chevron-right': { source: require('../../../assets/icons/chevron-right.svg') },
+  /** Reservation info rows (47:6385). */
+  'calendar-days': { source: require('../../../assets/icons/calendar-days.svg') },
+  'clock-outline': { source: require('../../../assets/icons/clock-outline.svg') },
+  'map-pin': { source: require('../../../assets/icons/map-pin.svg') },
+  'credit-card': { source: require('../../../assets/icons/credit-card.svg') },
+  /** Status icons after the reservation title: keep their greens. */
+  'status-pending': { source: require('../../../assets/icons/status-pending.svg'), multicolor: true },
+  'status-confirmed': { source: require('../../../assets/icons/status-confirmed.svg'), multicolor: true },
+  'status-completed': { source: require('../../../assets/icons/status-completed.svg'), multicolor: true },
+  /** Chat button on the reservation (52:9299), 30pt. */
+  message: { source: require('../../../assets/icons/message.svg') },
+  /** Close on the reservation photo and chat header (1.5 stroke). */
+  'close-thin': { source: require('../../../assets/icons/close-thin.svg') },
+  /** Chat (47:5940, 52:9442). */
+  call: { source: require('../../../assets/icons/call.svg') },
+  'add-file': { source: require('../../../assets/icons/add-file.svg') },
+  mic: { source: require('../../../assets/icons/mic.svg') },
+  /** Paper plane inside the black send button: 12pt glyph. */
+  send: { source: require('../../../assets/icons/send.svg'), glyph: { width: 14, height: 14 } },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;

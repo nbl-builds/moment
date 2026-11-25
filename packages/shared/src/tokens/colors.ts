@@ -40,6 +40,9 @@ export const palette = {
   coralTint: '#FFE8E5', // Figma: invalid promo row fill (48:7743)
   coralShade: '#E25242', // Figma: invalid promo text and icon (48:7743)
   hostOrange: '#F25726', // Figma: host name on slot cards (47:4198)
+  badgeRed: '#F35C5C', // Figma: unread / cart count badges (52:8565)
+  onlineGreen: '#30CC22', // Figma: online dot in Chat (47:5940)
+  cancelRed: '#FF5050', // Figma: "Cancel reservation" link (47:6385)
   // Adventure Quiz thermometer illustration (20:2453)
   thermometerBlue: '#2979C1',
   thermometerGrey: '#EAEAEA',
@@ -127,6 +130,11 @@ export const colors = {
   invalidSurface: palette.coralTint,
   invalid: palette.coralShade,
   host: palette.hostOrange,
+  /** Bookings: unread and cart count badges, online dot, cancel link. */
+  badge: palette.badgeRed,
+  onBadge: palette.white,
+  online: palette.onlineGreen,
+  cancel: palette.cancelRed,
   /** Pressed overlay for buttons without a pressed colour of their own. */
   pressedOverlay: withAlpha(palette.pureBlack, 0.1),
 } as const;
