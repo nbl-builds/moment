@@ -1,5 +1,5 @@
 import { colors } from '@moment/shared';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { openListing } from '@/features/business/navigation';
 import { useState } from 'react';
@@ -8,7 +8,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheet } from '@/components/bottom-sheet';
 import { showToast } from '@/components/toast';
 import { Button, Icon, Text } from '@/components/ui';
-import { comingWithGroups } from '@/features/bucket-list/bucket-sheets';
 import { NameSheet } from '@/features/bucket-list/components/name-sheet';
 import { SheetOption } from '@/features/bucket-list/components/sheet-option';
 import { BUCKET } from '@/features/bucket-list/layout';
@@ -39,6 +38,33 @@ export default function BucketListDetailScreen() {
   const { renameList, deleteList } = useBucketMutations();
   const bucket = useBucketList();
   const { place } = useUserPlace();
+  const queryClient = useQueryClient();
+
+  /** "Invite others": the list becomes a group (same name, cover and items), then Invite opens. */
+  const inviteOthers = async () => {
+    const data = list.data;
+    if (!data) return;
+    try {
+      const group = await api.groups.create({
+        name: data.name.length >= 2 ? data.name : `${data.name} group`,
+        visibility: 'private',
+        isOpenToMatch: false,
+        maxMembers: 12,
+        interestTagIds: [],
+        destinationCity: place.city ?? undefined,
+        coverUrl: data.items.find((i) => i.listing)?.listing?.media[0]?.url ?? data.items.find((i) => i.business)?.business?.cover_url ?? undefined,
+      });
+      await Promise.all(
+        data.items.map((i) =>
+          i.listing ? api.groups.like(group.id, { listingId: i.listing.id }) : i.business ? api.groups.like(group.id, { businessId: i.business.id }) : null,
+        ),
+      );
+      await queryClient.invalidateQueries({ queryKey: ['groups'] });
+      router.push({ pathname: '/group/[id]', params: { id: group.id, invite: '1' } });
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Couldn’t create the group');
+    }
+  };
   const [sheet, setSheet] = useState<Sheet>(null);
   const close = () => setSheet(null);
 
@@ -150,7 +176,7 @@ export default function BucketListDetailScreen() {
             subtitle="Inviting others will automatically convert to groups"
             onPress={() => {
               close();
-              comingWithGroups();
+              void inviteOthers();
             }}
           />
         </View>
