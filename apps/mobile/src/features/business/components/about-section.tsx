@@ -2,7 +2,9 @@ import { colors } from '@moment/shared';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import { MapFallback } from '@/components/map-fallback';
 import { Text } from '@/components/ui';
+import { MAPS_AVAILABLE } from '@/lib/env';
 import { BIZ } from '../layout';
 
 const LONG = 260;
@@ -38,23 +40,27 @@ export function AboutSection({
       )}
       {point && (
         <Pressable onPress={onOpenMap} style={styles.map} accessibilityRole="button" accessibilityLabel="Map. Opens directions in Maps">
-          <MapView
-            style={StyleSheet.absoluteFill}
-            pointerEvents="none"
-            scrollEnabled={false}
-            zoomEnabled={false}
-            rotateEnabled={false}
-            pitchEnabled={false}
-            toolbarEnabled={false}
-            userInterfaceStyle="light"
-            initialRegion={{ latitude: point.lat, longitude: point.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}
-          >
-            <Marker coordinate={{ latitude: point.lat, longitude: point.lng }}>
-              <View style={styles.pin}>
-                <View style={styles.pinDot} />
-              </View>
-            </Marker>
-          </MapView>
+          {MAPS_AVAILABLE ? (
+            <MapView
+              style={StyleSheet.absoluteFill}
+              pointerEvents="none"
+              scrollEnabled={false}
+              zoomEnabled={false}
+              rotateEnabled={false}
+              pitchEnabled={false}
+              toolbarEnabled={false}
+              userInterfaceStyle="light"
+              initialRegion={{ latitude: point.lat, longitude: point.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}
+            >
+              <Marker coordinate={{ latitude: point.lat, longitude: point.lng }}>
+                <View style={styles.pin}>
+                  <View style={styles.pinDot} />
+                </View>
+              </Marker>
+            </MapView>
+          ) : (
+            <MapFallback hint="Tap for directions" />
+          )}
         </Pressable>
       )}
     </View>

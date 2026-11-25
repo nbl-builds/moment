@@ -6,6 +6,8 @@ import { router, Stack } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import { MapFallback } from '@/components/map-fallback';
+import { MAPS_AVAILABLE } from '@/lib/env';
 import Animated, { interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { showToast } from '@/components/toast';
@@ -56,8 +58,9 @@ export default function ExploreScreen() {
   const [region, setRegion] = useState<Region>(start);
   const [searched, setSearched] = useState<Region>(start);
   const [selected, setSelected] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(false);
-  const progress = useSharedValue(0);
+  // Without a map (Android builds with no Google Maps key) the list opens expanded.
+  const [expanded, setExpanded] = useState(!MAPS_AVAILABLE);
+  const progress = useSharedValue(MAPS_AVAILABLE ? 0 : 1);
 
   const categories = useQuery({ queryKey: ['categories', 'all'], queryFn: () => api.catalog.listCategories() });
   const kind = mode === 'experiences' ? 'experience' : 'service';
@@ -167,62 +170,66 @@ export default function ExploreScreen() {
     <View style={styles.screen}>
       {/* Map drags must not trigger the stack's swipe-back; the X closes Explore. */}
       <Stack.Screen options={{ gestureEnabled: false, fullScreenGestureEnabled: false }} />
-      <MapView
-        ref={mapRef}
-        style={StyleSheet.absoluteFill}
-        initialRegion={start}
-        onRegionChangeComplete={(r) => setRegion(r)}
-        onPress={(e) => {
-          // iOS also reports marker taps here.
-          if (e.nativeEvent.action !== 'marker-press') setSelected(null);
-        }}
-        showsUserLocation={Boolean(place.coords)}
-        showsPointsOfInterests={false}
-        showsBuildings={false}
-        showsCompass={false}
-        toolbarEnabled={false}
-        userInterfaceStyle="light"
-        mapType={Platform.OS === 'ios' ? 'mutedStandard' : 'standard'}
-        mapPadding={{ top: headerBottom, right: 0, bottom: STRIP_HEIGHT + insets.bottom, left: 0 }}
-        accessibilityLabel={`Map with ${list.length} ${mode === 'experiences' ? 'experiences' : 'businesses'}`}
-      >
-        {clusters.map((c) =>
-          c.kind === 'pin' ? (
-            <Marker
-              // Remount when selected so the snapshot redraws (tracksViewChanges is off for speed).
-              key={`${c.key}-${c.point.id === selected ? 'on' : 'off'}`}
-              coordinate={{ latitude: c.lat, longitude: c.lng }}
-              anchor={{ x: 0.5, y: 1 }}
-              onPress={(e) => {
-                e.stopPropagation();
-                setSelected(c.point.id);
-              }}
-              tracksViewChanges={false}
-              accessibilityLabel={resultTitle(list.find((r) => r.item.id === c.point.id))}
-              zIndex={c.point.id === selected ? 2 : 1}
-            >
-              <MapPin selected={c.point.id === selected} />
-            </Marker>
-          ) : (
-            <Marker
-              key={c.key}
-              coordinate={{ latitude: c.lat, longitude: c.lng }}
-              onPress={(e) => {
-                e.stopPropagation();
-                zoomInto(c.lat, c.lng);
-              }}
-              tracksViewChanges={false}
-              accessibilityLabel={`${c.points.length} places here. Zoom in`}
-            >
-              <View style={styles.cluster}>
-                <Text variant="subText14" weight="bold" color="white">
-                  {c.points.length}
-                </Text>
-              </View>
-            </Marker>
-          ),
-        )}
-      </MapView>
+      {MAPS_AVAILABLE ? (
+        <MapView
+          ref={mapRef}
+          style={StyleSheet.absoluteFill}
+          initialRegion={start}
+          onRegionChangeComplete={(r) => setRegion(r)}
+          onPress={(e) => {
+            // iOS also reports marker taps here.
+            if (e.nativeEvent.action !== 'marker-press') setSelected(null);
+          }}
+          showsUserLocation={Boolean(place.coords)}
+          showsPointsOfInterests={false}
+          showsBuildings={false}
+          showsCompass={false}
+          toolbarEnabled={false}
+          userInterfaceStyle="light"
+          mapType={Platform.OS === 'ios' ? 'mutedStandard' : 'standard'}
+          mapPadding={{ top: headerBottom, right: 0, bottom: STRIP_HEIGHT + insets.bottom, left: 0 }}
+          accessibilityLabel={`Map with ${list.length} ${mode === 'experiences' ? 'experiences' : 'businesses'}`}
+        >
+          {clusters.map((c) =>
+            c.kind === 'pin' ? (
+              <Marker
+                // Remount when selected so the snapshot redraws (tracksViewChanges is off for speed).
+                key={`${c.key}-${c.point.id === selected ? 'on' : 'off'}`}
+                coordinate={{ latitude: c.lat, longitude: c.lng }}
+                anchor={{ x: 0.5, y: 1 }}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  setSelected(c.point.id);
+                }}
+                tracksViewChanges={false}
+                accessibilityLabel={resultTitle(list.find((r) => r.item.id === c.point.id))}
+                zIndex={c.point.id === selected ? 2 : 1}
+              >
+                <MapPin selected={c.point.id === selected} />
+              </Marker>
+            ) : (
+              <Marker
+                key={c.key}
+                coordinate={{ latitude: c.lat, longitude: c.lng }}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  zoomInto(c.lat, c.lng);
+                }}
+                tracksViewChanges={false}
+                accessibilityLabel={`${c.points.length} places here. Zoom in`}
+              >
+                <View style={styles.cluster}>
+                  <Text variant="subText14" weight="bold" color="white">
+                    {c.points.length}
+                  </Text>
+                </View>
+              </Marker>
+            ),
+          )}
+        </MapView>
+      ) : (
+        <MapFallback hint="Browse the list below; the map comes to Android soon." style={{ paddingBottom: 200 }} />
+      )}
 
       {/* Map controls: search this area, selected card, locate, mode switch */}
       <Animated.View style={[StyleSheet.absoluteFill, { pointerEvents: expanded ? 'none' : 'box-none' }, controlsStyle]}>
@@ -269,7 +276,14 @@ export default function ExploreScreen() {
 
       {/* Results list and the bottom strip */}
       <View style={[styles.panelArea, { top: headerBottom, pointerEvents: 'box-none' }]}>
-        <ResultsPanel expanded={expanded} onExpandedChange={setExpanded} travel={travel} bottomInset={insets.bottom} progress={progress}>
+        <ResultsPanel
+          expanded={expanded}
+          onExpandedChange={setExpanded}
+          travel={travel}
+          bottomInset={insets.bottom}
+          progress={progress}
+          lockedNote={MAPS_AVAILABLE ? undefined : 'Map coming soon'}
+        >
           <FlatList
             data={list}
             keyExtractor={(r) => r.item.id}

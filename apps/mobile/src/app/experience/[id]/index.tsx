@@ -15,6 +15,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, useWindowD
 import MapView, { Marker } from 'react-native-maps';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MapFallback } from '@/components/map-fallback';
 import { Button, Icon, Text, type IconName } from '@/components/ui';
 import { Card, SectionHeader } from '@/features/booking/components/card';
 import { useListing } from '@/features/booking/queries';
@@ -25,6 +26,7 @@ import { ReviewItem } from '@/features/business/components/review-item';
 import { ShareSheet } from '@/features/business/components/share-sheet';
 import { openHost } from '@/features/business/navigation';
 import { BookBar } from '@/features/experience/book-bar';
+import { MAPS_AVAILABLE } from '@/lib/env';
 import { experienceLink } from '@/features/experience/links';
 import { openInMaps } from '@/features/experience/maps';
 import { PhotoGrid } from '@/features/experience/photo-grid';
@@ -271,22 +273,26 @@ function Experience({ listing: l }: { listing: Listing }) {
               accessibilityRole="button"
               accessibilityLabel="Meeting point on the map. Opens maps"
             >
-              <MapView
-                style={StyleSheet.absoluteFill}
-                initialRegion={{ latitude: point.lat, longitude: point.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}
-                scrollEnabled={false}
-                zoomEnabled={false}
-                rotateEnabled={false}
-                pitchEnabled={false}
-                pointerEvents="none"
-                userInterfaceStyle="light"
-                mapType={process.env.EXPO_OS === 'ios' ? 'mutedStandard' : 'standard'}
-                liteMode
-              >
-                <Marker coordinate={{ latitude: point.lat, longitude: point.lng }} anchor={{ x: 0.5, y: 1 }}>
-                  <MapPin />
-                </Marker>
-              </MapView>
+              {MAPS_AVAILABLE ? (
+                <MapView
+                  style={StyleSheet.absoluteFill}
+                  initialRegion={{ latitude: point.lat, longitude: point.lng, latitudeDelta: 0.012, longitudeDelta: 0.012 }}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  rotateEnabled={false}
+                  pitchEnabled={false}
+                  pointerEvents="none"
+                  userInterfaceStyle="light"
+                  mapType={process.env.EXPO_OS === 'ios' ? 'mutedStandard' : 'standard'}
+                  liteMode
+                >
+                  <Marker coordinate={{ latitude: point.lat, longitude: point.lng }} anchor={{ x: 0.5, y: 1 }}>
+                    <MapPin />
+                  </Marker>
+                </MapView>
+              ) : (
+                <MapFallback hint="Tap to open in Maps" />
+              )}
             </Pressable>
           )}
         </Section>
