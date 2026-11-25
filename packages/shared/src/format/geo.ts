@@ -39,3 +39,21 @@ export function formatDistanceKm(km: number): string {
   const value = km < 10 ? km.toFixed(1).replace(/\.0$/, '') : String(Math.round(km));
   return `${value} km away`;
 }
+
+/**
+ * A PostGIS point as PostgREST returns it (hex EWKB, e.g. listing
+ * `meeting_point`) -> { lat, lng }. Null for anything that isn't a 2D point.
+ */
+export function parseEwkbPoint(hex: string | null | undefined): { lat: number; lng: number } | null {
+  if (!hex || !/^[0-9a-f]+$/i.test(hex) || hex.length < 42) return null;
+  const bytes = new Uint8Array(hex.match(/../g)!.map((b) => parseInt(b, 16)));
+  const view = new DataView(bytes.buffer);
+  const little = bytes[0] === 1;
+  const type = view.getUint32(1, little);
+  if ((type & 0xff) !== 1) return null; // not a Point
+  const offset = type & 0x20000000 ? 9 : 5; // skip the SRID when present
+  if (bytes.length < offset + 16) return null;
+  const lng = view.getFloat64(offset, little);
+  const lat = view.getFloat64(offset + 8, little);
+  return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
+}

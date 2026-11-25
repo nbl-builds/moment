@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { distanceKm, formatDistanceKm, LAUNCH_CITY_CENTRES, nearestLaunchCity } from './geo';
+import { distanceKm, formatDistanceKm, LAUNCH_CITY_CENTRES, nearestLaunchCity, parseEwkbPoint } from './geo';
 
 describe('geo helpers', () => {
   it('measures great-circle distance', () => {
@@ -21,5 +21,18 @@ describe('geo helpers', () => {
     expect(formatDistanceKm(3)).toBe('3 km away');
     expect(formatDistanceKm(54.6)).toBe('55 km away');
     expect(formatDistanceKm(Number.NaN)).toBe('');
+  });
+});
+
+describe('parseEwkbPoint', () => {
+  it('reads a PostGIS point with an SRID (Trail 3, Islamabad)', () => {
+    const p = parseEwkbPoint('0101000020E6100000B84082E2C7445240AD69DE718ADE4040');
+    expect(p?.lat).toBeCloseTo(33.7386, 4);
+    expect(p?.lng).toBeCloseTo(73.0747, 4);
+  });
+  it('ignores anything else', () => {
+    expect(parseEwkbPoint(null)).toBeNull();
+    expect(parseEwkbPoint('not hex')).toBeNull();
+    expect(parseEwkbPoint('0102000020E6100000')).toBeNull();
   });
 });
