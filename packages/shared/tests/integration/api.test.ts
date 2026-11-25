@@ -526,5 +526,44 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
       expect(await me.account.notifications.unreadCount()).toBeGreaterThanOrEqual(0);
       expect((await me.account.memberships.listPlans(SEED.margallaBusiness)).every((p) => p.business_id === SEED.margallaBusiness)).toBe(true);
     });
+
+    it('edits the profile, saves payment methods and coupons', async () => {
+      await me.profile.updateDetails({ firstName: 'Ayesha', lastName: 'Khan', pronouns: 'she/her' });
+      await me.profile.updateEmergencyContact({ name: 'Imran Khan', relation: 'Father', phone: '+923001112233' });
+      await me.profile.updateHomeCity('Lahore');
+      await me.profile.updatePrivacy({ profile_public: false, likes_visible_to_groups: true, bookings_visible_to_hosts: false });
+      const { profile, private: details } = await me.profile.getMe();
+      expect(profile.display_name).toBe('Ayesha Khan');
+      expect(profile.home_city).toBe('Lahore');
+      expect(details?.pronouns).toBe('she/her');
+      expect(details?.emergency_contact_phone).toBe('+923001112233');
+      expect(details?.privacy_prefs).toMatchObject({ profile_public: false });
+
+      const card = await me.account.paymentMethods.add({ method: 'card', last4: '4242', brand: 'Visa', expMonth: 8, expYear: 2030, provider: 'mock', providerToken: 'tok_1' });
+      const wallet = await me.account.paymentMethods.add({ method: 'jazzcash', last4: '4567', provider: 'mock', providerToken: 'tok_2' });
+      expect((await me.account.paymentMethods.list()).find((m) => m.is_default)?.id).toBe(card.id);
+      await me.account.paymentMethods.setDefault(wallet.id);
+      expect((await me.account.paymentMethods.list())[0]?.id).toBe(wallet.id);
+      await me.account.paymentMethods.remove(wallet.id);
+      expect((await me.account.paymentMethods.list()).map((m) => [m.id, m.is_default])).toEqual([[card.id, true]]);
+
+      const [offer] = await me.catalog.listPublicCoupons();
+      await me.account.savedCoupons.save(offer!.id);
+      await me.account.savedCoupons.save(offer!.id); // twice is fine
+      expect((await me.account.savedCoupons.list()).map((c) => c.coupon_id)).toEqual([offer!.id]);
+      await me.account.savedCoupons.remove(offer!.id);
+      expect(await me.account.savedCoupons.list()).toEqual([]);
+      expect(await me.profile.completedBookingCount()).toBeGreaterThanOrEqual(0);
+    });
+
+    it('links booking notifications to their business', async () => {
+      const dev = await signedIn(SEED.devUser);
+      const feed = await dev.account.notifications.list({ limit: 50 });
+      const ids = feed.map((n) => (n.data as { booking_id?: string }).booking_id).filter((id): id is string => Boolean(id));
+      expect(ids.length).toBeGreaterThan(0);
+      const businesses = await dev.account.notifications.bookingBusinesses(ids);
+      expect(Object.values(businesses).every((b) => b.name.length > 0)).toBe(true);
+      expect((await dev.account.wallet.transactions({ since: new Date(Date.now() - 7 * 864e5) })).length).toBeGreaterThan(0);
+    });
   });
 });

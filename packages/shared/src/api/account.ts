@@ -141,6 +141,13 @@ export function createAccountApi(db: MomentSupabaseClient) {
       },
 
       remove: (id: string) => unwrap(db.from('notifications').delete().eq('id', id)),
+
+      /** Business name and logo for booking notifications (the leading tile, 48:4018). */
+      bookingBusinesses: async (bookingIds: string[]) => {
+        if (bookingIds.length === 0) return {} as Record<string, { name: string; logo_url: string | null }>;
+        const rows = await unwrap(db.from('bookings').select('id, business:businesses!inner(name, logo_url)').in('id', bookingIds));
+        return Object.fromEntries(rows.map((r) => [r.id, r.business])) as Record<string, { name: string; logo_url: string | null }>;
+      },
     },
 
     /** Saves this device's Expo push token (idempotent per token). */

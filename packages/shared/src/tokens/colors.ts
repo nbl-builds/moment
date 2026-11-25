@@ -48,6 +48,10 @@ export const palette = {
   heartPink: '#FACAC6', // Figma: Group Match heart button (48:4500)
   heartRed: '#DC3421', // Figma: Group Match heart (48:4500)
   deleteRed: '#E87063', // Figma: Delete Group row and Yes button (48:5138, 48:5243)
+  blackTint3: '#696969', // Figma: Black Color / Black Tint 3 (wallet notes, feedback field borders, 48:5297)
+  alertRed: '#EE4747', // Figma: "not verified" alert next to the name (48:3423)
+  debitRed: '#CF3838', // Figma: negative wallet amounts (48:5297)
+  oliveGreen: '#7E9839', // Figma: "Accepted" invite status (48:5969)
   // Adventure Quiz thermometer illustration (20:2453)
   thermometerBlue: '#2979C1',
   thermometerGrey: '#EAEAEA',
@@ -138,6 +142,14 @@ export const colors = {
   /** Bookings: unread and cart count badges, online dot, cancel link. */
   badge: palette.badgeRed,
   onBadge: palette.white,
+  /** Profile: secondary grey text and field borders (Black Tint 3). */
+  blackTint3: palette.blackTint3,
+  /** Profile: unverified identity alert dot. */
+  alert: palette.alertRed,
+  /** Wallet: money going out. Money coming in uses `price`. */
+  debit: palette.debitRed,
+  /** Invite friends: "Accepted". */
+  accepted: palette.oliveGreen,
   online: palette.onlineGreen,
   cancel: palette.cancelRed,
   /** Groups: intro carousel cards, Group Match heart, Delete Group. */
