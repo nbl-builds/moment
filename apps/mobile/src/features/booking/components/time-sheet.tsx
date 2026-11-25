@@ -52,6 +52,7 @@ export function TimeSheet({ visible, serviceIds, date, price, staff, fallbackNam
       hideClose
       title="Select Time"
       top={BOOK.sheet.top.time}
+      scrollContent
       action={{ label: 'Save', disabled: !visit, onPress: () => visit && (setPicked(null), onSave(visit)) }}
     >
       {date && (

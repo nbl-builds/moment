@@ -37,6 +37,7 @@ export function CouponSheet({ visible, businessId, value, onApply, onClose }: Co
       onClose={close}
       title="Add Coupon"
       top={BOOK.sheet.top.coupon}
+      scrollContent
       action={{ label: 'Apply', disabled: !code, onPress: () => apply(code) }}
     >
       <Text variant="subText14" weight="medium" color="black" style={styles.label}>

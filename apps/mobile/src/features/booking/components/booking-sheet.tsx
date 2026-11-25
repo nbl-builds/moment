@@ -1,6 +1,6 @@
 import { colors } from '@moment/shared';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheet } from '@/components/bottom-sheet';
 import { Button, Icon, Text } from '@/components/ui';
@@ -20,20 +20,22 @@ export interface BookingSheetProps {
   hideClose?: boolean;
   /** Figma sheet top in the 926 frame; sets the sheet height. */
   top: number;
+  /** Keep the Figma height and scroll the content under the pinned button (long lists). */
+  scrollContent?: boolean;
   /** Pinned lime button at the bottom. */
   action?: { label: string; onPress: () => void; disabled?: boolean; loading?: boolean };
   children: ReactNode;
 }
 
 /** Off-white booking sheet (47:3717 ...): header, content, pinned action. */
-export function BookingSheet({ visible, onClose, title, titleAlign = 'center', onBack, hideClose, top, action, children }: BookingSheetProps) {
+export function BookingSheet({ visible, onClose, title, titleAlign = 'center', onBack, hideClose, top, scrollContent, action, children }: BookingSheetProps) {
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const minHeight = (height * (BOOK.frameHeight - top)) / BOOK.frameHeight;
 
   return (
     <BottomSheet visible={visible} onRequestClose={onClose} backgroundColor={colors.backgroundMuted} accessibilityLabel={title}>
-      <View style={[styles.body, { minHeight, paddingBottom: insets.bottom + BOOK.buttonGap }]}>
+      <View style={[styles.body, scrollContent ? { height: minHeight } : { minHeight }, { paddingBottom: insets.bottom + BOOK.buttonGap }]}>
         {(title || !hideClose || onBack) && (
           <View style={styles.header}>
             {onBack && (
@@ -59,7 +61,13 @@ export function BookingSheet({ visible, onClose, title, titleAlign = 'center', o
             )}
           </View>
         )}
-        <View style={styles.content}>{children}</View>
+        {scrollContent ? (
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            {children}
+          </ScrollView>
+        ) : (
+          <View style={styles.content}>{children}</View>
+        )}
         {action && (
           <Button
             label={action.label}
