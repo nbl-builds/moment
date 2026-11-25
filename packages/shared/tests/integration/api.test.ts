@@ -142,6 +142,27 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
     });
 
 
+    it('loads Explore, experience details and host profiles', async () => {
+      const islamabad = { minLat: 33.55, minLng: 72.9, maxLat: 33.85, maxLng: 73.25 };
+      const pins = await anon.catalog.exploreListings({ box: islamabad, user: { lat: 33.72, lng: 73.06 } });
+      expect(pins.length).toBeGreaterThanOrEqual(3);
+      expect(pins.every((p) => p.city === 'Islamabad' && p.distance_km !== null && p.lat > 33.5)).toBe(true);
+
+      const karachi = await anon.catalog.exploreBusinesses({ box: { minLat: 24.7, minLng: 66.9, maxLat: 25.0, maxLng: 67.2 } });
+      expect(karachi.length).toBeGreaterThanOrEqual(4);
+      expect(karachi.every((b) => b.city === 'Karachi' && b.from_price > 0)).toBe(true);
+
+      const hike = await anon.catalog.getListing('margalla-sunrise-hike');
+      expect(hike.highlights.length).toBeGreaterThan(0);
+      expect(hike.itinerary.map((s) => s.position)).toEqual([...hike.itinerary.map((s) => s.position)].sort((a, b) => a - b));
+      const host = hike.staff.map((s) => s.staff).find((s) => s?.is_host);
+      expect(host).toBeTruthy();
+
+      const profile = await anon.catalog.getHost(host!.id);
+      expect(profile.display_name).toBe(host!.display_name);
+      expect(profile.listings.some((l) => l.listing?.id === hike.id)).toBe(true);
+    });
+
     it('fills the Home rails', async () => {
       const curated = await anon.catalog.curated({ tag: 'local-fun', city: 'Lahore' });
       expect(curated.length).toBeGreaterThanOrEqual(3);

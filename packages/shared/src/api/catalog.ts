@@ -87,6 +87,69 @@ export function createCatalogApi(db: MomentSupabaseClient) {
         }),
       ),
 
+    /**
+     * Explore map, experiences mode: published experiences inside the visible
+     * area with Search filters, as listing cards plus pin coordinates and the
+     * distance from `user` (when known). Best first.
+     */
+    exploreListings: async (args: {
+      box: { minLat: number; minLng: number; maxLat: number; maxLng: number };
+      categoryIds?: string[];
+      query?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      minRating?: number;
+      user?: { lat: number; lng: number } | null;
+      limit?: number;
+    }) => {
+      const pins = await unwrap(
+        db.rpc('explore_listings', {
+          p_min_lat: args.box.minLat,
+          p_min_lng: args.box.minLng,
+          p_max_lat: args.box.maxLat,
+          p_max_lng: args.box.maxLng,
+          p_category_ids: args.categoryIds?.length ? args.categoryIds : undefined,
+          p_query: args.query || undefined,
+          p_min_price: args.minPrice,
+          p_max_price: args.maxPrice,
+          p_min_rating: args.minRating,
+          p_user_lat: args.user?.lat,
+          p_user_lng: args.user?.lng,
+          p_limit: args.limit ?? 100,
+        }),
+      );
+      const cards = await listingsByIds(pins.map((p) => p.listing_id));
+      const byId = new Map(pins.map((p) => [p.listing_id, p]));
+      return cards.flatMap((card) => {
+        const pin = byId.get(card.id);
+        return pin ? [{ ...card, lat: pin.lat, lng: pin.lng, distance_km: pin.distance_km === null ? null : Number(pin.distance_km) }] : [];
+      });
+    },
+
+    /** Explore map, businesses mode: service businesses inside the visible area (Services near you fields + coordinates). */
+    exploreBusinesses: (args: {
+      box: { minLat: number; minLng: number; maxLat: number; maxLng: number };
+      categorySlugs?: string[];
+      query?: string;
+      minRating?: number;
+      user?: { lat: number; lng: number } | null;
+      limit?: number;
+    }) =>
+      unwrap(
+        db.rpc('explore_businesses', {
+          p_min_lat: args.box.minLat,
+          p_min_lng: args.box.minLng,
+          p_max_lat: args.box.maxLat,
+          p_max_lng: args.box.maxLng,
+          p_category_slugs: args.categorySlugs?.length ? args.categorySlugs : undefined,
+          p_query: args.query || undefined,
+          p_min_rating: args.minRating,
+          p_user_lat: args.user?.lat,
+          p_user_lng: args.user?.lng,
+          p_limit: args.limit ?? 100,
+        }),
+      ),
+
     /** Cards for these listings, in the given order (Recently viewed). Unknown or hidden ids are skipped. */
     listingsByIds: (ids: string[]) => listingsByIds(ids),
 
@@ -185,17 +248,19 @@ export function createCatalogApi(db: MomentSupabaseClient) {
           .from('listings')
           .select(
             `*,
-            business:businesses!inner(id, slug, name, logo_url, cover_url, kind, rating_avg, rating_count, phone, timezone),
+            business:businesses!inner(id, slug, name, logo_url, cover_url, kind, rating_avg, rating_count, phone, timezone, is_verified),
             location:business_locations(id, name, address_line1, address_line2, area, city, province),
             category:categories(id, slug, name, kind),
             media:listing_media(id, url, alt, sort_order),
             options:listing_options(id, name, description, price_amount, duration_minutes, max_quantity, sort_order, is_active),
-            staff:listing_staff(staff:staff_members(id, display_name, title, avatar_url, is_host, rating_avg, rating_count, languages)),
+            staff:listing_staff(staff:staff_members(id, display_name, title, avatar_url, bio, is_host, rating_avg, rating_count, languages, created_at)),
+            itinerary:listing_itinerary_steps(position, title, description, duration_minutes),
             tags:listing_tags(tag:tags(id, slug, name))`,
           )
           .eq(column, idOrSlug)
           .order('sort_order', { referencedTable: 'listing_media' })
           .order('sort_order', { referencedTable: 'listing_options' })
+          .order('position', { referencedTable: 'listing_itinerary_steps' })
           .maybeSingle(),
         'Listing',
       );
@@ -277,12 +342,16 @@ export function createCatalogApi(db: MomentSupabaseClient) {
       return { total: rows.length, counts };
     },
 
-    /** "About the host" (About and Listings tabs). */
+    /** Host Profile (About and Listings tabs). Listings are published experiences only (RLS). */
     getHost: (staffId: string) =>
       unwrapRequired(
         db
           .from('staff_members')
-          .select(`${HOST_CARD_SELECT}, listings:listing_staff(listing:listings(${LISTING_CARD_SELECT}))`)
+          .select(
+            `id, display_name, title, avatar_url, cover_url, bio, languages, rating_avg, rating_count, created_at,
+            business:businesses!inner(id, slug, name, kind, is_verified, logo_url, cover_url),
+            listings:listing_staff(listing:listings(${LISTING_CARD_SELECT}))`,
+          )
           .eq('id', staffId)
           .eq('is_host', true)
           .maybeSingle(),
