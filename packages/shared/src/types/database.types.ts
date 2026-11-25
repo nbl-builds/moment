@@ -1400,6 +1400,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      listing_itinerary_steps: {
+        Row: {
+          business_id: string;
+          created_at: string;
+          description: string | null;
+          duration_minutes: number | null;
+          id: string;
+          listing_id: string;
+          position: number;
+          title: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          business_id: string;
+          created_at?: string;
+          description?: string | null;
+          duration_minutes?: number | null;
+          id?: string;
+          listing_id: string;
+          position: number;
+          title: string;
+        };
+        Update: {
+          business_id?: string;
+          created_at?: string;
+          description?: string | null;
+          duration_minutes?: number | null;
+          id?: string;
+          listing_id?: string;
+          position?: number;
+          title?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "listing_itinerary_steps_business_id_listing_id_fkey";
+            columns: ["business_id", "listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["business_id", "id"];
+          },
+        ];
+      };
       listing_media: {
         Row: {
           alt: string | null;
@@ -1568,11 +1610,13 @@ export type Database = {
           category_id: string | null;
           city: string;
           created_at: string;
+          cuisine: string | null;
           currency: string;
           description: string | null;
           duration_minutes: number;
           excludes: string[];
           external_ref: string | null;
+          highlights: string[];
           id: string;
           includes: string[];
           instant_book: boolean;
@@ -1598,6 +1642,7 @@ export type Database = {
           title: string;
           type: Database["public"]["Enums"]["listing_type"];
           updated_at: string;
+          what_to_bring: string[];
         };
         ComputedFields: never;
         Insert: {
@@ -1609,11 +1654,13 @@ export type Database = {
           category_id?: string | null;
           city: string;
           created_at?: string;
+          cuisine?: string | null;
           currency?: string;
           description?: string | null;
           duration_minutes: number;
           excludes?: string[];
           external_ref?: string | null;
+          highlights?: string[];
           id?: string;
           includes?: string[];
           instant_book?: boolean;
@@ -1639,6 +1686,7 @@ export type Database = {
           title: string;
           type: Database["public"]["Enums"]["listing_type"];
           updated_at?: string;
+          what_to_bring?: string[];
         };
         Update: {
           booking_count?: number;
@@ -1649,11 +1697,13 @@ export type Database = {
           category_id?: string | null;
           city?: string;
           created_at?: string;
+          cuisine?: string | null;
           currency?: string;
           description?: string | null;
           duration_minutes?: number;
           excludes?: string[];
           external_ref?: string | null;
+          highlights?: string[];
           id?: string;
           includes?: string[];
           instant_book?: boolean;
@@ -1679,6 +1729,7 @@ export type Database = {
           title?: string;
           type?: Database["public"]["Enums"]["listing_type"];
           updated_at?: string;
+          what_to_bring?: string[];
         };
         Relationships: [
           {
@@ -2771,6 +2822,7 @@ export type Database = {
           avatar_url: string | null;
           bio: string | null;
           business_id: string;
+          cover_url: string | null;
           created_at: string;
           display_name: string;
           external_ref: string | null;
@@ -2790,6 +2842,7 @@ export type Database = {
           avatar_url?: string | null;
           bio?: string | null;
           business_id: string;
+          cover_url?: string | null;
           created_at?: string;
           display_name: string;
           external_ref?: string | null;
@@ -2808,6 +2861,7 @@ export type Database = {
           avatar_url?: string | null;
           bio?: string | null;
           business_id?: string;
+          cover_url?: string | null;
           created_at?: string;
           display_name?: string;
           external_ref?: string | null;
@@ -3292,6 +3346,61 @@ export type Database = {
         }[];
       };
       email_sign_in_method: { Args: { p_email: string }; Returns: string };
+      explore_businesses: {
+        Args: {
+          p_category_slugs?: string[];
+          p_limit?: number;
+          p_max_lat: number;
+          p_max_lng: number;
+          p_min_lat: number;
+          p_min_lng: number;
+          p_min_rating?: number;
+          p_query?: string;
+          p_user_lat?: number;
+          p_user_lng?: number;
+        };
+        Returns: {
+          affinity: number;
+          area: string;
+          category_name: string;
+          category_slugs: string[];
+          city: string;
+          cover_url: string;
+          currency: string;
+          distance_km: number;
+          from_price: number;
+          id: string;
+          lat: number;
+          lng: number;
+          logo_url: string;
+          name: string;
+          rating_avg: number;
+          rating_count: number;
+          slug: string;
+        }[];
+      };
+      explore_listings: {
+        Args: {
+          p_category_ids?: string[];
+          p_limit?: number;
+          p_max_lat: number;
+          p_max_lng: number;
+          p_max_price?: number;
+          p_min_lat: number;
+          p_min_lng: number;
+          p_min_price?: number;
+          p_min_rating?: number;
+          p_query?: string;
+          p_user_lat?: number;
+          p_user_lng?: number;
+        };
+        Returns: {
+          distance_km: number;
+          lat: number;
+          listing_id: string;
+          lng: number;
+        }[];
+      };
       find_matching_groups: {
         Args: {
           p_city?: string;
@@ -3373,11 +3482,13 @@ export type Database = {
           category_id: string | null;
           city: string;
           created_at: string;
+          cuisine: string | null;
           currency: string;
           description: string | null;
           duration_minutes: number;
           excludes: string[];
           external_ref: string | null;
+          highlights: string[];
           id: string;
           includes: string[];
           instant_book: boolean;
@@ -3403,6 +3514,7 @@ export type Database = {
           title: string;
           type: Database["public"]["Enums"]["listing_type"];
           updated_at: string;
+          what_to_bring: string[];
         }[];
         SetofOptions: {
           from: "*";
