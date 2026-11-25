@@ -102,13 +102,27 @@ const bookingBase = z.object({
  * `slot` (tours: pick a session) or `appointment` (services: pick a time, optionally a staff member).
  */
 export const createBookingSchema = z.discriminatedUnion('mode', [
-  bookingBase.extend({ mode: z.literal('slot'), slotId: uuidSchema }),
+  /** `private`: book the whole session at the listing's private price ("Private group"). */
+  bookingBase.extend({ mode: z.literal('slot'), slotId: uuidSchema, private: z.boolean().default(false) }),
   bookingBase.extend({
     mode: z.literal('appointment'),
     startsAt: isoDateTimeSchema,
     staffId: uuidSchema.optional(),
   }),
 ]);
+
+/** Confirm & Pay for a services cart (several appointment services, one visit). */
+export const createCartSchema = z.object({
+  services: z
+    .array(z.object({ listingId: uuidSchema, startsAt: isoDateTimeSchema, staffId: uuidSchema.optional(), optionId: uuidSchema.optional() }))
+    .min(1, { message: 'Add a service to book' })
+    .max(10),
+  notes: optionalText(BOOKING_NOTES_MAX, 'Notes'),
+  couponCode: couponCodeSchema.optional(),
+  contactPhone: optionalPkPhoneSchema,
+  idempotencyKey: z.string().min(8).max(100),
+});
+export type CreateCartForm = z.output<typeof createCartSchema>;
 
 export type BookingGuests = z.output<typeof guestsShape>;
 export type CreateBookingInput = z.input<typeof createBookingSchema>;
@@ -137,7 +151,7 @@ export function toCreateBookingArgs(form: CreateBookingForm): RpcArgs<'create_bo
     p_idempotency_key: form.idempotencyKey,
     p_source: form.source,
     ...(form.mode === 'slot'
-      ? { p_slot_id: form.slotId }
+      ? { p_slot_id: form.slotId, p_private: form.private }
       : { p_starts_at: form.startsAt, p_staff_id: form.staffId }),
   };
 }

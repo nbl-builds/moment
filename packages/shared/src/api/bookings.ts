@@ -1,7 +1,7 @@
 import { DEFAULT_TIMEZONE } from '../constants';
 import { addDaysToLocalDate, localDateTimeToIso } from '../format/datetime';
 import type { Enums } from '../types';
-import { toCreateBookingArgs, type CancelBooking, type CreateBookingForm } from '../validation/booking';
+import { toCreateBookingArgs, type CancelBooking, type CreateBookingForm, type CreateCartForm } from '../validation/booking';
 import type { PageOptions } from './catalog';
 import { requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
 
@@ -57,6 +57,72 @@ export function createBookingsApi(db: MomentSupabaseClient) {
 
     /** Confirm & Pay. Pass the output of `createBookingSchema`. Retrying with the same idempotency key is safe. */
     create: (form: CreateBookingForm) => unwrap(db.rpc('create_booking', toCreateBookingArgs(form))),
+
+    /**
+     * Confirm & Pay for a services cart: one booking per service, all or none.
+     * The coupon applies to the most expensive service. Idempotent per key.
+     */
+    createCart: (form: CreateCartForm) =>
+      unwrap(
+        db.rpc('create_bookings', {
+          p_bookings: form.services.map((s) => ({
+            listing_id: s.listingId,
+            starts_at: s.startsAt,
+            staff_id: s.staffId ?? null,
+            items: s.optionId ? [{ option_id: s.optionId, quantity: 1 }] : null,
+          })),
+          p_coupon_code: form.couponCode,
+          p_notes: form.notes,
+          p_idempotency_key: form.idempotencyKey,
+          p_contact_phone: form.contactPhone,
+        }),
+      ),
+
+    /**
+     * Price lines for Confirm Reservation, priced by the server exactly as the
+     * booking will be. A bad coupon doesn't throw: `coupon_error` says why.
+     */
+    quote: async (args: { listingId: string; guestCount?: number; optionId?: string; couponCode?: string; private?: boolean }) => {
+      const data = await unwrap(
+        db.rpc('quote_booking', {
+          p_listing_id: args.listingId,
+          p_guest_count: args.guestCount ?? 1,
+          p_items: args.optionId ? [{ option_id: args.optionId, quantity: 1 }] : undefined,
+          p_coupon_code: args.couponCode,
+          p_private: args.private ?? false,
+        }),
+      );
+      const q = data as { subtotal: number; discount: number; total: number; currency: string; coupon_title: string | null; coupon_error: string | null };
+      return { subtotal: q.subtotal, discount: q.discount, total: q.total, currency: q.currency, couponTitle: q.coupon_title, couponError: q.coupon_error };
+    },
+
+    /** "Select Date" for appointments: local dates with at least one free time. */
+    availableDates: async ({ listingId, from, to }: { listingId: string; from: string; to: string }) =>
+      new Set(await unwrap(db.rpc('available_dates', { p_listing_id: listingId, p_from: from, p_to: to }))),
+
+    /** "Select dates" for experiences: the next sessions with their host and seats left. */
+    upcomingSlots: ({ listingId, days = 21 }: { listingId: string; days?: number }) =>
+      unwrap(
+        db
+          .from('slots')
+          .select('id, starts_at, ends_at, capacity, seats_booked, status, staff:staff_members(id, display_name, avatar_url)')
+          .eq('listing_id', listingId)
+          .in('status', ['open', 'full'])
+          .gt('starts_at', new Date().toISOString())
+          .lt('starts_at', new Date(Date.now() + days * 86_400_000).toISOString())
+          .order('starts_at'),
+      ),
+
+    /** "Available Coupons" on Add Coupon: public deals for this business or all of Moment. */
+    publicCoupons: (businessId: string) =>
+      unwrap(
+        db
+          .from('coupons')
+          .select('id, code, title, description, discount_type, discount_value, max_discount_amount, min_subtotal_amount, ends_at, business_id')
+          .eq('is_public', true)
+          .or(`business_id.is.null,business_id.eq.${businessId}`)
+          .order('business_id', { nullsFirst: false }),
+      ),
 
     cancel: ({ bookingId, reason }: CancelBooking) =>
       unwrap(db.rpc('cancel_booking', { p_booking_id: bookingId, p_reason: reason })),

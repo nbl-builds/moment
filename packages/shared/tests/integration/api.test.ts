@@ -7,7 +7,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { ApiError, createMomentApi, type MomentApi } from '../../src/api';
 import { upcomingLocalDates } from '../../src/format/datetime';
 import type { Database } from '../../src/types';
-import { completeSignUpWithPasswordSchema, createBookingSchema, recommendPlaceSchema, searchFiltersSchema } from '../../src/validation';
+import { completeSignUpWithPasswordSchema, createBookingSchema, createCartSchema, recommendPlaceSchema, searchFiltersSchema } from '../../src/validation';
 
 const url = process.env.SUPABASE_URL ?? '';
 const key = process.env.SUPABASE_PUBLISHABLE_KEY ?? '';
@@ -284,7 +284,7 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
           createBookingSchema.parse({ mode: 'slot', listingId: SEED.sunriseHike, slotId, guests: { adults: 1 }, couponCode: 'NOPE123', idempotencyKey: key8() }),
         ),
         'invalid',
-        'This coupon is not valid',
+        "This code doesn't exist",
       );
       await expectApiError(
         me.bookings.create(
@@ -348,6 +348,35 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
       expect(booking.staff_id).toBe(time!.staff_id);
       await expectApiError(me.bookings.create(form(key8())), 'conflict');
       await me.bookings.cancel({ bookingId: booking.id });
+    });
+
+    it('quotes, lists calendar days and books a services cart in one go', async () => {
+      const quote = await me.bookings.quote({ listingId: SEED.swedishMassage, couponCode: 'SAFFRON20' });
+      expect(quote.discount).toBeGreaterThan(0);
+      expect(quote.couponError).toBeNull();
+      expect((await me.bookings.quote({ listingId: SEED.swedishMassage, couponCode: 'SUMMER24' })).couponError).toBe('This code has expired');
+
+      const days = upcomingLocalDates(14);
+      const open = await me.bookings.availableDates({ listingId: SEED.swedishMassage, from: days[0]!, to: days[13]! });
+      expect(open.size).toBeGreaterThan(5);
+
+      const coupons = await me.bookings.publicCoupons(SEED.saffronSpa);
+      expect(coupons.map((c) => c.code)).toContain('SAFFRON20');
+      expect(coupons.map((c) => c.code)).not.toContain('SUMMER24');
+
+      const date = days.find((d, i) => i > 2 && open.has(d))!;
+      const [time] = await me.bookings.listAvailableTimes({ listingId: SEED.swedishMassage, date });
+      const bookings = await me.bookings.createCart(
+        createCartSchema.parse({ services: [{ listingId: SEED.swedishMassage, startsAt: time!.starts_at }], idempotencyKey: key8() }),
+      );
+      expect(bookings).toHaveLength(1);
+      await me.bookings.cancel({ bookingId: bookings[0]!.id });
+    });
+
+    it('lists upcoming sessions with seats', async () => {
+      const slots = await anon.bookings.upcomingSlots({ listingId: SEED.sunriseHike });
+      expect(slots.length).toBeGreaterThan(5);
+      expect(slots.every((s) => new Date(s.starts_at) > new Date())).toBe(true);
     });
   });
 
