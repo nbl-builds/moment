@@ -78,7 +78,10 @@ export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: B
             style={styles.item}
             accessibilityRole="tab"
             accessibilityState={{ selected: focused }}
-            accessibilityLabel={options?.tabBarAccessibilityLabel ?? tab.label}
+            accessibilityLabel={
+              options?.tabBarAccessibilityLabel ??
+              (options?.tabBarBadge !== undefined ? `${tab.label}, ${options.tabBarBadge} unread` : tab.label)
+            }
             hitSlop={4}
           >
             {route.name === 'explore' ? (
@@ -86,7 +89,16 @@ export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: B
             ) : route.name === 'profile' ? (
               <ProfileIcon focused={focused} />
             ) : (
-              <Icon name={tab.icon} size={TAB_BAR.iconSize} color={focused ? 'primary' : 'secondaryTint3'} />
+              <View>
+                <Icon name={tab.icon} size={TAB_BAR.iconSize} color={focused ? 'primary' : 'secondaryTint3'} />
+                {options?.tabBarBadge !== undefined && (
+                  <View style={styles.badge} accessible={false}>
+                    <Text variant="caption11" weight="extrabold" color="onBadge" style={styles.badgeText}>
+                      {String(options.tabBarBadge)}
+                    </Text>
+                  </View>
+                )}
+              </View>
             )}
             <TabLabel label={tab.label} focused={focused} collapse={collapse} />
           </Pressable>
@@ -180,6 +192,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: TAB_BAR.minTapTarget,
+  },
+  /** Unread count on the Bookings icon (Figma 52:8565: 14pt #F35C5C, ExtraBold 8). */
+  badge: {
+    position: 'absolute',
+    top: -7,
+    right: -9,
+    minWidth: 16,
+    height: 16,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    backgroundColor: colors.badge,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: {
+    fontSize: 9,
+    lineHeight: 12,
   },
   label: {
     overflow: 'hidden',

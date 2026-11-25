@@ -1,5 +1,5 @@
 import { BOOKING_CHARGES, colors, formatPrice, priceBreakdown } from '@moment/shared';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Text } from '@/components/ui';
 import { BOOK } from '../layout';
 import { Card, Divider, Line, SectionHeader } from './card';
@@ -14,6 +14,7 @@ export function PriceDetails({
   discount,
   loading,
   error,
+  style,
 }: {
   /** "2 Services", "3 Guests", "Private group". */
   itemsLabel: string;
@@ -21,10 +22,12 @@ export function PriceDetails({
   discount: number;
   loading: boolean;
   error: boolean;
+  /** Reservation details show it as a full-width section. */
+  style?: StyleProp<ViewStyle>;
 }) {
   if (subtotal === undefined) {
     return (
-      <Card>
+      <Card style={style}>
         <SectionHeader title="Price Details" />
         {error ? (
           <Text variant="body14" color="error" style={styles.state}>
@@ -41,7 +44,7 @@ export function PriceDetails({
   // Tax is on the amount actually paid (after the coupon).
   const beforeDiscount = p.subtotal + p.tax + p.serviceFee;
   return (
-    <Card>
+    <Card style={style}>
       <View style={styles.header}>
         <SectionHeader title="Price Details" />
         {loading && <ActivityIndicator size="small" color={colors.secondaryTint3} />}
