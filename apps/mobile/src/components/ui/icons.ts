@@ -209,6 +209,18 @@ export const icons = {
   mic: { source: require('../../../assets/icons/mic.svg') },
   /** Paper plane inside the black send button: 12pt glyph. */
   send: { source: require('../../../assets/icons/send.svg'), glyph: { width: 14, height: 14 } },
+
+  // Explore, Experience details, Host Profile (48:2341 ... 48:4223)
+  /** Filled map pin: meeting area and first itinerary step (48:6527). */
+  'pin-fill': { source: require('../../../assets/icons/pin-fill.svg') },
+  /** Report host (48:4175), 28pt. */
+  flag: { source: require('../../../assets/icons/flag.svg') },
+  /** Host Profile "Language" row. */
+  languages: { source: require('../../../assets/icons/languages.svg') },
+  /** Explore: locate button (crosshair), mode switch arrows (white), panel chevron (26 x 5.5 in a 28 box). */
+  locate: { source: require('../../../assets/icons/locate.svg') },
+  'arrow-up-down': { source: require('../../../assets/icons/arrow-up-down.svg') },
+  'handle-up': { source: require('../../../assets/icons/handle-up.svg'), glyph: { width: 28, height: 7.6 } },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;
