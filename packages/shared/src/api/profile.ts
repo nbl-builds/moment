@@ -1,6 +1,6 @@
 import type { NotificationPrefs, PersonalInfo } from '../validation/profile';
 import { toDisplayName } from '../validation/profile';
-import { requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
+import { ApiError, requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
 
 export function createProfileApi(db: MomentSupabaseClient) {
   return {
@@ -44,6 +44,20 @@ export function createProfileApi(db: MomentSupabaseClient) {
           .maybeSingle(),
         'Profile',
       );
+    },
+
+    /**
+     * Uploads a profile photo to `avatars/<user_id>/...` and saves it on the
+     * profile as a storage ref (`api.media.url` resolves it). Returns the ref.
+     */
+    uploadAvatar: async (file: { body: ArrayBuffer; contentType: string; extension: string }) => {
+      const userId = await requireUserId(db);
+      const path = `${userId}/avatar-${Date.now()}.${file.extension}`;
+      const { error } = await db.storage.from('avatars').upload(path, file.body, { contentType: file.contentType });
+      if (error) throw new ApiError('network', `Could not upload the photo: ${error.message}`, undefined, undefined, error);
+      const ref = `storage://avatars/${path}`;
+      await unwrap(db.from('profiles').update({ avatar_url: ref }).eq('id', userId));
+      return ref;
     },
 
     /** Upload to the `avatars` bucket (`<user_id>/...`) first, then save the public URL here. */
