@@ -43,6 +43,11 @@ export const palette = {
   badgeRed: '#F35C5C', // Figma: unread / cart count badges (52:8565)
   onlineGreen: '#30CC22', // Figma: online dot in Chat (47:5940)
   cancelRed: '#FF5050', // Figma: "Cancel reservation" link (47:6385)
+  skyBlue: '#9CC9FE', // Figma: Moment Groups intro carousel side card (48:6274)
+  butterYellow: '#FEE99C', // Figma: Moment Groups intro carousel side card (48:6274)
+  heartPink: '#FACAC6', // Figma: Group Match heart button (48:4500)
+  heartRed: '#DC3421', // Figma: Group Match heart (48:4500)
+  deleteRed: '#E87063', // Figma: Delete Group row and Yes button (48:5138, 48:5243)
   // Adventure Quiz thermometer illustration (20:2453)
   thermometerBlue: '#2979C1',
   thermometerGrey: '#EAEAEA',
@@ -135,6 +140,12 @@ export const colors = {
   onBadge: palette.white,
   online: palette.onlineGreen,
   cancel: palette.cancelRed,
+  /** Groups: intro carousel cards, Group Match heart, Delete Group. */
+  introBlue: palette.skyBlue,
+  introYellow: palette.butterYellow,
+  heartSurface: palette.heartPink,
+  heart: palette.heartRed,
+  destructive: palette.deleteRed,
   /** Pressed overlay for buttons without a pressed colour of their own. */
   pressedOverlay: withAlpha(palette.pureBlack, 0.1),
 } as const;

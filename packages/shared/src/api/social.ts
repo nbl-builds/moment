@@ -113,6 +113,14 @@ export function createGroupsApi(db: MomentSupabaseClient) {
       if (error && error.code !== '23505') throw new ApiError('network', error.message, undefined, undefined, error);
     },
 
+    /** "Add to Groups" ticks: my groups where I already saved this experience or business. */
+    likedGroupIds: async (target: { listingId: string } | { businessId: string }) => {
+      const userId = await requireUserId(db);
+      let q = db.from('group_likes').select('group_id').eq('user_id', userId);
+      q = 'listingId' in target ? q.eq('listing_id', target.listingId) : q.eq('business_id', target.businessId);
+      return (await unwrap(q)).map((r) => r.group_id);
+    },
+
     unlike: async (groupId: string, target: { listingId: string } | { businessId: string }) => {
       const userId = await requireUserId(db);
       let q = db.from('group_likes').delete().eq('group_id', groupId).eq('user_id', userId);
@@ -121,7 +129,22 @@ export function createGroupsApi(db: MomentSupabaseClient) {
     },
 
     /** Group page > Group Match: groups to match with, and whether this group already asked. */
-    matches: (groupId: string) => unwrap(db.rpc('group_matches', { p_group_id: groupId })),
+    matches: async (groupId: string) => {
+      const groups = await unwrap(db.rpc('group_matches', { p_group_id: groupId }));
+      if (!groups.length) return [];
+      // Faces for each card ("Liked by"): members of public groups are readable.
+      const members = await unwrap(
+        db
+          .from('group_members')
+          .select('group_id, role, profile:profiles!group_members_user_id_fkey(id, display_name, avatar_url)')
+          .in('group_id', groups.map((g) => g.id))
+          .eq('status', 'active'),
+      );
+      return groups.map((g) => ({
+        ...g,
+        members: members.filter((m) => m.group_id === g.id && m.profile).map((m) => m.profile!),
+      }));
+    },
 
     /** Heart on a Group Match card. */
     sendMatch: async (fromGroupId: string, toGroupId: string) => {
