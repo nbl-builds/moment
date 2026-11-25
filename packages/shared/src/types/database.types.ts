@@ -1230,6 +1230,116 @@ export type Database = {
           },
         ];
       };
+      group_likes: {
+        Row: {
+          business_id: string | null;
+          created_at: string;
+          group_id: string;
+          id: string;
+          listing_id: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          business_id?: string | null;
+          created_at?: string;
+          group_id: string;
+          id?: string;
+          listing_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          business_id?: string | null;
+          created_at?: string;
+          group_id?: string;
+          id?: string;
+          listing_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "group_likes_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_likes_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_likes_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_likes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      group_match_requests: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          from_group_id: string;
+          id: string;
+          status: Database["public"]["Enums"]["match_request_status"];
+          to_group_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          from_group_id: string;
+          id?: string;
+          status?: Database["public"]["Enums"]["match_request_status"];
+          to_group_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          from_group_id?: string;
+          id?: string;
+          status?: Database["public"]["Enums"]["match_request_status"];
+          to_group_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "group_match_requests_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_match_requests_from_group_id_fkey";
+            columns: ["from_group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "group_match_requests_to_group_id_fkey";
+            columns: ["to_group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       group_members: {
         Row: {
           created_at: string;
@@ -1289,10 +1399,13 @@ export type Database = {
           end_date: string | null;
           id: string;
           interest_tag_ids: string[];
+          invite_token: string;
           is_open_to_match: boolean;
+          likes_visibility: Database["public"]["Enums"]["likes_visibility"];
           max_members: number;
           name: string;
           owner_id: string;
+          sharing_enabled: boolean;
           start_date: string | null;
           updated_at: string;
           visibility: Database["public"]["Enums"]["group_visibility"];
@@ -1307,10 +1420,13 @@ export type Database = {
           end_date?: string | null;
           id?: string;
           interest_tag_ids?: string[];
+          invite_token?: string;
           is_open_to_match?: boolean;
+          likes_visibility?: Database["public"]["Enums"]["likes_visibility"];
           max_members?: number;
           name: string;
           owner_id: string;
+          sharing_enabled?: boolean;
           start_date?: string | null;
           updated_at?: string;
           visibility?: Database["public"]["Enums"]["group_visibility"];
@@ -1324,10 +1440,13 @@ export type Database = {
           end_date?: string | null;
           id?: string;
           interest_tag_ids?: string[];
+          invite_token?: string;
           is_open_to_match?: boolean;
+          likes_visibility?: Database["public"]["Enums"]["likes_visibility"];
           max_members?: number;
           name?: string;
           owner_id?: string;
+          sharing_enabled?: boolean;
           start_date?: string | null;
           updated_at?: string;
           visibility?: Database["public"]["Enums"]["group_visibility"];
@@ -3417,10 +3536,13 @@ export type Database = {
           end_date: string | null;
           id: string;
           interest_tag_ids: string[];
+          invite_token: string;
           is_open_to_match: boolean;
+          likes_visibility: Database["public"]["Enums"]["likes_visibility"];
           max_members: number;
           name: string;
           owner_id: string;
+          sharing_enabled: boolean;
           start_date: string | null;
           updated_at: string;
           visibility: Database["public"]["Enums"]["group_visibility"];
@@ -3431,6 +3553,14 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      find_people: {
+        Args: { p_limit?: number; p_query: string };
+        Returns: {
+          avatar_url: string;
+          display_name: string;
+          id: string;
+        }[];
       };
       get_available_times: {
         Args: {
@@ -3443,6 +3573,26 @@ export type Database = {
           ends_at: string;
           staff_id: string;
           starts_at: string;
+        }[];
+      };
+      group_matches: {
+        Args: { p_group_id: string; p_limit?: number };
+        Returns: {
+          cover_url: string;
+          description: string;
+          destination_city: string;
+          id: string;
+          member_count: number;
+          name: string;
+          request_status: Database["public"]["Enums"]["match_request_status"];
+          shared_badges: number;
+        }[];
+      };
+      group_recommendations: {
+        Args: { p_group_id: string; p_limit?: number };
+        Returns: {
+          listing_id: string;
+          score: number;
         }[];
       };
       listing_distances: {
@@ -3724,8 +3874,10 @@ export type Database = {
       group_role: "owner" | "admin" | "member";
       group_visibility: "private" | "public";
       legal_document_type: "terms" | "privacy" | "cancellation" | "host_terms";
+      likes_visibility: "everyone" | "only_me";
       listing_status: "draft" | "published" | "archived";
       listing_type: "experience" | "service";
+      match_request_status: "pending" | "accepted" | "declined";
       member_status: "invited" | "active";
       membership_interval: "month" | "year" | "one_time";
       membership_status: "active" | "past_due" | "cancelled" | "expired";
@@ -3901,8 +4053,10 @@ export const Constants = {
       group_role: ["owner", "admin", "member"],
       group_visibility: ["private", "public"],
       legal_document_type: ["terms", "privacy", "cancellation", "host_terms"],
+      likes_visibility: ["everyone", "only_me"],
       listing_status: ["draft", "published", "archived"],
       listing_type: ["experience", "service"],
+      match_request_status: ["pending", "accepted", "declined"],
       member_status: ["invited", "active"],
       membership_interval: ["month", "year", "one_time"],
       membership_status: ["active", "past_due", "cancelled", "expired"],
