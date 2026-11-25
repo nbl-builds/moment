@@ -35,11 +35,13 @@ const LABEL_GAP = 4;
  */
 export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { collapse, setCollapsed } = useTabBar();
+  const { collapse, setCollapsed, hidden } = useTabBar();
+  const offscreen = E.height + TAB_BAR.bottomOffset(insets.bottom) + 20;
 
   const barStyle = useAnimatedStyle(() => {
     const c = collapse.get();
     return {
+      transform: [{ translateY: hidden.get() * offscreen }],
       height: interpolate(c, [0, 1], [E.height, C.height]),
       left: interpolate(c, [0, 1], [E.sideInset, C.sideInset]),
       right: interpolate(c, [0, 1], [E.sideInset, C.sideInset]),
