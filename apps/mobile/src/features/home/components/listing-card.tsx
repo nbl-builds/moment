@@ -77,6 +77,8 @@ export interface PhotoCardProps {
   withActionLabel?: string;
   saved: boolean;
   onToggleSaved: () => void;
+  /** Replaces the avatar row and price (Groups: "Liked by" and member avatars). */
+  footer?: ReactNode;
 }
 
 /** The Home card layout (17:1126, 17:1169) shared by listing and business cards. */
@@ -143,23 +145,27 @@ export function PhotoCard(p: PhotoCardProps) {
           {p.title}
         </Text>
 
-        <View style={[styles.footer, { paddingBottom: v.footerBottom }]}>
-          {p.onPressWith ? (
-            <Pressable onPress={p.onPressWith} hitSlop={6} style={styles.with} accessible={false}>
-              {withRow}
-            </Pressable>
-          ) : (
-            <View style={styles.with}>{withRow}</View>
-          )}
-          <View style={styles.price}>
-            <Text variant="subText14" weight="bold" color="price">
-              {p.price}
-            </Text>
-            <Text variant="body10" color="secondaryTint2">
-              {p.priceNote}
-            </Text>
+        {p.footer ? (
+          <View style={[styles.customFooter, { paddingBottom: v.footerBottom }]}>{p.footer}</View>
+        ) : (
+          <View style={[styles.footer, { paddingBottom: v.footerBottom }]}>
+            {p.onPressWith ? (
+              <Pressable onPress={p.onPressWith} hitSlop={6} style={styles.with} accessible={false}>
+                {withRow}
+              </Pressable>
+            ) : (
+              <View style={styles.with}>{withRow}</View>
+            )}
+            <View style={styles.price}>
+              <Text variant="subText14" weight="bold" color="price">
+                {p.price}
+              </Text>
+              <Text variant="body10" color="secondaryTint2">
+                {p.priceNote}
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
       </Pressable>
       <Pressable
         onPress={p.onToggleSaved}
@@ -232,6 +238,9 @@ const styles = StyleSheet.create({
   },
   title: {
     paddingRight: 10,
+  },
+  customFooter: {
+    marginTop: 'auto',
   },
   footer: {
     marginTop: 'auto',

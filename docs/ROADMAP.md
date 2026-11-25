@@ -10,13 +10,13 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Dev auth bypass for testing screens: `EXPO_PUBLIC_AUTH_BYPASS=1` in `apps/mobile/.env.local` (dev builds only; see `.env.example`). Remove it, or keep it dev-only, when the production SMS provider is wired
 - Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
 - Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
-- Next: section 9, Group Screens, or section 10, Profile Screens. Test on a real device: Explore map gestures and pin taps (AXe can't drive MapKit in the simulator), voice notes and the chat keyboard
+- Next: section 10, Profile Screens (General, Support, Legal), then Recommend a place. Test on a real device: Explore map gestures and pin taps (AXe can't drive MapKit in the simulator), voice notes and the chat keyboard
 - Next screens behind Home's placeholder routes: Experience details (`/listing/[id]`, has a "Check availability" button into Select dates for now), host profile (`/host/[id]`), Recommend a place, and the Bookings / Explore / Groups / Profile tabs
 - Promo banners are static in `apps/mobile/src/features/home/promos.ts`; move them to `platform_settings` when the team needs to change them without a release
 - "Recently viewed" is stored on the device (AsyncStorage); move it to the server if it should follow the user
 - Seed photos are the Figma images in `supabase/seed-media` (local only). Real listings need media upload in the business portal
 - Icons: Figma's "Huge Icons" page is not the npm Hugeicons library, so icons are exported from Figma per screen into `apps/mobile/assets/icons` and registered in `components/ui/icons.ts`
-- Figma fields with no column yet (add a migration when the screens are built): profile pronouns and emergency contact, group "Who can see likes?", recommendation type (experience vs business; stored in the note for now)
+- Figma fields with no column yet (add a migration when the screens are built): profile pronouns and emergency contact, recommendation type (experience vs business; stored in the note for now)
 - Search by distance and date (`near`, `maxDistanceKm`, `date`, `sort: 'distance'`) needs a search RPC; `catalog.searchListings` throws `unsupported` for these until then. Build it with the Explore map (card distances already use `listing_distances`)
 - Set the same password rule (8+ characters, letters and digits) on the hosted Supabase project under Auth settings; `config.toml` only covers local
 - Check the date helpers on Hermes devices (they use `Intl.DateTimeFormat` with `timeZone`, verified on Node only)
@@ -34,7 +34,7 @@ One branch per section (`feat/<section>`), merged into `staging`. Frames: `docs/
 - [x] 6. Customer Dashboard (Adventure Quiz) + personality badge (badge on Profile comes with section 10)
 - [x] 7. Customer Dashboard (Section Screens): "See all" lists (with Search typing screen and Filters updates)
 - [x] 8. Explore Screens (`/map`, from the tab bar's Explore button): map with clustered pins, selected-pin card, Search this area, locate, Hosts / Businesses switch, search and filters, category chips, and the draggable results list
-- [ ] 9. Group Screens
+- [x] 9. Group Screens: Groups tab (empty, search, rows with sharing eye), Moment Groups intro (first time) with FAQ, New Group (cover upload, name, topic) and Congratulations, group page (Liked by group with "Liked by" faces respecting likes visibility, Group Match deck with match requests, Recommended Group), share sheet, Invite others (people search by name or phone), members sheet (remove), ••• menu (rename, settings, leave), Group Settings (sharing, private, who can see likes, delete). The heart's "Add to Groups" saves to group likes; a bucket list's "Invite others" turns it into a group
 - [ ] 10. Profile Screens (General, Support, Legal)
 
 ## To wire after UI
@@ -43,7 +43,9 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - **Search: host mode** (`features/search/mock.ts` `searchHosts`): Filters > Host shows hosts; loads the top 100 hosts and filters on the device by name, category, city, language and rating (area, distance, price and dates ignored). Needs a `search_hosts` RPC
 - **Search: distance and date paging**: with a distance or date filter, Search Results filters one page of 50 on the device (real `listing_distances`). Move both into the search RPC so they page on the server
 
-- **Bucket List: Groups** ("Add to Groups" on the heart sheet, "Invite others" on the share sheet): show a "Coming with Groups" toast. Wire when Groups (section 9) is built; inviting converts the list to a group
+- **Group invite links**: "Share a link" sends `moment://group/<invite_token>` when sharing is on; opening it (join by token, an RPC) is not built yet
+- **Group Match requests received**: requests are sent and withdrawn in the app, but there is no screen to accept or decline incoming ones yet (RLS already lets the receiving group's admins update the status). Needs an inbox (notifications feed) and what "accepted" unlocks (shared chat or plan)
+- **Group invites**: invited people see the group in their list with Join / Decline, but get no push or in-app notification yet (notifications feed)
 - **Bucket List: shared links**: "Share a link" sends `moment://bucket-list/<share_token>`; opening it (read-only view by token, RLS or an RPC) is not built yet
 
 - **Payments** (`features/booking/mock.ts` `payForBookings`): Confirm & Pay books for real, then the mock returns a pending `TEST-...` payment after 600ms and nothing is charged; bookings stay `payment_status = 'unpaid'`. Wire to the chosen Pakistan provider (card, JazzCash, Easypaisa in `PAYMENT_METHODS`); the server marks bookings paid by webhook
@@ -134,7 +136,7 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - [x] Bucket List: several named lists (`bucket_lists`), heart -> save sheet -> list picker (ticks, toggle) -> name a new list -> first-save sheet or "Saved to ..." toast with View; all lists and one list screens with share link, rename and delete; optimistic hearts and lists
 - [x] Adventure Quiz + personality badge driving recommendations: Figma's six questions (photo lists, glass, emoji, plane seat, thermometer) as `quiz_questions.kind` + `config`, guests sign in at the end and Home resumes the submit, retaking replaces the result, Services near you refetches (the badge breaks ties)
 - [ ] Personality badge on Profile
-- [ ] Groups: group travel, group match
+- [x] Groups: group travel, group likes, group match requests, recommendations (accepting match requests and invite links still to wire)
 - [ ] Profile: membership, offers, notifications, support, legal
 
 ## Phase 7: Consumer web and gamification

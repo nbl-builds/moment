@@ -152,6 +152,13 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - `group_members`: role (`owner | admin | member`), status (`invited | requested | active | left`).
 - Creating a group adds the owner and creates the group chat.
 - `find_matching_groups(city, start, end)` powers Group Match.
+- `groups` also has `description` (the "Group Topic"), `cover_url`, `sharing_enabled` (link sharing), `likes_visibility` (`everyone | only_me`) and `invite_token` (random, unique; the share link is `moment://group/<token>`).
+- `group_likes`: what a group saved (exactly one of listing or business, `num_nonnulls` check), who liked it and when. Partial unique indexes stop duplicates per group. Read: your own likes, or every member's when the group's `likes_visibility` is `everyone`. Insert: your own, as an active member. Delete: your own, or any as a group admin.
+- `group_match_requests`: from group, to group, status (`pending | accepted | declined`), unique per pair. Members send only to public groups that are open to match; the receiving group's admins accept or decline; the sender withdraws a pending one.
+- `group_matches(group, limit)`: public, open groups in the same destination city that aren't already related, with member count, shared badges and this group's request status.
+- `group_recommendations(group, limit)`: listings scored from the members' quiz badge tag weights, twice the tags of the group's liked items, and popularity; liked items are left out.
+- `find_people(query, limit)`: security definer, signed-in users only. Matches display name (`ilike`) or an exact phone (`03xx...` and `923xx...` normalised to `+92`); never returns the caller. Returns only id, name and avatar.
+- Invites are `group_members` rows with status `invited`; the invitee joins (`active`) or declines (`left`).
 
 ### Chat
 - `conversations` (`direct | business | group`), `conversation_participants`, `messages`.
@@ -181,6 +188,7 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - `business-media` (public read, owners and managers write `<business_id>/...`)
 - `chat-attachments` (private, conversation participants, `<conversation_id>/...`)
 - `review-photos` (public read, users write their own folder `<user_id>/...`)
+- `group-covers` (public read, users write their own folder `<user_id>/...`)
 - `seed-media` (local dev only, public): images exported from Figma in `supabase/seed-media`, uploaded on `supabase db reset`. Media columns may hold `storage://<bucket>/<path>` references; the API client resolves them to public URLs for the app's own Supabase host.
 
 ## Indexes
@@ -208,6 +216,7 @@ pnpm db:types    # regenerate packages/shared/src/types/database.types.ts
 - `03_social_and_payments`: reviews only for completed bookings, business replies, chat and realtime access, groups and joining rules, cash payments vs provider payments.
 - `04`-`08`: sign up, email sign-in, Home dashboard, Adventure Quiz, bucket lists.
 - `10_booking_flow`: quotes and coupon reasons, sold-out and private slots, services cart (coupon once, idempotent, all or nothing), calendar days, phone sync.
+- `14_groups`: likes and likes visibility, match requests (who can send, accept and withdraw), `group_matches`, `group_recommendations`, `find_people` (no guests, phone formats), invites, covers bucket.
 - `09_business_page`: opening hours and `business_is_open` (split days, past midnight), gallery and hours RLS, seed coverage, review-photo uploads, `reviewable_bookings`, location points.
 
 ### Seed data (local only)

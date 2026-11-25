@@ -221,6 +221,14 @@ export const icons = {
   locate: { source: require('../../../assets/icons/locate.svg') },
   'arrow-up-down': { source: require('../../../assets/icons/arrow-up-down.svg') },
   'handle-up': { source: require('../../../assets/icons/handle-up.svg'), glyph: { width: 28, height: 7.6 } },
+
+  // Groups (48:3071 ... 48:5243)
+  /** Group menu: Group Settings (48:4832), 28pt. */
+  settings: { source: require('../../../assets/icons/settings.svg') },
+  /** Groups list: link sharing is on (48:3142), keeps its green. */
+  'eye-privacy': { source: require('../../../assets/icons/eye-privacy.svg'), multicolor: true },
+  /** New Group cover picker: grey circle with a camera (48:4074), 41pt. */
+  'camera-button': { source: require('../../../assets/icons/camera-button.svg'), multicolor: true },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;

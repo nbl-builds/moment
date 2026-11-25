@@ -23,7 +23,7 @@ export interface BookingSheetProps {
   /** Keep the Figma height and scroll the content under the pinned button (long lists). */
   scrollContent?: boolean;
   /** Pinned lime button at the bottom. */
-  action?: { label: string; onPress: () => void; disabled?: boolean; loading?: boolean };
+  action?: { label: string; onPress: () => void; disabled?: boolean; loading?: boolean; variant?: 'primary' | 'dark' };
   children: ReactNode;
 }
 
@@ -74,6 +74,7 @@ export function BookingSheet({ visible, onClose, title, titleAlign = 'center', o
             onPress={action.onPress}
             disabled={action.disabled}
             loading={action.loading}
+            variant={action.variant ?? 'primary'}
             style={styles.action}
           />
         )}

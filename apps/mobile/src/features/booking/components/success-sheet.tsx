@@ -7,7 +7,7 @@ import { BookingSheet } from './booking-sheet';
 const RING = 116;
 const DOT = 76;
 
-export type SuccessKind = 'request' | 'confirmed' | 'membership';
+export type SuccessKind = 'request' | 'confirmed' | 'membership' | 'group';
 
 const COPY: Record<SuccessKind, { title: string; body: string }> = {
   request: {
@@ -22,13 +22,18 @@ const COPY: Record<SuccessKind, { title: string; body: string }> = {
     title: 'Your membership\nrequest is sent.',
     body: 'The business will confirm it shortly.\nWe’ll let you know.',
   },
+  /** New Group (48:4118): Figma's body was copied from bookings; replaced. */
+  group: {
+    title: 'Congratulations!',
+    body: 'Your group is ready.\nInvite friends to start planning together.',
+  },
 };
 
 /** Booking sent (47:5045): check badge, title, note and "Sounds Good!". */
 export function SuccessSheet({ visible, kind, onDone }: { visible: boolean; kind: SuccessKind; onDone: () => void }) {
   const copy = COPY[kind];
   return (
-    <BookingSheet visible={visible} onClose={onDone} hideClose top={BOOK.sheet.top.success} action={{ label: 'Sounds Good!', onPress: onDone }}>
+    <BookingSheet visible={visible} onClose={onDone} hideClose top={BOOK.sheet.top.success} action={{ label: 'Sounds Good!', onPress: onDone, variant: kind === 'group' ? 'dark' : 'primary' }}>
       <View style={styles.content} accessibilityLiveRegion="polite">
         <View style={styles.ring}>
           <View style={styles.dot}>

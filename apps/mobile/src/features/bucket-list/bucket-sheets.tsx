@@ -9,6 +9,7 @@ import { BottomSheet } from '@/components/bottom-sheet';
 import { showToast } from '@/components/toast';
 import { Button, Icon, Text } from '@/components/ui';
 import { useLoginSheet } from '@/features/auth/login-sheet-provider';
+import { GroupPickerSheet } from '@/features/groups/components/group-picker-sheet';
 import { ListThumbnail } from './components/list-thumbnail';
 import { NameSheet } from './components/name-sheet';
 import { SheetOption } from './components/sheet-option';
@@ -18,12 +19,10 @@ import { useBucketLists, useBucketMutations, useSavedListings, type SaveTarget }
 // Saving from a heart (Figma 22:2487 -> 24:1225 -> 24:1444 -> 24:1667):
 // actions sheet -> "Your Bucketlist" picker -> "Give it a name" -> first-save sheet.
 
-type Step = 'actions' | 'picker' | 'name' | 'first' | null;
+type Step = 'actions' | 'picker' | 'name' | 'first' | 'groups' | null;
 
 /** Shown once per device: the very first save gets the "Ohhh, your first item here!" sheet. */
 const FIRST_SAVE_KEY = 'moment.bucketFirstSaveSeen';
-
-export const comingWithGroups = () => showToast('Coming with Groups');
 
 interface BucketSheetsValue {
   /** Heart tapped on a listing: guests get the login sheet. */
@@ -129,10 +128,7 @@ export function BucketSheetsProvider({ children }: { children: ReactNode }) {
             icon="users"
             title="Add to Groups"
             subtitle="Plan with a team"
-            onPress={() => {
-              close();
-              comingWithGroups();
-            }}
+            onPress={() => setStep('groups')}
           />
         </View>
       </BottomSheet>
@@ -205,6 +201,13 @@ export function BucketSheetsProvider({ children }: { children: ReactNode }) {
           </View>
         </View>
       </BottomSheet>
+
+      {/* "Add to Groups": pick or create a group */}
+      <GroupPickerSheet
+        target={step === 'groups' && target ? (target.kind === 'listing' ? { listingId: target.id } : { businessId: target.id }) : null}
+        onBack={() => setStep('actions')}
+        onClose={close}
+      />
 
       {/* "Give it a name" (24:1444) */}
       <NameSheet
