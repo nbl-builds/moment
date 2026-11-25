@@ -3,14 +3,14 @@
 Keep this file current: tick items as they land and update **Next up** so any session can pick up where the last one stopped.
 
 ## Next up
-- Decide maps provider (Mapbox vs Google Maps) before Explore work
+- Maps: Explore uses react-native-maps with the default provider (Apple Maps on iOS, muted style; Google on Android). Decide Mapbox vs Google before launch; Figma's grey map style needs the Google provider (`customMapStyle`) or Mapbox
 - Phase 1 remaining: Supabase Auth providers for production (a Pakistan SMS provider for phone OTP, email, Apple, Google, Facebook). Locally, phone OTP works with the test numbers in `supabase/config.toml` (`+92 308 4282001` / `051518`, `+92 300 1234567` / `123456`)
 - Sign-in providers at the end: a Pakistan SMS provider (production phone OTP), Apple, Google and Facebook (buttons show "Coming soon" today), and production SMTP for auth emails (templates in `supabase/templates`)
 - Before launch: rate-limit `email_sign_in_method` (it reveals whether an email has an account), and set `moment://**` as a redirect URL on the hosted project
 - Dev auth bypass for testing screens: `EXPO_PUBLIC_AUTH_BYPASS=1` in `apps/mobile/.env.local` (dev builds only; see `.env.example`). Remove it, or keep it dev-only, when the production SMS provider is wired
 - Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
 - Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
-- Next: section 2 remainder (Experience details, host profile) or section 8, Explore Screens. Booking Status is done: test voice notes and the chat keyboard on a real device (see "To wire after UI")
+- Next: section 9, Group Screens, or section 10, Profile Screens. Test on a real device: Explore map gestures and pin taps (AXe can't drive MapKit in the simulator), voice notes and the chat keyboard
 - Next screens behind Home's placeholder routes: Experience details (`/listing/[id]`, has a "Check availability" button into Select dates for now), host profile (`/host/[id]`), Recommend a place, and the Bookings / Explore / Groups / Profile tabs
 - Promo banners are static in `apps/mobile/src/features/home/promos.ts`; move them to `platform_settings` when the team needs to change them without a release
 - "Recently viewed" is stored on the device (AsyncStorage); move it to the server if it should follow the user
@@ -27,13 +27,13 @@ Keep this file current: tick items as they land and update **Next up** so any se
 ## UI-first phase (consumer mobile)
 One branch per section (`feat/<section>`), merged into `staging`. Frames: `docs/FIGMA.md`.
 - [x] 1. Search Filter
-- [ ] 2. Business Look (business, experience detail, host profile, reviews). Business page done (`/business/[slug]`); experience detail and host profile next
+- [x] 2. Business Look: business page (`/business/[slug]`), Experience details (`/experience/[id]` with gallery, itinerary, meeting map, reviews, Book me), Host Profile (`/host/[id]`, About / Listings, Report host). Every experience card opens Experience details; Top Hosts and "Hosted by" open Host Profile; services open their business
 - [x] 3. Booking Flow: Select dates (Dates / Guests / Private group), Confirm Reservation, the date / time / guests / notes / payment / coupon / success sheets; real bookings through `create_booking` / `create_bookings`, payment mocked
 - [x] 4. Booking Status Screens: Bookings tab (one row per business, unread badges, cart and ••• in the header), All Bookings with the period/year filter, Cart (saved on the device, swipe to remove), Reservation details by status (pending, confirmed, completed, cancelled) with cancel, reschedule, book again and review, and Chat with a business (Realtime messages, typing, read state, photos, voice notes)
 - [ ] 5. Bucket List + Recommend a place (Bucket List done: named lists, save sheets, list screens; Recommend a place next)
 - [x] 6. Customer Dashboard (Adventure Quiz) + personality badge (badge on Profile comes with section 10)
 - [x] 7. Customer Dashboard (Section Screens): "See all" lists (with Search typing screen and Filters updates)
-- [ ] 8. Explore Screens
+- [x] 8. Explore Screens (`/map`, from the tab bar's Explore button): map with clustered pins, selected-pin card, Search this area, locate, Hosts / Businesses switch, search and filters, category chips, and the draggable results list
 - [ ] 9. Group Screens
 - [ ] 10. Profile Screens (General, Support, Legal)
 
@@ -54,6 +54,9 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - **Voice notes in Chat** (`features/bookings/mock.ts` `uploadVoiceNote`): recorded with expo-audio and played on the device only; nothing is uploaded or sent. Allow audio in the `chat-attachments` bucket and send it as an attachment. Recording could not be tested in the iOS Simulator (expo-audio's permission calls never resolve in Expo Go there); test on a device
 - **Business "Online" in Chat**: shown while the business is open (`business_hours`); replace with Realtime presence of business staff once the business portal has a chat inbox
 - **Payment method on Reservation details**: reads `payments`; bookings paid through the payments mock have none, so it says "Not paid yet (test payment)"
+- **Report host** (`features/host/mock.ts` `reportHost`): the reason sheet works, nothing is stored. Needs a `reports` table (reporter, host, reason, note) and a super admin queue
+- **Experience share links**: `moment://experience/<id>` is shared but opening it isn't wired yet (same as business and bucket list links)
+- **Host intro video**: Figma's play icon on the host avatar (48:4175) has no video behind it yet, so it isn't shown
 - **Contact Moment Support** (`/support`): placeholder until support chat (Chat section)
 - **Service animals** link on Add Guest shows an explanation alert; no separate service-animal field (pets count goes in the booking notes via `guestDetailsNote`)
 
