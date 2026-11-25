@@ -1,8 +1,8 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import type { Message } from '../types';
-import type { CreateGroupForm, FeedbackForm, SendMessageForm } from '../validation/social';
+import type { Message, TablesInsert, TablesUpdate } from '../types';
+import type { CreateGroupForm, FeedbackForm, GroupSettings, SendMessageForm } from '../validation/social';
 import { FEEDBACK_TOPIC_LABELS } from '../validation/social';
-import type { PageOptions } from './catalog';
+import { LISTING_CARD_SELECT, type PageOptions } from './catalog';
 import { ApiError, requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
 
 // Groups, chat and support.
@@ -26,23 +26,36 @@ export function createGroupsApi(db: MomentSupabaseClient) {
             is_open_to_match: form.isOpenToMatch,
             max_members: form.maxMembers,
             interest_tag_ids: form.interestTagIds,
+            cover_url: form.coverUrl ?? null,
           })
           .select()
           .single(),
       );
     },
 
-    /** My Groups. */
+    /** Groups list: my groups (active or invited), newest first, with member avatars. */
     listMine: async () => {
       const userId = await requireUserId(db);
       return unwrap(
         db
           .from('group_members')
-          .select('role, status, group:groups!inner(*, members:group_members(count))')
+          .select(
+            `role, status, group:groups!inner(id, name, description, cover_url, created_at, owner_id, visibility, sharing_enabled,
+              members:group_members(user_id, status, role, profile:profiles!group_members_user_id_fkey(id, display_name, avatar_url)))`,
+          )
           .eq('user_id', userId)
           .in('status', ['active', 'invited'])
-          .order('joined_at', { ascending: false }),
+          .order('created_at', { referencedTable: 'groups', ascending: false }),
       );
+    },
+
+    /** "Upload Cover Photo": into `group-covers/<user_id>/...`; returns the storage ref for `create`. */
+    uploadCover: async (file: { body: ArrayBuffer; contentType: string; extension: string }) => {
+      const userId = await requireUserId(db);
+      const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${file.extension}`;
+      const { error } = await db.storage.from('group-covers').upload(path, file.body, { contentType: file.contentType });
+      if (error) throw new ApiError('network', `Could not upload the photo: ${error.message}`, undefined, undefined, error);
+      return `storage://group-covers/${path}`;
     },
 
     get: (groupId: string) =>
@@ -57,13 +70,98 @@ export function createGroupsApi(db: MomentSupabaseClient) {
 
     rename: (groupId: string, name: string) => unwrap(db.from('groups').update({ name }).eq('id', groupId)),
 
-    updateSettings: (groupId: string, settings: { visibility: 'private' | 'public'; isOpenToMatch?: boolean }) =>
+    /**
+     * Group Settings. Making a group private also takes it out of Group Match
+     * (matching needs a public group); opening it to match makes it public.
+     */
+    updateSettings: (groupId: string, s: GroupSettings) => {
+      const patch: TablesUpdate<'groups'> = {};
+      if (s.visibility !== undefined) patch.visibility = s.visibility;
+      if (s.visibility === 'private') patch.is_open_to_match = false;
+      if (s.isOpenToMatch !== undefined) {
+        patch.is_open_to_match = s.isOpenToMatch;
+        if (s.isOpenToMatch) patch.visibility = 'public';
+      }
+      if (s.sharingEnabled !== undefined) patch.sharing_enabled = s.sharingEnabled;
+      if (s.likesVisibility !== undefined) patch.likes_visibility = s.likesVisibility;
+      return unwrap(db.from('groups').update(patch).eq('id', groupId));
+    },
+
+    /** "Liked by group": experiences and businesses members saved to the group, newest first (RLS applies likes visibility). */
+    likes: (groupId: string) =>
       unwrap(
         db
-          .from('groups')
-          .update({ visibility: settings.visibility, ...(settings.isOpenToMatch === undefined ? {} : { is_open_to_match: settings.isOpenToMatch }) })
-          .eq('id', groupId),
+          .from('group_likes')
+          .select(
+            `id, user_id, created_at, listing:listings(${LISTING_CARD_SELECT}), business:businesses(id, slug, name, logo_url, cover_url, rating_avg, rating_count),
+            profile:profiles!group_likes_user_id_fkey(id, display_name, avatar_url)`,
+          )
+          .eq('group_id', groupId)
+          .order('created_at', { ascending: false }),
       ),
+
+    /** Save an experience (or a business) to a group. Saving twice is a no-op. */
+    like: async (groupId: string, target: { listingId: string } | { businessId: string }) => {
+      const userId = await requireUserId(db);
+      const row: TablesInsert<'group_likes'> = {
+        group_id: groupId,
+        user_id: userId,
+        listing_id: 'listingId' in target ? target.listingId : null,
+        business_id: 'businessId' in target ? target.businessId : null,
+      };
+      const { error } = await db.from('group_likes').insert(row);
+      if (error && error.code !== '23505') throw new ApiError('network', error.message, undefined, undefined, error);
+    },
+
+    unlike: async (groupId: string, target: { listingId: string } | { businessId: string }) => {
+      const userId = await requireUserId(db);
+      let q = db.from('group_likes').delete().eq('group_id', groupId).eq('user_id', userId);
+      q = 'listingId' in target ? q.eq('listing_id', target.listingId) : q.eq('business_id', target.businessId);
+      return unwrap(q);
+    },
+
+    /** Group page > Group Match: groups to match with, and whether this group already asked. */
+    matches: (groupId: string) => unwrap(db.rpc('group_matches', { p_group_id: groupId })),
+
+    /** Heart on a Group Match card. */
+    sendMatch: async (fromGroupId: string, toGroupId: string) => {
+      const userId = await requireUserId(db);
+      const { error } = await db.from('group_match_requests').insert({ from_group_id: fromGroupId, to_group_id: toGroupId, created_by: userId });
+      if (error && error.code !== '23505') throw new ApiError('network', error.message, undefined, undefined, error);
+    },
+
+    /** Take back a pending match request. */
+    withdrawMatch: (fromGroupId: string, toGroupId: string) =>
+      unwrap(db.from('group_match_requests').delete().eq('from_group_id', fromGroupId).eq('to_group_id', toGroupId)),
+
+    /** Group page > Recommended Group: listing cards ranked for the whole group. */
+    recommendations: async (groupId: string, limit = 10) => {
+      const ranked = await unwrap(db.rpc('group_recommendations', { p_group_id: groupId, p_limit: limit }));
+      const ids = ranked.map((r) => r.listing_id);
+      if (!ids.length) return [];
+      const rows = await unwrap(db.from('listings').select(LISTING_CARD_SELECT).in('id', ids).order('sort_order', { referencedTable: 'listing_media' }));
+      const byId = new Map(rows.map((r) => [r.id, r]));
+      return ids.map((id) => byId.get(id)).filter((r): r is (typeof rows)[number] => Boolean(r));
+    },
+
+    /** Invite others: Moment users by name or exact phone number. */
+    findPeople: (query: string) => unwrap(db.rpc('find_people', { p_query: query })),
+
+    /** Invite people (they see the group as invited until they accept). Already in the group: skipped. */
+    invite: async (groupId: string, userIds: string[]) => {
+      const me = await requireUserId(db);
+      if (!userIds.length) return;
+      const { error } = await db
+        .from('group_members')
+        .upsert(userIds.map((id) => ({ group_id: groupId, user_id: id, role: 'member' as const, status: 'invited' as const, invited_by: me })), {
+          onConflict: 'group_id,user_id',
+          ignoreDuplicates: true,
+        });
+      if (error) throw new ApiError('network', error.message, undefined, undefined, error);
+    },
+
+    /** Members sheet: admins remove a member (not the owner). */
+    removeMember: (groupId: string, userId: string) => unwrap(db.from('group_members').delete().eq('group_id', groupId).eq('user_id', userId)),
 
     remove: (groupId: string) => unwrap(db.from('groups').delete().eq('id', groupId)),
 

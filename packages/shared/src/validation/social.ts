@@ -37,6 +37,8 @@ export const createGroupSchema = z
     isOpenToMatch: z.boolean().default(false),
     maxMembers: z.number().int().min(LIMITS.groupMembers.min).max(LIMITS.groupMembers.max).default(12),
     interestTagIds: z.array(uuidSchema).max(10).default([]),
+    /** "Upload Cover Photo": a storage ref from `groups.uploadCover`. */
+    coverUrl: mediaRefSchema.optional(),
   })
   .refine((g) => !g.startDate || !g.endDate || g.endDate >= g.startDate, {
     message: 'End date must be on or after the start date',
@@ -51,9 +53,12 @@ export const renameGroupSchema = z.object({ name: groupName });
 
 /** "Group Settings": "Make Private" / "Enable Sharing" (public = anyone with the link can join). */
 export const groupSettingsSchema = z.object({
-  visibility: z.enum(['private', 'public']),
+  visibility: z.enum(['private', 'public']).optional(),
   isOpenToMatch: z.boolean().optional(),
+  sharingEnabled: z.boolean().optional(),
+  likesVisibility: z.enum(['everyone', 'only_me']).optional(),
 });
+export type GroupSettings = z.output<typeof groupSettingsSchema>;
 
 /** Chat composer. Attachments are uploaded to `chat-attachments` first and referenced by path. */
 export const sendMessageSchema = z

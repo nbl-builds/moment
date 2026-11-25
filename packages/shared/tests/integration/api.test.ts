@@ -477,6 +477,34 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
       await me.groups.remove(group.id);
     });
 
+    it('likes, matches, recommends and invites in a group', async () => {
+      const group = await me.groups.create({ name: 'Weekend Plans', visibility: 'private', isOpenToMatch: false, maxMembers: 8, interestTagIds: [] });
+      const hike = await me.catalog.getListing('margalla-sunrise-hike');
+      await me.groups.like(group.id, { listingId: hike.id });
+      await me.groups.like(group.id, { listingId: hike.id }); // twice is fine
+      const likes = await me.groups.likes(group.id);
+      expect(likes.map((l) => l.listing?.id)).toEqual([hike.id]);
+
+      const recs = await me.groups.recommendations(group.id, 5);
+      expect(recs.length).toBe(5);
+      expect(recs.some((r) => r.id === hike.id)).toBe(false);
+
+      // Opening to match makes the group public; it then finds groups in the same city.
+      await me.groups.updateSettings(group.id, { isOpenToMatch: true, sharingEnabled: true, likesVisibility: 'only_me' });
+      const full = await me.groups.get(group.id);
+      expect([full.visibility, full.is_open_to_match, full.sharing_enabled, full.likes_visibility]).toEqual(['public', true, true, 'only_me']);
+      await me.groups.updateSettings(group.id, { visibility: 'private' });
+      expect((await me.groups.get(group.id)).is_open_to_match).toBe(false);
+
+      const people = await me.groups.findPeople('fatima');
+      expect(people[0]?.display_name).toBe('Fatima Noor');
+      await me.groups.invite(group.id, [people[0]!.id]);
+      const members = (await me.groups.get(group.id)).members;
+      expect(members.find((m) => m.user_id === people[0]!.id)?.status).toBe('invited');
+      await me.groups.removeMember(group.id, people[0]!.id);
+      await me.groups.remove(group.id);
+    });
+
     it('chats with a business', async () => {
       const conversation = await me.chat.startWithBusiness(SEED.margallaBusiness);
       const sent = await me.chat.send({ conversationId: conversation.id, body: 'Is parking available?', attachments: [] });
