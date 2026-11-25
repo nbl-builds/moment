@@ -1,9 +1,10 @@
 import { colors } from '@moment/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { exploreStore } from '@/features/explore/store';
 import { Icon, Text, textStyle } from '@/components/ui';
 import { GroupChip } from '@/features/search/components/group-chip';
 import { FilterButton } from '@/features/search/components/filter-button';
@@ -26,14 +27,22 @@ const FIELD = { height: 50, radius: 12 } as const;
  * recent searches (kept on the device) and popular categories below.
  */
 export default function SearchScreen() {
+  /** `from=explore`: the search text goes back to Explore's map instead of opening results. */
+  const { from } = useLocalSearchParams<{ from?: string }>();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [text, setText] = useState('');
   const recent = useQuery({ queryKey: RECENT_SEARCHES_QUERY_KEY, queryFn: getRecentSearches });
 
   const setRecent = (list: string[]) => queryClient.setQueryData(RECENT_SEARCHES_QUERY_KEY, list);
-  const showResults = (filters: SearchFilterState) =>
+  const showResults = (filters: SearchFilterState) => {
+    if (from === 'explore') {
+      exploreStore.setFilters({ ...exploreStore.get().filters, query: filters.query });
+      router.back();
+      return;
+    }
     router.push({ pathname: '/search-results', params: { filters: encodeFilters(filters) } });
+  };
 
   const submit = (term: string) => {
     const query = term.trim();

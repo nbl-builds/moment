@@ -1,13 +1,19 @@
 import { router } from 'expo-router';
 
-/** Open a business page. */
-export const openBusiness = (slug: string) => router.push({ pathname: '/business/[slug]', params: { slug } });
+/** Open a business page (optionally on its Services tab). */
+export const openBusiness = (slug: string, tab?: 'services') =>
+  router.push({ pathname: '/business/[slug]', params: tab ? { slug, tab } : { slug } });
+
+/** Top Hosts, "Hosted by" and host rows: the Host Profile. */
+export function openHost(host: { id: string }) {
+  router.push({ pathname: '/host/[id]', params: { id: host.id } });
+}
 
 /**
- * Top Hosts: a solo local host (business kind `host`) opens their business
- * page; a host who works for an operator opens the host profile.
+ * Any listing card: experiences open Experience details; services have no
+ * page of their own, so they open their business on the Services tab.
  */
-export function openHost(host: { id: string; business: { slug: string; kind: string } }) {
-  if (host.business.kind === 'host') openBusiness(host.business.slug);
-  else router.push({ pathname: '/host/[id]', params: { id: host.id } });
+export function openListing(listing: { id: string; type?: string | null; business?: { slug: string } | null }) {
+  if (listing.type === 'service' && listing.business) openBusiness(listing.business.slug, 'services');
+  else router.push({ pathname: '/experience/[id]', params: { id: listing.id } });
 }

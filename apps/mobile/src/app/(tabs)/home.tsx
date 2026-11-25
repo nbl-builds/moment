@@ -27,7 +27,7 @@ import { OnboardingPermissions } from '@/features/permissions/onboarding-permiss
 import { takePendingQuiz } from '@/features/quiz/model';
 import { EMPTY_FILTERS, encodeFilters, groupForCategorySlug } from '@/features/search/filters';
 import type { SeeAllKey } from '@/features/see-all/sections';
-import { openHost } from '@/features/business/navigation';
+import { openHost, openListing } from '@/features/business/navigation';
 
 const CARD = HOME.card;
 
@@ -48,7 +48,6 @@ export default function HomeScreen() {
 
   const headerHeight = insets.top + HOME.headerTop + HOME.searchHeight + HOME.headerBottom / 2;
   const go = (href: Href) => router.push(href);
-  const openListing = (listing: ListingCardData) => go({ pathname: '/listing/[id]', params: { id: listing.id } });
   // "More to explore" chips show Search Results for that category.
   const openCategory = (slug: string) => {
     const group = groupForCategorySlug(slug);

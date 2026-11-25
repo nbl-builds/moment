@@ -132,6 +132,13 @@ Booking Empty 52:8373, 52:8565 · Bookings 47:6282 · All Bookings 52:9094 · Bo
 ## Explore Screens
 Explore (Experiences) 48:2341, 52:9860, 52:10435 · Explore (Businesses) 52:10292
 
+| Screen | Frame | Code |
+|---|---|---|
+| Explore map / list, experiences | 48:2341, 52:9860 | `app/map.tsx`, `features/explore/` |
+| Explore map / list, businesses | 52:10292, 52:10435 | `app/map.tsx` (business cards: `features/home/components/service-business-card.tsx`) |
+| Experience details, top / full | 48:3873, 48:6527 | `app/experience/[id]/index.tsx`, `features/experience/` (+ `photos.tsx`, `reviews.tsx`, no frames) |
+| Host Profile, About / Listings | 48:4175, 48:4223 | `app/host/[id].tsx`, `features/host/` |
+
 ## Group Screens
 Groups 48:3071, 48:6213, 48:6274 (long) · My Groups 48:3142 · Create new group 48:4074, 48:4118 · Groups View 48:4500 · Group Share 48:4668 · Group Settings 48:4832, 48:5138, 48:5184 · Group Rename 48:4986 · Group Delete 48:5243
 

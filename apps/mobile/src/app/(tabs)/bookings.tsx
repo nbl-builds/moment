@@ -72,7 +72,7 @@ export default function BookingsTab() {
       <Empty
         title="No bookings yet"
         note="When you book an experience or a service, you’ll see it here."
-        action={{ label: 'Explore', onPress: () => router.navigate('/explore') }}
+        action={{ label: 'Explore', onPress: () => router.push('/map') }}
       />
     );
   } else {

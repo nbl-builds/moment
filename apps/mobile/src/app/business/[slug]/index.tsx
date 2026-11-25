@@ -31,6 +31,7 @@ import { ServiceCard } from '@/features/business/components/service-card';
 import { ShareSheet } from '@/features/business/components/share-sheet';
 import { TabPills, type BusinessTab } from '@/features/business/components/tab-pills';
 import { serviceCart, useServiceCart } from '@/features/business/cart';
+import { openListing } from '@/features/business/navigation';
 import { BIZ } from '@/features/business/layout';
 import {
   useBusiness,
@@ -144,7 +145,6 @@ export default function BusinessScreen() {
   const shownServices = (services.data ?? []).filter((s) => serviceFilter === 'all' || s.category?.slug === serviceFilter);
   const serviceHeading = serviceFilter === 'all' ? 'All Services' : (categories.find((c) => c.value === serviceFilter)?.label ?? 'Services');
 
-  const openListing = (id: string) => router.push({ pathname: '/listing/[id]', params: { id } });
   const toggleCart = (serviceId: string) => biz && serviceCart.toggle(biz.id, serviceId);
   const continueToBooking = () =>
     biz && router.push({ pathname: '/booking/new', params: { businessId: biz.id, services: cart.join(',') } });
@@ -224,7 +224,7 @@ export default function BusinessScreen() {
                   bookings={l.booking_count}
                   price={l.price_amount}
                   currency={l.currency}
-                  onPress={() => openListing(l.id)}
+                  onPress={() => (l.type === 'service' ? toggleCart(l.id) : openListing(l))}
                   inCart={cart.includes(l.id)}
                   onToggleCart={l.type === 'service' ? () => toggleCart(l.id) : undefined}
                 />
@@ -250,7 +250,7 @@ export default function BusinessScreen() {
                   bookings={s.booking_count}
                   price={s.price_amount}
                   currency={s.currency}
-                  onPress={() => openListing(s.id)}
+                  onPress={() => toggleCart(s.id)}
                   inCart={cart.includes(s.id)}
                   onToggleCart={() => toggleCart(s.id)}
                 />

@@ -1477,3 +1477,82 @@ update public.conversation_participants set last_read_at = now() - interval '24 
 where user_id = '00000000-0000-4000-a000-000000000099' and conversation_id = (select saffron from dev_chats);
 update public.conversation_participants set last_read_at = now()
 where user_id = '00000000-0000-4000-a000-000000000099' and conversation_id = (select margalla from dev_chats);
+
+-- ---------------------------------------------------------------------------
+-- Experience details and Host Profile: full content for every experience
+-- (longer description, reasons to book, itinerary, what to bring, cuisine,
+-- meeting notes, six photos) by category, and host cover photos.
+-- ---------------------------------------------------------------------------
+create temp table exp_content (category text, intro text, highlights text[], bring text[], steps jsonb);
+insert into exp_content values
+  ('food-drink',
+   'You will taste your way through dishes locals queue for, with a host who knows every cook by name. Expect stories about how each recipe arrived in the city, tips on what to order next time, and plenty of chai between stops. Portions are generous, so come hungry. Vegetarian options are available at every stop; tell your host when you book.',
+   '{"Tastings at five family-run spots locals love","A host who grew up in the neighbourhood","Small group of up to 10 guests","Vegetarian options at every stop"}',
+   '{"Comfortable walking shoes","An appetite","Cash for extra snacks to take home","Hand sanitiser"}',
+   '[{"t":"Meet your host","d":"Say salam, get a quick history of the area and a first cup of chai.","m":15},{"t":"Street classics","d":"Two of the most famous stalls, with dishes explained as they are made.","m":45},{"t":"A family kitchen","d":"Sit down for the main course where the same family has cooked for decades.","m":45},{"t":"Something sweet","d":"Finish with kheer, jalebi or kulfi and tips for the rest of your stay.","m":30}]'),
+  ('tours-walks',
+   'Walk through layers of history with a guide who brings every gate, courtyard and carving to life. The pace is relaxed with shaded stops, and there is time for photos at the best viewpoints. You will leave knowing the stories behind the landmarks and where to come back for food and shopping.',
+   '{"Licensed guide who knows the hidden corners","Skip-the-confusion entry and timings","Best photo spots at the right light","Relaxed pace with shaded rest stops"}',
+   '{"Comfortable walking shoes","A hat or scarf for the sun","Water bottle","Modest clothing for places of worship"}',
+   '[{"t":"Welcome and overview","d":"Meet your guide and see the route on a map.","m":10},{"t":"The main landmark","d":"A guided walk through the highlights and their stories.","m":60},{"t":"Hidden lanes","d":"Side streets, old havelis and workshops most visitors miss.","m":40},{"t":"Tea and questions","d":"Wrap up over tea with recommendations for the rest of your trip.","m":20}]'),
+  ('outdoor-adventure',
+   'Get out of the city and into the hills with an experienced guide who sets a comfortable pace for the group. Along the way you will learn about the birds, plants and villages of the area, and stop at viewpoints most people never find. Safety briefing, first aid and snacks are included.',
+   '{"Certified guide with first-aid training","Viewpoints away from the crowds","Snacks and water included","Suitable for beginners and families"}',
+   '{"Trainers or hiking shoes","A light jacket","Sunscreen and sunglasses","A small backpack"}',
+   '[{"t":"Meet at the trailhead","d":"Safety briefing, warm-up and a look at the route.","m":15},{"t":"The climb","d":"A steady walk with stops for photos, birds and water.","m":60},{"t":"Summit break","d":"Snacks and chai with the best view of the day.","m":30},{"t":"Back down","d":"An easier route back, with stories from the villages on the way.","m":45}]'),
+  ('water-activities',
+   'Spend the day on the water with a team that has run these trips for years. Every guest gets a life jacket and a briefing before setting off, and the pace suits first-timers. Between paddles there is time to swim, spot birds and crabs, and rest in the shade.',
+   '{"All gear and life jackets included","Briefing for first-timers","Small group with two instructors","Time to swim and explore"}',
+   '{"Swimwear and a towel","Quick-dry clothes","Sunscreen and a hat","A change of clothes"}',
+   '[{"t":"Gear up","d":"Life jackets, paddles and a safety briefing on the shore.","m":20},{"t":"Out on the water","d":"Paddle or sail out with your instructors.","m":60},{"t":"Swim stop","d":"Time to swim, snorkel or relax on the boat.","m":40},{"t":"Back to shore","d":"Rinse off, warm chai and photos from the day.","m":20}]'),
+  ('day-trips',
+   'A full day out with transport, a guide and every ticket sorted, so you can simply enjoy the views. The route is planned to beat the crowds, with a proper lunch stop and short walks at each highlight. Pick-up is from a central meeting point in the city.',
+   '{"Transport and tickets included","A guide for the whole day","Lunch stop at a local favourite","Planned to beat the crowds"}',
+   '{"Your CNIC or passport","Comfortable shoes","A warm layer","Cash for souvenirs"}',
+   '[{"t":"Pick-up","d":"Meet the group and set off with a short briefing.","m":20},{"t":"First highlight","d":"Guided walk and photos at the main stop.","m":90},{"t":"Lunch","d":"A proper sit-down lunch at a local favourite.","m":60},{"t":"Last stop and return","d":"One more viewpoint before the drive back.","m":120}]'),
+  ('arts-workshops',
+   'Learn a craft from an artist who has practised it for years, in a small hands-on class. You will start with the basics, then make a piece of your own to take home. All materials are provided, and the studio has tea on the go.',
+   '{"Hands-on class with a working artist","All materials included","Take your own piece home","Small class of up to 8"}',
+   '{"Clothes you don''t mind getting paint on","Reference photos if you have an idea","A bag to carry your piece"}',
+   '[{"t":"Meet the artist","d":"A short history of the craft and a look at finished pieces.","m":15},{"t":"Learn the basics","d":"Try the techniques on practice boards.","m":40},{"t":"Make your piece","d":"Design and paint your own piece with guidance.","m":60},{"t":"Finish and wrap","d":"Final touches, a photo and packing it to take home.","m":15}]');
+
+update public.listings l set
+  description = coalesce(l.description, l.summary, '') || E'\n\n' || c.intro,
+  highlights = c.highlights,
+  what_to_bring = c.bring,
+  cuisine = case when cat.slug = 'food-drink' then
+              case l.city when 'Lahore' then 'Lahori, Mughlai' when 'Karachi' then 'Karachi street food, BBQ' else 'Pakistani, BBQ' end
+            end,
+  meeting_point_notes = coalesce(l.meeting_point_notes,
+    'Meet your host at ' || coalesce(bl.name, 'the meeting point') || coalesce(', ' || bl.address_line1, '') ||
+    '. Look for the Moment sign; your host will message you on the day.')
+from public.categories cat, exp_content c, public.business_locations bl
+where l.type = 'experience' and cat.id = l.category_id and c.category = cat.slug::text and bl.id = l.location_id;
+
+insert into public.listing_itinerary_steps (business_id, listing_id, position, title, description, duration_minutes)
+select l.business_id, l.id, s.ord - 1, s.step ->> 't', s.step ->> 'd', (s.step ->> 'm')::int
+from public.listings l
+join public.categories cat on cat.id = l.category_id
+join exp_content c on c.category = cat.slug::text
+cross join lateral jsonb_array_elements(c.steps) with ordinality as s(step, ord)
+where l.type = 'experience';
+
+-- Six photos for every experience (gallery and photo grid).
+insert into public.listing_media (business_id, listing_id, url, alt, sort_order)
+select l.business_id, l.id, 'storage://seed-media/listings/' || p.file, l.title, 10 + p.ord
+from public.listings l
+cross join lateral (
+  select f.file, row_number() over () as ord
+  from unnest(array['old-town-walk.jpg', 'food-tasting.jpg', 'night-market.jpg', 'museum-gallery.jpg', 'kids-adventure.jpg',
+                    'family-cooking.jpg', 'street-drinks.jpg', 'plane-window.jpg', 'kids-cooking.jpg']) with ordinality as f(file, n)
+  where f.file not in (select right(m.url, length(f.file)) from public.listing_media m where m.listing_id = l.id)
+  order by (f.n + abs(hashtext(l.slug::text))) % 9
+  limit 3
+) p
+where l.type = 'experience';
+
+-- Host covers: one of the host's experience photos.
+update public.staff_members s set cover_url = (
+  select m.url from public.listing_staff ls join public.listing_media m on m.listing_id = ls.listing_id
+  where ls.staff_id = s.id order by m.sort_order limit 1)
+where s.is_host;
