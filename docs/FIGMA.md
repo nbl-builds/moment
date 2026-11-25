@@ -44,7 +44,7 @@ Other pages: Typography `2:121`, Colors `4:82`, Icons `4:58` (Huge Icons), Butto
 | Popular Activites | 18:1085 | `app/see-all/[section].tsx` (`popular`) |
 | Popular Activites, chip selected | 20:1354 | `features/search/components/group-chip.tsx` |
 | Top Hosts (2-column grid) | 20:1479 | `see-all/hosts`, `HostCard variant="grid"` |
-| Just For You | 20:1676 | `see-all/for-you` |
+| Services near you (frame named "Just For You") | 20:1676 | `see-all/services` |
 | Just For You (titled "Explore") | 20:1897 | `see-all/explore` (Home "More to explore" arrow) |
 
 Local fun, Must-trys and Recently viewed have no frame and reuse the list layout (`see-all/local-fun`, `must-try`, `recent`).

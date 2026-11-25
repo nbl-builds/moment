@@ -151,9 +151,12 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
       const byIds = await anon.catalog.listingsByIds([...ids, '00000000-0000-4000-e000-00000000ffff']);
       expect(byIds.map((l) => l.id)).toEqual(ids);
 
-      const forYou = await anon.catalog.justForYou({ limit: 5 });
-      expect(forYou.length).toBe(5);
-      expect(forYou[0]?.business.name).toBeTruthy();
+      const services = await anon.catalog.servicesNearYou({ city: 'Lahore', limit: 5 });
+      expect(services.length).toBeGreaterThanOrEqual(4);
+      expect(services.every((b) => b.city === 'Lahore' && b.from_price > 0 && b.distance_km === null)).toBe(true);
+      const near = await anon.catalog.servicesNearYou({ near: { lat: 31.5204, lng: 74.3587 }, limit: 3 });
+      expect(near.map((b) => b.city)).toEqual(['Lahore', 'Lahore', 'Lahore']);
+      expect(near.every((b, i) => i === 0 || (b.distance_km ?? 0) >= (near[i - 1]?.distance_km ?? 0))).toBe(true);
 
       const distances = await anon.catalog.listingDistances({ lat: 31.5204, lng: 74.3587 }, ids);
       expect(distances.size).toBe(2);
@@ -434,7 +437,7 @@ describe.skipIf(!url || !key)('API client against local Supabase', () => {
       const result = await me.quiz.submit(answers);
       expect(result.badge_id).toBeTruthy();
       expect((await me.quiz.latestResult())?.badge?.name).toBeTruthy();
-      expect(Array.isArray(await me.catalog.justForYou({ limit: 5 }))).toBe(true);
+      expect((await me.catalog.servicesNearYou({ city: 'Islamabad', limit: 5 })).length).toBeGreaterThan(0);
     });
 
     it('creates and renames a group', async () => {

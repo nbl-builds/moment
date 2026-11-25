@@ -1021,6 +1021,109 @@ set rating_avg = 4.6 + (abs(hashtext(display_name)) % 5) / 10.0,
 where is_host;
 
 -- ---------------------------------------------------------------------------
+-- Home "Services near you": more service businesses (venues) in every launch
+-- city, each with a location, a bookable staff member, two services, tags,
+-- a gallery and a membership plan. Opening hours, staff schedules and reviews
+-- come from the generic blocks below.
+-- ---------------------------------------------------------------------------
+create temp table seed_venues (n int, slug text, name text, tagline text, area text, address text, city text, province text, postal text, lat float8, lng float8, logo text, rating numeric, ratings int, staff text, staff_title text);
+insert into seed_venues values
+  (1,  'lotus-nail-lounge',     'Lotus Nail Lounge',      'Gel, acrylic and nail art in F-6',          'F-6 Supermarket', 'Shop 21, Super Market',            'Islamabad', 'Islamabad Capital Territory', '44000', 33.7295, 73.0767, 'beauty',   4.7, 86,  'Hina Zafar',     'Nail artist'),
+  (2,  'kohsar-grooming',       'Kohsar Men''s Grooming', 'Cuts, shaves and facials for men',          'F-10 Markaz',     'Plot 4, Main Markaz',              'Islamabad', 'Islamabad Capital Territory', '44000', 33.6957, 73.0137, 'beauty',   4.5, 142, 'Waqas Mir',      'Senior barber'),
+  (3,  'noor-skin-clinic',      'Noor Skin Clinic',       'Facials and skin care by therapists',       'Blue Area',       'Office 3, Saudi Pak Tower',        'Islamabad', 'Islamabad Capital Territory', '44000', 33.7096, 73.0637, 'serenity', 4.8, 64,  'Dr. Maham Ali',  'Skin therapist'),
+  (4,  'mehr-hair-studio',      'Mehr Hair Studio',       'Cuts, colour and blow-dries',               'G-9 Markaz',      'Shop 9, Karachi Company',          'Islamabad', 'Islamabad Capital Territory', '44000', 33.6866, 73.0306, 'beauty',   4.4, 51,  'Saba Noor',      'Hair stylist'),
+  (5,  'dastaan-spa',           'Dastaan Spa',            'Massages and hammam in DHA',                'DHA Phase 5',     '120-CCA, Phase 5',                 'Lahore',    'Punjab',                      '54792', 31.4628, 74.4089, 'serenity', 4.9, 118, 'Nimra Javed',    'Massage therapist'),
+  (6,  'liberty-cuts',          'Liberty Cuts',           'Quick cuts by Liberty Market',              'Gulberg',         '12 Liberty Market',                'Lahore',    'Punjab',                      '54660', 31.5106, 74.3446, 'beauty',   4.3, 203, 'Bilal Aslam',    'Barber'),
+  (7,  'johar-town-nail-bar',   'Johar Town Nail Bar',    'Manicures and pedicures',                   'Johar Town',      '65-R1, Johar Town',                'Lahore',    'Punjab',                      '54782', 31.4697, 74.2728, 'beauty',   4.6, 77,  'Areeba Khan',    'Nail technician'),
+  (8,  'model-town-skin-lab',   'Model Town Skin Lab',    'Hydrafacials and peels',                    'Model Town',      '9-C, Link Road',                   'Lahore',    'Punjab',                      '54700', 31.4834, 74.3262, 'serenity', 4.7, 39,  'Dr. Faiza Rauf', 'Aesthetician'),
+  (9,  'seaview-spa',           'Seaview Spa',            'Sea breeze and slow massages in Clifton',   'Clifton',         'Block 4, Clifton',                 'Karachi',   'Sindh',                       '75600', 24.8138, 67.0300, 'serenity', 4.8, 156, 'Rida Siddiqui',  'Spa therapist'),
+  (10, 'zamzama-nail-studio',   'Zamzama Nail Studio',    'Nail art on Zamzama Boulevard',             'DHA Phase 5',     '14-C, Zamzama Boulevard',          'Karachi',   'Sindh',                       '75500', 24.8170, 67.0420, 'beauty',   4.5, 92,  'Mahnoor Shah',   'Nail artist'),
+  (11, 'bahadurabad-hair-house','Bahadurabad Hair House', 'Family salon for cuts and colour',          'Bahadurabad',     'Plot 22, Bahadur Yar Jang Road',   'Karachi',   'Sindh',                       '74800', 24.8820, 67.0700, 'beauty',   4.4, 188, 'Sameer Hussain', 'Stylist'),
+  (12, 'pechs-skin-care',       'PECHS Skin Care',        'Clean-ups and facials off Tariq Road',      'PECHS',           '44-A, Block 2, Tariq Road',        'Karachi',   'Sindh',                       '75400', 24.8722, 67.0607, 'serenity', 4.6, 58,  'Dr. Sana Mirza', 'Skin therapist');
+
+-- The first venues' covers were placeholder photos; use the salon photos.
+update public.businesses set cover_url = 'storage://seed-media/' || case slug
+    when 'saffron-spa' then 'business/spa-1.jpg' when 'gulberg-glow' then 'business/spa-2.jpg' else 'business/spa-3.jpg' end
+where kind = 'venue';
+
+insert into public.businesses (id, slug, name, kind, status, tagline, description, phone, logo_url, cover_url, is_verified, rating_avg, rating_count)
+select ('00000000-0000-4000-b000-' || lpad((100 + n)::text, 12, '0'))::uuid, slug, name, 'venue', 'active', tagline, tagline || '. Book online with Moment.',
+       '+92300000' || lpad((200 + n)::text, 4, '0'), 'storage://seed-media/logos/' || logo || '.png',
+       'storage://seed-media/business/spa-' || (1 + n % 3) || '.jpg', n % 3 <> 0, rating, ratings
+from seed_venues;
+
+insert into public.business_locations (id, business_id, name, address_line1, area, city, province, postal_code, geo, is_primary)
+select ('00000000-0000-4000-c000-' || lpad((100 + n)::text, 12, '0'))::uuid, ('00000000-0000-4000-b000-' || lpad((100 + n)::text, 12, '0'))::uuid,
+       name, address, area, city, province, postal, pg_temp.pt(lat, lng), true
+from seed_venues;
+
+insert into public.staff_members (id, business_id, display_name, title, languages, is_host, is_bookable)
+select ('00000000-0000-4000-d000-' || lpad((100 + n)::text, 12, '0'))::uuid, ('00000000-0000-4000-b000-' || lpad((100 + n)::text, 12, '0'))::uuid,
+       staff, staff_title, '{ur,en}', false, true
+from seed_venues;
+
+-- Two services each: (venue n, service 1 or 2, slug, title, summary, category, minutes, price, tags)
+create temp table seed_venue_services (n int, k int, slug text, title text, summary text, category text, minutes int, price int, tags text[]);
+insert into seed_venue_services values
+  (1, 1, 'lotus-gel-manicure', 'Gel Manicure', 'Shape, cuticle care and two-week gel colour.', 'nails', 45, 250000, '{beauty}'),
+  (1, 2, 'lotus-spa-pedicure', 'Spa Pedicure', 'Soak, scrub and massage with polish.', 'nails', 60, 300000, '{beauty,wellness}'),
+  (2, 1, 'kohsar-classic-cut', 'Classic Cut', 'Wash, cut and style.', 'grooming', 30, 120000, '{beauty}'),
+  (2, 2, 'kohsar-hot-towel-shave', 'Hot Towel Shave', 'Straight razor shave with hot towels.', 'grooming', 30, 100000, '{beauty,wellness}'),
+  (3, 1, 'noor-hydrafacial', 'Hydrafacial', 'Deep cleanse, exfoliation and hydration.', 'skin-care', 60, 900000, '{beauty,wellness}'),
+  (3, 2, 'noor-acne-clean-up', 'Acne Clean-up', 'Gentle extraction and calming mask.', 'skin-care', 45, 450000, '{beauty}'),
+  (4, 1, 'mehr-cut-blow-dry', 'Cut and Blow-dry', 'Consultation, cut and a bouncy blow-dry.', 'hair', 60, 220000, '{beauty}'),
+  (4, 2, 'mehr-global-colour', 'Global Colour', 'One colour, roots to ends.', 'hair', 120, 800000, '{beauty}'),
+  (5, 1, 'dastaan-aromatherapy-massage', 'Aromatherapy Massage', 'Full body with essential oils, 60 minutes.', 'spa-massage', 60, 700000, '{wellness}'),
+  (5, 2, 'dastaan-hammam', 'Turkish Hammam', 'Steam, scrub and foam wash.', 'spa-massage', 75, 950000, '{wellness,beauty}'),
+  (6, 1, 'liberty-quick-cut', 'Quick Cut', 'In and out in 20 minutes.', 'hair', 20, 80000, '{beauty}'),
+  (6, 2, 'liberty-kids-cut', 'Kids'' Cut', 'For under-12s, patient barbers.', 'hair', 20, 60000, '{beauty,family-friendly}'),
+  (7, 1, 'johar-classic-manicure', 'Classic Manicure', 'Shape, buff and polish.', 'nails', 30, 150000, '{beauty}'),
+  (7, 2, 'johar-nail-art', 'Nail Art (10 nails)', 'Hand-painted designs of your choice.', 'nails', 60, 350000, '{beauty}'),
+  (8, 1, 'skinlab-chemical-peel', 'Chemical Peel', 'Brightening peel with aftercare.', 'skin-care', 45, 650000, '{beauty}'),
+  (8, 2, 'skinlab-glow-facial', 'Glow Facial', 'Vitamin C facial for dull skin.', 'skin-care', 60, 500000, '{beauty,wellness}'),
+  (9, 1, 'seaview-swedish-massage', 'Swedish Massage', 'Long, slow strokes, 60 minutes.', 'spa-massage', 60, 750000, '{wellness}'),
+  (9, 2, 'seaview-couples-massage', 'Couples Massage', 'Side by side in our sea-view suite.', 'spa-massage', 60, 1400000, '{wellness}'),
+  (10, 1, 'zamzama-gel-extensions', 'Gel Extensions', 'Full set of gel extensions.', 'nails', 90, 550000, '{beauty}'),
+  (10, 2, 'zamzama-mini-mani', 'Mini Manicure', 'Tidy, file and polish in 20 minutes.', 'nails', 20, 90000, '{beauty}'),
+  (11, 1, 'bahadurabad-family-cut', 'Family Haircut', 'Cuts for adults and kids.', 'hair', 30, 100000, '{beauty,family-friendly}'),
+  (11, 2, 'bahadurabad-keratin', 'Keratin Smoothing', 'Frizz-free hair for three months.', 'hair', 150, 1600000, '{beauty}'),
+  (12, 1, 'pechs-clean-up', 'Express Clean-up', 'Quick clean and glow.', 'skin-care', 30, 300000, '{beauty}'),
+  (12, 2, 'pechs-gold-facial', 'Gold Facial', 'Our signature 24k gold facial.', 'skin-care', 60, 600000, '{beauty,wellness}');
+
+insert into public.listings (
+  id, business_id, type, booking_mode, slug, title, summary, description, category_id, location_id,
+  city, duration_minutes, min_guests, max_guests, price_amount, price_unit, instant_book, cancellation_policy,
+  languages, status, rating_avg, rating_count
+)
+select ('00000000-0000-4000-e000-' || lpad((100 + s.n * 2 + s.k)::text, 12, '0'))::uuid,
+       ('00000000-0000-4000-b000-' || lpad((100 + s.n)::text, 12, '0'))::uuid, 'service', 'appointment', s.slug, s.title, s.summary, s.summary,
+       pg_temp.cat(s.category), ('00000000-0000-4000-c000-' || lpad((100 + s.n)::text, 12, '0'))::uuid,
+       v.city, s.minutes, 1, 1, s.price, 'per_booking', true, 'moderate', '{en,ur}', 'published',
+       v.rating, 10 + (s.n * 7 + s.k * 3) % 60
+from seed_venue_services s join seed_venues v on v.n = s.n;
+
+insert into public.listing_media (business_id, listing_id, url, alt, sort_order)
+select l.business_id, l.id, 'storage://seed-media/' || case when s.category in ('spa-massage', 'skin-care') then 'listings/spa-facial.jpg' else 'business/spa-' || (1 + (s.n + s.k) % 3) || '.jpg' end, l.title, 0
+from seed_venue_services s join public.listings l on l.slug = s.slug;
+
+insert into public.listing_tags (business_id, listing_id, tag_id)
+select l.business_id, l.id, t.id
+from seed_venue_services s
+join public.listings l on l.slug = s.slug
+cross join lateral unnest(s.tags) as tag(slug)
+join public.tags t on t.slug = tag.slug;
+
+insert into public.business_photos (business_id, url, sort_order)
+select ('00000000-0000-4000-b000-' || lpad((100 + n)::text, 12, '0'))::uuid, 'storage://seed-media/business/spa-' || p.i || '.jpg', p.i
+from seed_venues cross join generate_series(1, 3) as p(i);
+
+insert into public.membership_plans (business_id, name, description, price_amount, interval, benefits, included_sessions, discount_percent, sort_order)
+select ('00000000-0000-4000-b000-' || lpad((100 + n)::text, 12, '0'))::uuid, split_part(name, ' ', 1) || ' Monthly',
+       'Two visits a month and 10% off everything else.', 400000 + n * 50000, 'month',
+       '{"perks": ["2 visits a month", "10% off other services"]}'::jsonb, 2, 10, 1
+from seed_venues;
+
+-- ---------------------------------------------------------------------------
 -- Business page (Figma "Business Look"): dev user, opening hours, gallery,
 -- verified badges, services for every business, membership plans, and reviews
 -- with photos (each backed by a completed booking).

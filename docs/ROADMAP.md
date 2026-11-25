@@ -94,11 +94,11 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - [ ] Apple / Google / Facebook sign-in (wired with the providers at the end)
 - [ ] Passcode entry screens
 - [x] Location and notification permissions (prompts only; push token registration comes with notifications)
-- [x] Home dashboard: pinned search, promo carousel, Adventure Quiz card, Popular activities, Top Hosts, Just for you, More to explore, Recently viewed, Local fun, Must-trys, "Are we missing something?"; real data, PKR prices, km distances, bucket-list hearts, pull to refresh, skeletons
+- [x] Home dashboard: pinned search, promo carousel, Adventure Quiz card, Popular activities, Top Hosts, Services near you (service businesses: nearest first with location, else the home city by rating, quiz badge breaks ties; Figma 17:1027 renamed it from "Just for you"), More to explore, Recently viewed, Local fun, Must-trys, "Are we missing something?"; real data, PKR prices, km distances, bucket-list hearts, pull to refresh, skeletons
 - [x] Floating tab bar (Home, Bookings, Explore, Groups, Profile) that shrinks on scroll; other tabs are placeholders
 - [x] Search and filters (Figma "Search Filter": Filters, location / date / language sheets, Search Results with removable chips; Home search, filter icon and category chips lead here)
 - [x] Search screen (`/search`): text field, recent searches on the device (clearable), popular categories, filter icon; prefix full-text search. Filters moved to `/filters`: Host mode shows hosts, price min–max range slider, "Choose a destination" with cities and areas (real `area` filter), Reset, active-filter count on filter icons
-- [x] Home "See all" screens (`/see-all/[section]`): Popular activities, Top Hosts (2-column grid), Just For You, Explore, Local fun, Must-trys, Recently viewed; category chips filter in place
+- [x] Home "See all" screens (`/see-all/[section]`): Popular activities, Top Hosts (2-column grid), Services near you (Beauty / Health & Wellness chips), Explore, Local fun, Must-trys, Recently viewed; category chips filter in place
 - [ ] Business detail, Experience detail, Host profile
 - [ ] Bucket List, Recommend a place
 
@@ -125,7 +125,7 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - [ ] Explore map
 - [x] Business page (`/business/[slug]`): hero carousel with a panel that slides over it (snaps collapsed/expanded, tabs pin), header with verified badge, address to Maps, km distance, bookings, Open now from opening hours; tabs Popular, Services (category chips, + to a per-business cart with total in PKR and Continue), Membership (plans -> Membership Details, payment methods from `PAYMENT_METHODS`), Reviews (star filters with counts, photo strip and full-screen viewer, Write a review with photo uploads; only after a completed visit), About (description, map); share sheet; heart saves the business to a bucket list
 - [x] Bucket List: several named lists (`bucket_lists`), heart -> save sheet -> list picker (ticks, toggle) -> name a new list -> first-save sheet or "Saved to ..." toast with View; all lists and one list screens with share link, rename and delete; optimistic hearts and lists
-- [x] Adventure Quiz + personality badge driving recommendations: Figma's six questions (photo lists, glass, emoji, plane seat, thermometer) as `quiz_questions.kind` + `config`, guests sign in at the end and Home resumes the submit, retaking replaces the result, Just for you refetches
+- [x] Adventure Quiz + personality badge driving recommendations: Figma's six questions (photo lists, glass, emoji, plane seat, thermometer) as `quiz_questions.kind` + `config`, guests sign in at the end and Home resumes the submit, retaking replaces the result, Services near you refetches (the badge breaks ties)
 - [ ] Personality badge on Profile
 - [ ] Groups: group travel, group match
 - [ ] Profile: membership, offers, notifications, support, legal

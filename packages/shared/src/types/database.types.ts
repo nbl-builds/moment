@@ -3437,6 +3437,31 @@ export type Database = {
           starts_at: string;
         }[];
       };
+      services_near_you: {
+        Args: {
+          p_city?: string;
+          p_lat?: number;
+          p_limit?: number;
+          p_lng?: number;
+        };
+        Returns: {
+          affinity: number;
+          area: string;
+          category_name: string;
+          category_slugs: string[];
+          city: string;
+          cover_url: string;
+          currency: string;
+          distance_km: number;
+          from_price: number;
+          id: string;
+          logo_url: string;
+          name: string;
+          rating_avg: number;
+          rating_count: number;
+          slug: string;
+        }[];
+      };
       start_business_conversation: {
         Args: { p_booking_id?: string; p_business_id: string };
         Returns: {

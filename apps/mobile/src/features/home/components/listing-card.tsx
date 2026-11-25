@@ -1,5 +1,6 @@
 import { colors, formatDistanceKm, formatPrice, priceUnitLabel, type PriceUnit } from '@moment/shared';
 import { Image } from 'expo-image';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon, Text } from '@/components/ui';
 import { api } from '@/lib/api';
@@ -12,7 +13,7 @@ const HEART_HIT_SLOP = 10;
 
 export interface ListingCardProps {
   listing: ListingCardData;
-  /** 'tall': Popular / Recently viewed (17:1126). 'short': Just for you (17:1169). 'wide': Search Results (22:2205). 'wideShort': See all > Just For You (20:1676). */
+  /** 'tall': Popular / Recently viewed (17:1126). 'short': Services near you (17:1169). 'wide': Search Results (22:2205). 'wideShort': See all > Services near you / Explore (20:1676). */
   size: 'tall' | 'short' | 'wide' | 'wideShort';
   distanceKm?: number;
   saved: boolean;
@@ -25,34 +26,105 @@ export interface ListingCardProps {
  * business for services) and price in PKR.
  */
 export function ListingCard({ listing, size, distanceKm, saved, onPress, onToggleSaved }: ListingCardProps) {
-  const v = CARD[size];
-  const photo = api.media.url(listing.media[0]?.url);
   const host = listing.staff.map((s) => s.staff).find((s) => s?.is_host) ?? null;
   const withName = host?.display_name ?? listing.business.name;
-  const withAvatar = api.media.url(host?.avatar_url ?? listing.business.logo_url);
-  const subtitle = host?.title ?? null;
-  const distance = distanceKm !== undefined ? formatDistanceKm(distanceKm) : '';
+  return (
+    <PhotoCard
+      size={size}
+      photoUrl={listing.media[0]?.url}
+      rating={listing.rating_count > 0 ? Number(listing.rating_avg) : null}
+      distanceKm={distanceKm}
+      title={listing.title}
+      avatarUrl={host?.avatar_url ?? listing.business.logo_url}
+      withLine={
+        <>
+          With{' '}
+          <Text variant="body14" weight="bold" color="third">
+            {withName}
+          </Text>
+        </>
+      }
+      subtitle={host?.title ?? null}
+      price={formatPrice(listing.price_amount, { currency: listing.currency })}
+      priceNote={priceUnitLabel(listing.price_unit as PriceUnit)}
+      accessibilityLabel={`${listing.title}, with ${withName}, ${formatPrice(listing.price_amount)} ${priceUnitLabel(listing.price_unit as PriceUnit)}`}
+      onPress={onPress}
+      onPressWith={() => openBusiness(listing.business.slug)}
+      withActionLabel={`Open ${listing.business.name}`}
+      saved={saved}
+      onToggleSaved={onToggleSaved}
+    />
+  );
+}
+
+export interface PhotoCardProps {
+  size: ListingCardProps['size'];
+  photoUrl: string | null | undefined;
+  /** Null hides the rating chip. */
+  rating: number | null;
+  distanceKm?: number;
+  title: string;
+  avatarUrl: string | null | undefined;
+  /** First line next to the avatar ("With <host>"), Medium 14. */
+  withLine: ReactNode;
+  subtitle: string | null;
+  price: string;
+  priceNote: string;
+  accessibilityLabel: string;
+  onPress: () => void;
+  /** Tapping the avatar row (listing cards open the business). */
+  onPressWith?: () => void;
+  withActionLabel?: string;
+  saved: boolean;
+  onToggleSaved: () => void;
+}
+
+/** The Home card layout (17:1126, 17:1169) shared by listing and business cards. */
+export function PhotoCard(p: PhotoCardProps) {
+  const v = CARD[p.size];
+  const photo = api.media.url(p.photoUrl);
+  const avatar = api.media.url(p.avatarUrl);
+  const distance = p.distanceKm !== undefined ? formatDistanceKm(p.distanceKm) : '';
+  const withRow = (
+    <>
+      {avatar ? (
+        <Image source={{ uri: avatar }} style={styles.avatar} contentFit="cover" accessible={false} />
+      ) : (
+        <View style={[styles.avatar, styles.avatarEmpty]} />
+      )}
+      <View style={styles.withText}>
+        <Text variant="body14" weight="medium" color="black" numberOfLines={1}>
+          {p.withLine}
+        </Text>
+        {p.subtitle && (
+          <Text variant="body10" color="secondaryTint2" numberOfLines={1}>
+            {p.subtitle}
+          </Text>
+        )}
+      </View>
+    </>
+  );
 
   return (
     // The heart is a sibling of the card's pressable, not nested in it, so screen
     // readers reach it as its own button.
-    <View style={[styles.card, { height: v.height }, (size === 'wide' || size === 'wideShort') && styles.wide]}>
+    <View style={[styles.card, { height: v.height }, (p.size === 'wide' || p.size === 'wideShort') && styles.wide]}>
       <Pressable
-        onPress={onPress}
+        onPress={p.onPress}
         style={({ pressed }) => [styles.body, pressed && styles.pressed]}
         accessibilityRole="button"
-        accessibilityLabel={`${listing.title}, with ${withName}, ${formatPrice(listing.price_amount)} ${priceUnitLabel(listing.price_unit as PriceUnit)}`}
-        accessibilityActions={[{ name: 'activate' }, { name: 'business', label: `Open ${listing.business.name}` }]}
-        onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'business' ? openBusiness(listing.business.slug) : onPress())}
+        accessibilityLabel={p.accessibilityLabel}
+        accessibilityActions={p.onPressWith ? [{ name: 'activate' }, { name: 'with', label: p.withActionLabel }] : undefined}
+        onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'with' ? p.onPressWith?.() : p.onPress())}
       >
         <View style={[styles.photo, { height: v.image }]}>
           {photo && <Image source={{ uri: photo }} style={StyleSheet.absoluteFill} contentFit="cover" transition={150} />}
 
-          {listing.rating_count > 0 && (
+          {p.rating !== null && (
             <View style={styles.rating}>
               <Icon name="star" size={14} />
               <Text variant="subText12" weight="medium" color="blackTint1">
-                {Number(listing.rating_avg).toFixed(1)}
+                {p.rating.toFixed(1)}
               </Text>
             </View>
           )}
@@ -68,54 +140,36 @@ export function ListingCard({ listing, size, distanceKm, saved, onPress, onToggl
         </View>
 
         <Text variant="body16" weight="bold" color="black" numberOfLines={v.titleLines} style={[styles.title, { marginTop: v.titleGap }]}>
-          {listing.title}
+          {p.title}
         </Text>
 
         <View style={[styles.footer, { paddingBottom: v.footerBottom }]}>
-          <Pressable
-            onPress={() => openBusiness(listing.business.slug)}
-            hitSlop={6}
-            style={styles.with}
-            accessible={false}
-          >
-            {withAvatar ? (
-              <Image source={{ uri: withAvatar }} style={styles.avatar} contentFit="cover" accessible={false} />
-            ) : (
-              <View style={[styles.avatar, styles.avatarEmpty]} />
-            )}
-            <View style={styles.withText}>
-              <Text variant="body14" weight="medium" color="black" numberOfLines={1}>
-                With{' '}
-                <Text variant="body14" weight="bold" color="third">
-                  {withName}
-                </Text>
-              </Text>
-              {subtitle && (
-                <Text variant="body10" color="secondaryTint2" numberOfLines={1}>
-                  {subtitle}
-                </Text>
-              )}
-            </View>
-          </Pressable>
+          {p.onPressWith ? (
+            <Pressable onPress={p.onPressWith} hitSlop={6} style={styles.with} accessible={false}>
+              {withRow}
+            </Pressable>
+          ) : (
+            <View style={styles.with}>{withRow}</View>
+          )}
           <View style={styles.price}>
             <Text variant="subText14" weight="bold" color="price">
-              {formatPrice(listing.price_amount, { currency: listing.currency })}
+              {p.price}
             </Text>
             <Text variant="body10" color="secondaryTint2">
-              {priceUnitLabel(listing.price_unit as PriceUnit)}
+              {p.priceNote}
             </Text>
           </View>
         </View>
       </Pressable>
       <Pressable
-        onPress={onToggleSaved}
+        onPress={p.onToggleSaved}
         hitSlop={HEART_HIT_SLOP}
         style={styles.heart}
         accessibilityRole="button"
-        accessibilityLabel={saved ? `Remove ${listing.title} from bucket list` : `Add ${listing.title} to bucket list`}
-        accessibilityState={{ selected: saved }}
+        accessibilityLabel={p.saved ? `Remove ${p.title} from bucket list` : `Add ${p.title} to bucket list`}
+        accessibilityState={{ selected: p.saved }}
       >
-        {saved ? <Icon name="heart-saved" /> : <Icon name="heart-on-photo" />}
+        {p.saved ? <Icon name="heart-saved" /> : <Icon name="heart-on-photo" />}
       </Pressable>
     </View>
   );

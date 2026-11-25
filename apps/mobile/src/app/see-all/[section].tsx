@@ -7,10 +7,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Icon, Text } from '@/components/ui';
 import { HostCard } from '@/features/home/components/host-card';
 import { ListingCard } from '@/features/home/components/listing-card';
+import { ServiceBusinessCard } from '@/features/home/components/service-business-card';
 import { Skeleton } from '@/features/home/components/skeleton';
 import { HOME } from '@/features/home/layout';
 import { useBucketList } from '@/features/home/use-bucket-list';
-import type { HostCardData, ListingCardData } from '@/features/home/use-home-data';
+import type { HostCardData, ListingCardData, ServiceBusinessData } from '@/features/home/use-home-data';
 import { useUserPlace } from '@/features/home/use-user-place';
 import { GroupChip } from '@/features/search/components/group-chip';
 import { CATEGORY_GROUPS, hostCategoryLabel } from '@/features/search/filters';
@@ -19,7 +20,7 @@ import { openHost } from '@/features/business/navigation';
 import { api } from '@/lib/api';
 
 // Figma: "Popular Activites" (18:1085, chip selected 20:1354), "Top Hosts"
-// (20:1479), "Just For You" (20:1676) and "Explore" (20:1897). Measured in the
+// (20:1479), "Services near you" (20:1676, was "Just For You") and "Explore" (20:1897). Measured in the
 // 428 x 926 frame below the 44pt status bar.
 const GAP = {
   top: 16,
@@ -36,6 +37,8 @@ const CHIP_ORDER = ['adventure', 'tours', 'food', 'wellness'];
 const CHIPS = [...CATEGORY_GROUPS].sort(
   (a, b) => (CHIP_ORDER.indexOf(a.key) + 1 || 99) - (CHIP_ORDER.indexOf(b.key) + 1 || 99),
 );
+/** Service businesses only filter by the groups that hold service categories. */
+const SERVICE_CHIPS = CATEGORY_GROUPS.filter((g) => g.key === 'beauty' || g.key === 'wellness');
 
 /** A Home section's full list, with category chips that filter it in place. */
 export default function SeeAllScreen() {
@@ -50,14 +53,16 @@ export default function SeeAllScreen() {
   const city = place.city ?? undefined;
 
   const categories = useQuery({ queryKey: ['categories', 'all'], queryFn: () => api.catalog.listCategories() });
+  const near = config.kind === 'businesses' ? place.coords : null;
   const list = useQuery({
-    queryKey: ['see-all', key, city],
-    queryFn: (): Promise<ListingCardData[] | HostCardData[]> =>
-      config.kind === 'hosts' ? config.load() : config.load(city),
+    queryKey: ['see-all', key, city, near?.lat, near?.lng],
+    queryFn: (): Promise<ListingCardData[] | HostCardData[] | ServiceBusinessData[]> =>
+      config.kind === 'hosts' ? config.load() : config.kind === 'businesses' ? config.load(city, near) : config.load(city),
     enabled: ready,
   });
   const listings = config.kind === 'listings' ? ((list.data ?? []) as ListingCardData[]) : [];
   const hosts = config.kind === 'hosts' ? ((list.data ?? []) as HostCardData[]) : [];
+  const businesses = config.kind === 'businesses' ? ((list.data ?? []) as ServiceBusinessData[]) : [];
 
   const ids = listings.map((l) => l.id);
   const distances = useQuery({
@@ -73,6 +78,7 @@ export default function SeeAllScreen() {
   const shownHosts = selected
     ? hosts.filter((h) => h.listings.some((l) => selected.slugs.includes(slugOf(l.listing?.category_id ?? null) ?? '')))
     : hosts;
+  const shownBusinesses = selected ? businesses.filter((b) => b.category_slugs.some((slug) => selected.slugs.includes(slug))) : businesses;
 
   const hostWidth = (width - INSET * 2 - HOME.hostGrid.gap) / 2;
   const isPending = list.isPending || categories.isPending;
@@ -90,7 +96,7 @@ export default function SeeAllScreen() {
         <View style={styles.rule} />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipRow}>
-        {CHIPS.map((g) => (
+        {(config.kind === 'businesses' ? SERVICE_CHIPS : CHIPS).map((g) => (
           <GroupChip
             key={g.key}
             label={g.label}
@@ -112,7 +118,9 @@ export default function SeeAllScreen() {
           <Skeleton width={hostWidth} height={236} radius={15} />
         </View>
       ) : (
-        [0, 1].map((i) => <Skeleton key={i} width="100%" height={HOME.card[config.card].height} radius={HOME.card.radius} />)
+        [0, 1].map((i) => (
+          <Skeleton key={i} width="100%" height={HOME.card[config.kind === 'businesses' ? 'wideShort' : config.card].height} radius={HOME.card.radius} />
+        ))
       )}
     </View>
   ) : isError ? (
@@ -141,7 +149,9 @@ export default function SeeAllScreen() {
           ? 'Try another category.'
           : key === 'recent'
             ? 'Experiences you open show up here.'
-            : 'Check back soon for new experiences.'}
+            : config.kind === 'businesses'
+              ? 'Check back soon for spas and salons near you.'
+              : 'Check back soon for new experiences.'}
       </Text>
       {selected && <Button label="Show all" size="small" variant="dark" onPress={() => setGroup(null)} style={styles.stateButton} />}
     </View>
@@ -174,6 +184,22 @@ export default function SeeAllScreen() {
               category={hostCategoryLabel(item, categories.data ?? [])}
               onPress={() => openHost(item)}
             />
+          )}
+        />
+      ) : config.kind === 'businesses' ? (
+        <FlatList
+          {...common}
+          data={shownBusinesses}
+          renderItem={({ item }) => (
+            <View style={styles.inset}>
+              <ServiceBusinessCard
+                business={item}
+                size="wideShort"
+                saved={bucket.isBusinessSaved(item.id)}
+                onPress={() => router.push({ pathname: '/business/[slug]', params: { slug: item.slug } })}
+                onToggleSaved={() => bucket.toggleBusiness(item.id)}
+              />
+            </View>
           )}
         />
       ) : (
