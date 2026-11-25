@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { exploreStore } from '@/features/explore/store';
 import { BottomSheet } from '@/components/bottom-sheet';
 import { PickerSheet } from '@/components/picker-sheet';
 import { RangeCalendar } from '@/components/range-calendar';
@@ -67,6 +68,12 @@ export default function FiltersScreen() {
     update({ categoryGroups: f.categoryGroups.includes(key) ? f.categoryGroups.filter((k) => k !== key) : [...f.categoryGroups, key] });
 
   const apply = () => {
+    // From Explore: filter the map and list in place.
+    if (params.from === 'explore') {
+      exploreStore.setFilters(f);
+      router.back();
+      return;
+    }
     const href = { pathname: '/search-results', params: { filters: encodeFilters(f) } } as const;
     // From Search Results: go back to it with the new filters. From Home: show results in place of Filters.
     if (params.from === 'results') router.dismissTo(href);
