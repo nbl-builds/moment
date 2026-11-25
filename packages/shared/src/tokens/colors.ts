@@ -36,6 +36,10 @@ export const palette = {
   grey95: '#F2F2F2', // Figma: Black Color / Black Tint 7 (slider and toggle track)
   grey82: '#D2D2D2', // Figma: Black Color / Black Tint 6 (chip borders, tab divider on the business page)
   grey93: '#EEEEEE', // Figma: selected filter chip fill (47:1697)
+  limeTint7: '#F7FEE7', // Figma: applied promo row fill (48:7600)
+  coralTint: '#FFE8E5', // Figma: invalid promo row fill (48:7743)
+  coralShade: '#E25242', // Figma: invalid promo text and icon (48:7743)
+  hostOrange: '#F25726', // Figma: host name on slot cards (47:4198)
   // Adventure Quiz thermometer illustration (20:2453)
   thermometerBlue: '#2979C1',
   thermometerGrey: '#EAEAEA',
@@ -118,6 +122,11 @@ export const colors = {
   /** Adventure Quiz thermometer: mercury and empty tube. */
   thermometerFill: palette.thermometerBlue,
   thermometerEmpty: palette.thermometerGrey,
+  /** Booking: promo code applied / invalid rows (48:7600, 48:7743), host name on slot cards. */
+  successSurface: palette.limeTint7,
+  invalidSurface: palette.coralTint,
+  invalid: palette.coralShade,
+  host: palette.hostOrange,
   /** Pressed overlay for buttons without a pressed colour of their own. */
   pressedOverlay: withAlpha(palette.pureBlack, 0.1),
 } as const;

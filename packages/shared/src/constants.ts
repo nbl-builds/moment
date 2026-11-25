@@ -54,3 +54,25 @@ export const PAYMENT_METHODS = [
   { key: 'easypaisa', label: 'Easypaisa' },
 ] as const;
 export type PaymentMethodKey = (typeof PAYMENT_METHODS)[number]['key'];
+
+/**
+ * Charges added on Confirm Reservation on top of the server's subtotal.
+ * Placeholder rates until finance confirms them (Figma shows 2.5% and $2):
+ * sales tax on services and a flat Moment service fee per checkout.
+ */
+export const BOOKING_CHARGES = {
+  taxPercent: 16,
+  serviceFeeAmount: 15000, // Rs 150, minor units
+} as const;
+
+/**
+ * What each `listings.cancellation_policy` means for the guest. Shown as the
+ * refund note on "Select dates" and in Confirm Reservation.
+ */
+export const CANCELLATION_POLICIES = {
+  flexible: { freeUntilHours: 24, label: 'Flexible', summary: 'Full refund up to 24 hours before the start.' },
+  moderate: { freeUntilHours: 72, label: 'Moderate', summary: 'Full refund up to 3 days before the start.' },
+  strict: { freeUntilHours: 7 * 24, label: 'Strict', summary: 'Full refund up to 7 days before the start.' },
+  non_refundable: { freeUntilHours: null, label: 'Non-refundable', summary: 'Non-refundable once booked.' },
+} as const;
+export type CancellationPolicyKey = keyof typeof CANCELLATION_POLICIES;

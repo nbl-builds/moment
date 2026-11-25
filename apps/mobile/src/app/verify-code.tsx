@@ -1,4 +1,5 @@
 import { ApiError, colors, OTP_LENGTH } from '@moment/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
@@ -7,6 +8,7 @@ import { Button, Icon, OtpInput, Text } from '@/components/ui';
 import { useLoginSheet } from '@/features/auth/login-sheet-provider';
 import { sendCode, verifyCode, type OtpTarget } from '@/features/auth/otp';
 import { resetTo, routeAfterSignIn } from '@/features/auth/sign-in-flow';
+import { api } from '@/lib/api';
 import { useCountdown } from '@/hooks/use-countdown';
 
 // Figma: "Sign In OTP" — empty (7:1034), code entered (9:603), wrong code (9:728).
@@ -30,8 +32,14 @@ const RESEND_COOLDOWN_S = 60;
 const WRONG_CODE = 'Wrong verification code';
 
 export default function VerifyCodeScreen() {
-  /** `next=create-password`: a new email sign-up continues to Create password. */
-  const { phone, email, next } = useLocalSearchParams<{ phone?: string; email?: string; next?: string }>();
+  /**
+   * `next=create-password`: a new email sign-up continues to Create password.
+   * `mode=phone-change`: confirms a new number for the signed-in user (Confirm
+   * Reservation > Phone number > Add), then goes back.
+   */
+  const { phone, email, next, mode } = useLocalSearchParams<{ phone?: string; email?: string; next?: string; mode?: string }>();
+  const phoneChange = mode === 'phone-change' && Boolean(phone);
+  const queryClient = useQueryClient();
   const target: OtpTarget = email ? { email } : { phone: phone ?? '' };
   const sentTo = email ?? phone ?? '';
   const insets = useSafeAreaInsets();
@@ -54,6 +62,12 @@ export default function VerifyCodeScreen() {
     if (!complete || verifying) return;
     setVerifying(true);
     try {
+      if (phoneChange) {
+        await api.auth.verifyPhoneChange({ phone: phone ?? '', code });
+        await queryClient.invalidateQueries({ queryKey: ['me'] });
+        router.back();
+        return;
+      }
       await verifyCode(target, code);
       resetTo(
         next === 'create-password' && email
@@ -69,6 +83,7 @@ export default function VerifyCodeScreen() {
 
   const onEdit = () => {
     router.back();
+    if (phoneChange) return;
     // The email screen is underneath with the address still typed; the phone sheet reopens.
     if (!email) openLoginSheet({ phone });
   };
@@ -79,7 +94,8 @@ export default function VerifyCodeScreen() {
     setCode('');
     setError(null);
     try {
-      await sendCode(target);
+      if (phoneChange) await api.auth.changePhone(phone ?? '');
+      else await sendCode(target);
     } catch (e) {
       setError(messageOf(e));
     }

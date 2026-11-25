@@ -361,6 +361,7 @@ export type Database = {
           guest_count: number;
           id: string;
           idempotency_key: string | null;
+          is_private: boolean;
           listing_id: string;
           location_id: string | null;
           membership_id: string | null;
@@ -401,6 +402,7 @@ export type Database = {
           guest_count?: number;
           id?: string;
           idempotency_key?: string | null;
+          is_private?: boolean;
           listing_id: string;
           location_id?: string | null;
           membership_id?: string | null;
@@ -440,6 +442,7 @@ export type Database = {
           guest_count?: number;
           id?: string;
           idempotency_key?: string | null;
+          is_private?: boolean;
           listing_id?: string;
           location_id?: string | null;
           membership_id?: string | null;
@@ -1579,9 +1582,11 @@ export type Database = {
           meeting_point: unknown;
           meeting_point_notes: string | null;
           min_guests: number;
+          pets_allowed: boolean;
           popularity_score: number;
           price_amount: number;
           price_unit: Database["public"]["Enums"]["price_unit"];
+          private_price_amount: number | null;
           published_at: string | null;
           rating_avg: number;
           rating_count: number;
@@ -1618,9 +1623,11 @@ export type Database = {
           meeting_point?: unknown;
           meeting_point_notes?: string | null;
           min_guests?: number;
+          pets_allowed?: boolean;
           popularity_score?: number;
           price_amount: number;
           price_unit?: Database["public"]["Enums"]["price_unit"];
+          private_price_amount?: number | null;
           published_at?: string | null;
           rating_avg?: number;
           rating_count?: number;
@@ -1656,9 +1663,11 @@ export type Database = {
           meeting_point?: unknown;
           meeting_point_notes?: string | null;
           min_guests?: number;
+          pets_allowed?: boolean;
           popularity_score?: number;
           price_amount?: number;
           price_unit?: Database["public"]["Enums"]["price_unit"];
+          private_price_amount?: number | null;
           published_at?: string | null;
           rating_avg?: number;
           rating_count?: number;
@@ -3090,6 +3099,10 @@ export type Database = {
       };
     };
     Functions: {
+      available_dates: {
+        Args: { p_from: string; p_listing_id: string; p_to: string };
+        Returns: string[];
+      };
       business_is_open: {
         Args: { p_at?: string; p_business_id: string };
         Returns: boolean;
@@ -3128,6 +3141,7 @@ export type Database = {
           guest_count: number;
           id: string;
           idempotency_key: string | null;
+          is_private: boolean;
           listing_id: string;
           location_id: string | null;
           membership_id: string | null;
@@ -3160,6 +3174,7 @@ export type Database = {
           p_items?: Json;
           p_listing_id: string;
           p_notes?: string;
+          p_private?: boolean;
           p_slot_id?: string;
           p_source?: Database["public"]["Enums"]["booking_source"];
           p_staff_id?: string;
@@ -3189,6 +3204,7 @@ export type Database = {
           guest_count: number;
           id: string;
           idempotency_key: string | null;
+          is_private: boolean;
           listing_id: string;
           location_id: string | null;
           membership_id: string | null;
@@ -3209,6 +3225,62 @@ export type Database = {
           to: "bookings";
           isOneToOne: true;
           isSetofReturn: false;
+        };
+      };
+      create_bookings: {
+        Args: {
+          p_bookings: Json;
+          p_contact_phone?: string;
+          p_coupon_code?: string;
+          p_idempotency_key?: string;
+          p_notes?: string;
+          p_source?: Database["public"]["Enums"]["booking_source"];
+        };
+        Returns: {
+          business_id: string;
+          cancellation_reason: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
+          code: string;
+          completed_at: string | null;
+          confirmed_at: string | null;
+          consumer_id: string;
+          contact_email: string | null;
+          contact_name: string | null;
+          contact_phone: string | null;
+          coupon_id: string | null;
+          created_at: string;
+          currency: string;
+          discount_amount: number;
+          during: unknown;
+          ends_at: string;
+          external_ref: string | null;
+          fee_amount: number;
+          group_id: string | null;
+          guest_count: number;
+          id: string;
+          idempotency_key: string | null;
+          is_private: boolean;
+          listing_id: string;
+          location_id: string | null;
+          membership_id: string | null;
+          notes: string | null;
+          payment_status: Database["public"]["Enums"]["booking_payment_status"];
+          slot_id: string | null;
+          source: Database["public"]["Enums"]["booking_source"];
+          staff_id: string | null;
+          starts_at: string;
+          status: Database["public"]["Enums"]["booking_status"];
+          subtotal_amount: number;
+          tax_amount: number;
+          total_amount: number;
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "bookings";
+          isOneToOne: false;
+          isSetofReturn: true;
         };
       };
       create_business_api_key: {
@@ -3271,6 +3343,16 @@ export type Database = {
           listing_id: string;
         }[];
       };
+      quote_booking: {
+        Args: {
+          p_coupon_code?: string;
+          p_guest_count?: number;
+          p_items?: Json;
+          p_listing_id: string;
+          p_private?: boolean;
+        };
+        Returns: Json;
+      };
       recommended_listings: {
         Args: { p_city?: string; p_limit?: number };
         Returns: {
@@ -3296,9 +3378,11 @@ export type Database = {
           meeting_point: unknown;
           meeting_point_notes: string | null;
           min_guests: number;
+          pets_allowed: boolean;
           popularity_score: number;
           price_amount: number;
           price_unit: Database["public"]["Enums"]["price_unit"];
+          private_price_amount: number | null;
           published_at: string | null;
           rating_avg: number;
           rating_count: number;
@@ -3438,6 +3522,7 @@ export type Database = {
           guest_count: number;
           id: string;
           idempotency_key: string | null;
+          is_private: boolean;
           listing_id: string;
           location_id: string | null;
           membership_id: string | null;

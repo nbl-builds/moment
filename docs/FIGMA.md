@@ -107,6 +107,17 @@ Recommend a service: 25:1941, 25:2025, 25:2067, 25:2148, 25:2198
 ## Booking Flow
 Business Summary 47:4198, 47:3637, 47:5143, 48:7600, 48:7743, 47:4348, 47:4445, 47:4311, 47:5045 · Edit Reservation 48:7876 · Edit Day 47:3717 · Edit Slot 47:3864 · Edit Guests 47:4596 · Edit Notes 47:4735 · Payment Method 47:4827 · Enter coupon 47:4945
 
+| Screen | Frame | Code |
+|---|---|---|
+| Entry (business cart "Continue") | 48:7876 | `app/business/[slug]/index.tsx` -> `app/booking/new.tsx` |
+| Select dates: Dates / Guests / Private group | 47:4198, 47:4348, 47:4311 | `app/booking/dates/[listingId].tsx`, `features/booking/components/slot-card.tsx` |
+| Confirm Reservation (short, full) | 47:3637, 47:5143 | `app/booking/confirm.tsx` |
+| Promo applied / invalid | 48:7600, 48:7743 | `features/booking/components/promo-row.tsx` |
+| Select Date / Select Time | 47:3717, 47:3864 | `features/booking/components/date-sheet.tsx`, `time-sheet.tsx` |
+| Add Guest | 47:4596 (47:4445 is the older styling) | `features/booking/components/guests-sheet.tsx` |
+| Add Notes / Payment Method / Add Coupon | 47:4735, 47:4827, 47:4945 | `notes-sheet.tsx`, `payment-sheet.tsx`, `coupon-sheet.tsx` |
+| Success | 47:5045 | `features/booking/components/success-sheet.tsx` |
+
 ## Booking Status Screens
 Booking Empty 52:8373, 52:8565 · Bookings 47:6282 · All Bookings 52:9094 · Booking Details (Pending) 47:6385, 52:9299, 47:6493 · Empty Cart 52:8690 · Empty Cart View 52:8991 · Chat 47:5940, 52:9442
 

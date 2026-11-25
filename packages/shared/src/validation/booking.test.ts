@@ -5,6 +5,7 @@ import {
   cancelBookingSchema,
   countGuests,
   createBookingSchema,
+  createCartSchema,
   createGuestsSchema,
   guestDetailsNote,
   toCreateBookingArgs,
@@ -115,6 +116,7 @@ describe('toCreateBookingArgs', () => {
     expect(toCreateBookingArgs(form)).toEqual({
       p_listing_id: LISTING,
       p_slot_id: SLOT,
+      p_private: false,
       p_guest_count: 3,
       p_items: undefined,
       p_notes: 'Vegetarian lunch please\n\nChildren: 1. Infants: 1.',
@@ -157,5 +159,14 @@ describe('cancelBookingSchema', () => {
   it('accepts an optional reason', () => {
     expect(cancelBookingSchema.parse({ bookingId: LISTING, reason: '' })).toEqual({ bookingId: LISTING, reason: undefined });
     expect(cancelBookingSchema.safeParse({ bookingId: 'nope' }).success).toBe(false);
+  });
+});
+
+describe('createCartSchema', () => {
+  it('books one to ten services and upper-cases the coupon', () => {
+    const service = { listingId: LISTING, startsAt: '2026-12-01T05:00:00.000Z' };
+    const form = createCartSchema.parse({ services: [service], couponCode: 'saffron20', idempotencyKey: 'cart-123456' });
+    expect(form.couponCode).toBe('SAFFRON20');
+    expect(createCartSchema.safeParse({ services: [], idempotencyKey: 'cart-123456' }).success).toBe(false);
   });
 });

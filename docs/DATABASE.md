@@ -94,6 +94,12 @@ RLS helpers live in the `private` schema (not exposed through the API), are `sec
 - `bookings`: code, consumer, business, listing, slot or appointment time and staff, guests, status, payment status, contact snapshot, amounts, coupon, group, source (`app | web | portal | pos`), idempotency key, external ref, cancellation details.
 - `booking_items` (option lines), `booking_events` (status history, written by trigger).
 - RPCs: `create_booking`, `cancel_booking` (consumer), `update_booking_status` (business).
+- `create_bookings(p_bookings jsonb, ...)`: a services cart (several appointment services, one visit) in one transaction, all or nothing (a line's `items` may be omitted or `null`); the coupon applies to the most expensive service; idempotent per key (`<key>:<index>`).
+- `quote_booking(listing, guests, items, coupon, private)`: the Confirm screen's subtotal and coupon discount, priced exactly as `create_booking` will (shared `private.booking_subtotal` and `private.apply_coupon`). A bad coupon returns `coupon_error` ("This code has expired", "Spend at least ... to use this code", ...) instead of raising.
+- `available_dates(listing, from, to)`: days with at least one free appointment time ("Select Date").
+- Private groups: `listings.private_price_amount` (null = not offered) books a whole session for one price; `bookings.is_private` makes the slot count as full. `listings.pets_allowed` drives the Pets stepper on Add Guest.
+- Tax and the service fee are added on the device from `BOOKING_CHARGES` in `@moment/shared` (placeholder rates); `bookings.total_amount` is the server's subtotal minus discount. Cancellation rules per policy are in `CANCELLATION_POLICIES`.
+- A phone confirmed after sign up (`auth.users.phone`) is copied to `profile_private.phone` by trigger.
 - Status flow: `pending -> confirmed -> completed | no_show`, or `cancelled_by_consumer | cancelled_by_business`.
 
 ### Payments
@@ -196,6 +202,7 @@ pnpm db:types    # regenerate packages/shared/src/types/database.types.ts
 - `02_bookings`: capacity and overbooking, idempotent retries, appointment double-booking (RPC and exclusion constraint), coupons, cancellation and status rules.
 - `03_social_and_payments`: reviews only for completed bookings, business replies, chat and realtime access, groups and joining rules, cash payments vs provider payments.
 - `04`-`08`: sign up, email sign-in, Home dashboard, Adventure Quiz, bucket lists.
+- `10_booking_flow`: quotes and coupon reasons, sold-out and private slots, services cart (coupon once, idempotent, all or nothing), calendar days, phone sync.
 - `09_business_page`: opening hours and `business_is_open` (split days, past midnight), gallery and hours RLS, seed coverage, review-photo uploads, `reviewable_bookings`, location points.
 
 ### Seed data (local only)
@@ -205,6 +212,8 @@ Every account uses password `password123`. Emails end in `@moment.test`.
 |---|---|
 | admin@moment.test | Super admin |
 | dev@moment.test | The dev auth bypass user (+92 300 1234567, code 123456), already signed up, with unreviewed visits to Saffron Spa and Margalla Trails |
+
+Booking test data: daily sessions for three weeks on every experience; tomorrow's "Saidpur Village & Faisal Mosque Golden Hour Walk" is sold out and the day after has one seat left; request-to-book listings include the Lahori cooking class and the Skardu day trip; pets on the Margalla hike and family outings; private sessions on six experiences. Coupons: `ISB15` (Margalla Trails), `LAHORE300` (Androon Walks, min Rs 2,000), `KARACHI500`, `SAFFRON20`, `WELCOME10`, `BIGSPEND` (min Rs 20,000), and the expired `SUMMER24`.
 | owner.margalla@ | Owner, Margalla Trails Co. (Islamabad) |
 | owner.saffron@ | Owner, Saffron Spa & Wellness (Islamabad) |
 | manager.saffron@ | Manager, Saffron Spa |
