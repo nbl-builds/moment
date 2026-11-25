@@ -10,23 +10,35 @@ begin
   perform set_config('role', 'authenticated', true);
 end;
 $$;
+create function pg_temp.logout() returns void language plpgsql as $$
+begin
+  perform set_config('role', 'postgres', true);
+  perform set_config('request.jwt.claims', '', true);
+end;
+$$;
 
 select has_function('public', 'my_business_unread', 'my_business_unread exists');
 
--- Seed: every status for the dev user
-select is(
-  (select array_agg(distinct status::text order by status::text) from public.bookings where consumer_id = '00000000-0000-4000-a000-000000000099'),
-  array['cancelled_by_business', 'cancelled_by_consumer', 'completed', 'confirmed', 'pending'],
-  'the dev user has bookings in every status');
+-- Seed: the dev user has past, cancelled and upcoming bookings (local testing may change which)
+select ok(
+  (select count(distinct status) from public.bookings where consumer_id = '00000000-0000-4000-a000-000000000099') >= 3,
+  'the dev user has bookings in several statuses');
 
+-- Unread counts on a fresh chat with Gulberg Glow (independent of local test data)
 select pg_temp.login('00000000-0000-4000-a000-000000000099');
-select is((select unread from public.my_business_unread() where business_id = '00000000-0000-4000-b000-000000000002'), 3, 'three unread from Saffron');
-select is((select unread from public.my_business_unread() where business_id = '00000000-0000-4000-b000-000000000001'), 0, 'Margalla is read');
+create temp table glow_chat as select (public.start_business_conversation('00000000-0000-4000-b000-000000000005')).id;
+select pg_temp.logout();
+insert into public.messages (conversation_id, sender_id, sender_business_id, body)
+select id, (select user_id from public.business_members where business_id = '00000000-0000-4000-b000-000000000005' limit 1),
+       '00000000-0000-4000-b000-000000000005', v.body
+from glow_chat, (values ('Salam!'), ('Your keratin is confirmed.')) as v(body);
+select pg_temp.login('00000000-0000-4000-a000-000000000099');
+select is((select unread from public.my_business_unread() where business_id = '00000000-0000-4000-b000-000000000005'), 2, 'two unread from the business');
 
--- My own messages never count; reading clears the count.
+-- My own messages never count; replying (or marking read) clears the count.
 insert into public.messages (conversation_id, sender_id, body)
-select conversation_id, '00000000-0000-4000-a000-000000000099', 'Thanks!' from public.my_business_unread() where business_id = '00000000-0000-4000-b000-000000000002';
-select is((select unread from public.my_business_unread() where business_id = '00000000-0000-4000-b000-000000000002'), 0, 'replying marks the chat read');
+select id, '00000000-0000-4000-a000-000000000099', 'Thanks!' from glow_chat;
+select is((select unread from public.my_business_unread() where business_id = '00000000-0000-4000-b000-000000000005'), 0, 'replying marks the chat read');
 
 select ok(private.realtime_user_topic_allowed('user:00000000-0000-4000-a000-000000000099'), 'I can listen to my own topic');
 select ok(not private.realtime_user_topic_allowed('user:00000000-0000-4000-a000-000000000021'), 'but not to someone else''s');

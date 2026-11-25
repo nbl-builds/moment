@@ -13,7 +13,8 @@ import { requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from
 export const BOOKING_LIST_SELECT = `
   id, code, status, payment_status, starts_at, ends_at, guest_count, total_amount, currency, source,
   listing:listings!inner(id, slug, title, type, duration_minutes, media:listing_media(url, alt, sort_order)),
-  business:businesses!inner(id, slug, name, logo_url, timezone)
+  business:businesses!inner(id, slug, name, logo_url, cover_url, timezone, is_verified, rating_avg, rating_count),
+  location:business_locations(area, city)
 ` as const;
 
 export const UPCOMING_STATUSES: Enums<'booking_status'>[] = ['pending', 'confirmed'];
