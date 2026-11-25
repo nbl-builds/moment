@@ -142,7 +142,8 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - `quiz_results`, `user_badges`.
 - `submit_quiz(answer_ids)` scores on the server and sets the profile badge. Retaking replaces the earlier result: the user's previous `quiz_results` rows and quiz-awarded personality badge are removed first.
 - Seed: Figma's six questions (Adventure Quiz 20:2103 ... 20:2453) with photos in `seed-media/quiz`; badges Nature Lover, Adventure Lover, Culture Lover, Food Lover, Wellness Lover, Party Lover (codes unchanged). `supabase/tests/database/07_quiz.test.sql` checks every badge can be earned.
-- `recommended_listings(limit)` powers "Just For You".
+- `services_near_you(lat, lng, city, limit)` powers Home "Services near you": active venues with a published service, their cover, logo, main category (`category_slugs` for filters), area, cheapest service (`from_price`) and distance. With a point: nearest first; else the city (all when null) by rating; the user's badge affinity for the services' tags breaks ties.
+- `recommended_listings(limit)` ranks experiences by the quiz badge. It powered "Just For You" before that section became "Services near you"; unused by the app now, kept for experience recommendations.
 
 ### Groups
 - `groups`: owner, destination, dates, visibility (`private | public`), open to match, max members, interests.
