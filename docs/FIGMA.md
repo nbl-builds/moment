@@ -142,6 +142,17 @@ Explore (Experiences) 48:2341, 52:9860, 52:10435 · Explore (Businesses) 52:1029
 ## Group Screens
 Groups 48:3071, 48:6213, 48:6274 (long) · My Groups 48:3142 · Create new group 48:4074, 48:4118 · Groups View 48:4500 · Group Share 48:4668 · Group Settings 48:4832, 48:5138, 48:5184 · Group Rename 48:4986 · Group Delete 48:5243
 
+| Screen | Frame | Code |
+|---|---|---|
+| Groups tab, empty / list | 48:3071, 48:3142 | `app/(tabs)/groups.tsx` |
+| Moment Groups intro, top / full (+ FAQ sheet, no frame) | 48:6213, 48:6274 | `app/group/intro.tsx` |
+| New Group, Congratulations | 48:4074, 48:4118 | `app/group/new.tsx`, `features/booking/components/success-sheet.tsx` (kind `group`) |
+| Group page: Liked by group, Group Match, Recommended | 48:4500 | `app/group/[id]/index.tsx`, `features/groups/components/` |
+| Share sheet, ••• menu, Rename | 48:4668, 48:4832, 48:4986 | `app/group/[id]/index.tsx` |
+| Invite others, Members, Leave (no frames) | | `features/groups/components/invite-sheet.tsx`, `members-sheet.tsx`, `confirm-sheet.tsx` |
+| Group Settings, Who can see likes, Delete | 48:5138, 48:5184, 48:5243 | `app/group/[id]/settings.tsx` |
+| Add to Groups picker (from the heart) | | `features/groups/components/group-picker-sheet.tsx` |
+
 ## Profile Screens
 General: Profile 48:3255, 48:3423, 48:3951 · Personal Information 48:3617, 48:3686 · Transactions 48:3728 · Notifications 48:4018 · Add loc 48:4398 · Business Summary variants 48:6140, 48:5297, 48:5379, 48:5415, 48:5832, 48:5607, 48:5660, 48:5703
 Support: Get started 48:6483 · FAQ 48:5465, 48:5505 · Give us feedback 48:6365, 48:6410 · Invite a friend 48:5873 · 48:5969, 48:5772
