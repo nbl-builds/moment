@@ -121,6 +121,14 @@ Business Summary 47:4198, 47:3637, 47:5143, 48:7600, 48:7743, 47:4348, 47:4445, 
 ## Booking Status Screens
 Booking Empty 52:8373, 52:8565 · Bookings 47:6282 · All Bookings 52:9094 · Booking Details (Pending) 47:6385, 52:9299, 47:6493 · Empty Cart 52:8690 · Empty Cart View 52:8991 · Chat 47:5940, 52:9442
 
+| Screen | Frame | Code |
+|---|---|---|
+| Bookings tab, empty / with items | 52:8373, 52:8565 | `app/(tabs)/bookings.tsx` |
+| All Bookings + Filter sheet | 52:9094, 47:6282 | `app/all-bookings.tsx` |
+| Cart, empty / with items | 52:8690, 52:8991 | `app/cart.tsx` (illustration exported from node 52:8941 at 1x) |
+| Reservation pending / confirmed / completed (cancelled: no frame) | 47:6385, 52:9299, 47:6493 | `app/reservation/[id].tsx` |
+| Chat, + attachments open | 47:5940, 52:9442 | `app/chat/[businessId].tsx`, `features/chat/` |
+
 ## Explore Screens
 Explore (Experiences) 48:2341, 52:9860, 52:10435 · Explore (Businesses) 52:10292
 

@@ -155,7 +155,9 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - `conversations` (`direct | business | group`), `conversation_participants`, `messages`.
 - Business conversations are a shared inbox: every active member of the business can read and reply (as the business).
 - Group conversations are open to active group members.
-- Realtime: an insert trigger broadcasts each message to the private channel `conversation:<id>`; policies on `realtime.messages` authorise subscribers.
+- Realtime: an insert trigger broadcasts each message to the private channel `conversation:<id>`; policies on `realtime.messages` authorise subscribers. Participants also send ephemeral `typing` events on that channel.
+- Per-user topic `user:<uid>` (private, only that user may listen): `booking` events when one of their bookings changes status, time or payment status, and `message` events when someone else writes in one of their conversations. The app refetches bookings and unread badges from these.
+- `my_business_unread()`: unread messages per business conversation for the signed-in user (Bookings tab and chat badges). One conversation per consumer and business (`start_business_conversation` without a booking).
 - RPCs: `start_direct_conversation`, `start_business_conversation`.
 
 ### Memberships and coupons

@@ -10,7 +10,7 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Dev auth bypass for testing screens: `EXPO_PUBLIC_AUTH_BYPASS=1` in `apps/mobile/.env.local` (dev builds only; see `.env.example`). Remove it, or keep it dev-only, when the production SMS provider is wired
 - Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
 - Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
-- Next: section 4, Booking Status Screens (the Bookings tab is still a placeholder; "Sounds Good!" after booking already opens it)
+- Next: section 2 remainder (Experience details, host profile) or section 8, Explore Screens. Booking Status is done: test voice notes and the chat keyboard on a real device (see "To wire after UI")
 - Next screens behind Home's placeholder routes: Experience details (`/listing/[id]`, has a "Check availability" button into Select dates for now), host profile (`/host/[id]`), Recommend a place, and the Bookings / Explore / Groups / Profile tabs
 - Promo banners are static in `apps/mobile/src/features/home/promos.ts`; move them to `platform_settings` when the team needs to change them without a release
 - "Recently viewed" is stored on the device (AsyncStorage); move it to the server if it should follow the user
@@ -29,7 +29,7 @@ One branch per section (`feat/<section>`), merged into `staging`. Frames: `docs/
 - [x] 1. Search Filter
 - [ ] 2. Business Look (business, experience detail, host profile, reviews). Business page done (`/business/[slug]`); experience detail and host profile next
 - [x] 3. Booking Flow: Select dates (Dates / Guests / Private group), Confirm Reservation, the date / time / guests / notes / payment / coupon / success sheets; real bookings through `create_booking` / `create_bookings`, payment mocked
-- [ ] 4. Booking Status Screens
+- [x] 4. Booking Status Screens: Bookings tab (one row per business, unread badges, cart and ••• in the header), All Bookings with the period/year filter, Cart (saved on the device, swipe to remove), Reservation details by status (pending, confirmed, completed, cancelled) with cancel, reschedule, book again and review, and Chat with a business (Realtime messages, typing, read state, photos, voice notes)
 - [ ] 5. Bucket List + Recommend a place (Bucket List done: named lists, save sheets, list screens; Recommend a place next)
 - [x] 6. Customer Dashboard (Adventure Quiz) + personality badge (badge on Profile comes with section 10)
 - [x] 7. Customer Dashboard (Section Screens): "See all" lists (with Search typing screen and Filters updates)
@@ -50,6 +50,10 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - **Membership apply** (`features/booking/mock.ts` `applyForMembership`): "Apply Membership" goes through Confirm & Pay and shows "Your membership request is sent", but nothing is stored. Needs a membership checkout endpoint (memberships are created by backend code after payment)
 - **Tax and service fee** (`BOOKING_CHARGES` in `packages/shared/src/constants.ts`: 16% tax on the amount after the coupon, Rs 150 fee per checkout): placeholder rates shown on Price Details only; the booking's `total_amount` excludes them. Confirm the rates with finance and add them server side with payments
 - **Refunds**: the refund note and Cancellation card come from `CANCELLATION_POLICIES` on the device; cancelling with a refund needs server-side rules when payments land
+- **Reschedule** (`features/bookings/mock.ts` `rescheduleBooking`): Reschedule Reservation reuses Select Date / Select Time, but there is no reschedule RPC; the new time shows for this app session only. Needs `reschedule_booking(booking, starts_at, staff)` with the same availability and cancellation-window checks as `create_booking`. Only appointment (service) bookings offer it; slot bookings would need a session picker
+- **Voice notes in Chat** (`features/bookings/mock.ts` `uploadVoiceNote`): recorded with expo-audio and played on the device only; nothing is uploaded or sent. Allow audio in the `chat-attachments` bucket and send it as an attachment. Recording could not be tested in the iOS Simulator (expo-audio's permission calls never resolve in Expo Go there); test on a device
+- **Business "Online" in Chat**: shown while the business is open (`business_hours`); replace with Realtime presence of business staff once the business portal has a chat inbox
+- **Payment method on Reservation details**: reads `payments`; bookings paid through the payments mock have none, so it says "Not paid yet (test payment)"
 - **Contact Moment Support** (`/support`): placeholder until support chat (Chat section)
 - **Service animals** link on Add Guest shows an explanation alert; no separate service-animal field (pets count goes in the booking notes via `guestDetailsNote`)
 
