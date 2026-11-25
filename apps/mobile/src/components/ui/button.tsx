@@ -5,7 +5,7 @@ import { Icon, Spinner } from './icon';
 import type { IconName } from './icons';
 import { Text, type FontWeightToken } from './text';
 
-export type ButtonVariant = 'primary' | 'dark' | 'light' | 'soft' | 'muted' | 'danger' | 'outline' | 'ghost';
+export type ButtonVariant = 'primary' | 'dark' | 'light' | 'soft' | 'muted' | 'quiet' | 'danger' | 'outline' | 'ghost';
 export type ButtonSize = keyof typeof buttonSizes;
 
 interface VariantStyle {
@@ -35,6 +35,8 @@ const VARIANTS: Record<ButtonVariant, VariantStyle> = {
   light: { background: 'white', label: 'secondary' },
   soft: { background: 'secondaryTint6', label: 'secondary', labelWeight: 'medium', radius: 10 },
   muted: { background: 'secondaryTint5', label: 'secondary' },
+  /** Grey fill, grey label: Sign Out and Delete Account (48:3255, 48:3617). */
+  quiet: { background: 'track', pressedBackground: 'divider', label: 'optionSelected' },
   danger: { background: 'danger', label: 'onDanger' },
   outline: { border: 'outline', label: 'secondary' },
   ghost: { label: 'secondary' },

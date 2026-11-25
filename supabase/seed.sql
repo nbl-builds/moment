@@ -620,9 +620,9 @@ select pg_temp.act_as(null);
 -- Coupons and memberships
 -- ---------------------------------------------------------------------------
 insert into public.coupons (id, business_id, code, title, description, discount_type, discount_value, max_discount_amount, min_subtotal_amount, per_user_limit, ends_at, is_public) values
-  ('00000000-0000-4000-8100-000000000001', null, 'WELCOME10', '10% off your first booking', 'Up to PKR 1,000 off any experience or service.', 'percent', 10, 100000, 0, 1, now() + interval '180 days', true),
+  ('00000000-0000-4000-8100-000000000001', null, 'WELCOME10', '10% off your first booking', 'Up to Rs 1,000 off any experience or service.', 'percent', 10, 100000, 0, 1, now() + interval '180 days', true),
   ('00000000-0000-4000-8100-000000000002', '00000000-0000-4000-b000-000000000002', 'SAFFRON20', '20% off weekday massages', 'Saffron Spa weekday offer.', 'percent', 20, null, 500000, 2, now() + interval '60 days', true),
-  ('00000000-0000-4000-8100-000000000003', '00000000-0000-4000-b000-000000000006', 'KARACHI500', 'PKR 500 off coastal trips', 'On bookings over PKR 5,000.', 'fixed', 50000, null, 500000, 1, now() + interval '90 days', true),
+  ('00000000-0000-4000-8100-000000000003', '00000000-0000-4000-b000-000000000006', 'KARACHI500', 'Rs 500 off coastal trips', 'On bookings over Rs 5,000.', 'fixed', 50000, null, 500000, 1, now() + interval '90 days', true),
   ('00000000-0000-4000-8100-000000000004', '00000000-0000-4000-b000-000000000003', 'ANDROONVIP', 'Friends of Androon Walks', 'Private code for repeat guests.', 'percent', 15, 150000, 0, 3, null, false);
 
 insert into public.membership_plans (id, business_id, name, description, price_amount, interval, benefits, included_sessions, discount_percent, sort_order) values
@@ -878,7 +878,7 @@ insert into public.messages (conversation_id, sender_id, sender_business_id, bod
   ('00000000-0000-4000-6000-000000000002', '00000000-0000-4000-a000-000000000022', null,
    'Did you try the mangrove kayaking? Thinking of booking it for my sister.', now() - interval '2 days'),
   ('00000000-0000-4000-6000-000000000002', '00000000-0000-4000-a000-000000000024', null,
-   'Yes! Go on a Sunday, it is quieter. Use KARACHI500 for PKR 500 off.', now() - interval '47 hours');
+   'Yes! Go on a Sunday, it is quieter. Use KARACHI500 for Rs 500 off.', now() - interval '47 hours');
 
 insert into public.messages (conversation_id, sender_id, body, created_at)
 select c.id, v.sender::uuid, v.body, now() - v.ago::interval
@@ -919,8 +919,8 @@ insert into public.notifications (user_id, type, title, body, data, read_at, cre
   ('00000000-0000-4000-a000-000000000021', 'new_message', 'Androon Walks replied', 'About 2 km in total with rest stops...', '{"screen": "chat", "conversation_id": "00000000-0000-4000-6000-000000000001"}', null, now() - interval '22 hours'),
   ('00000000-0000-4000-a000-000000000021', 'review_reply', 'Androon Walks replied to your review', 'Shukriya Hamza!...', '{"screen": "review"}', null, now() - interval '10 days'),
   ('00000000-0000-4000-a000-000000000026', 'group_invite', 'You''re invited to Lahore Food Squad', 'Hamza invited you to join.', '{"screen": "group", "group_id": "00000000-0000-4000-7000-000000000002"}', null, now() - interval '3 days'),
-  ('00000000-0000-4000-a000-000000000026', 'refund', 'Refund added to your wallet', 'PKR 4,500 for Rawal Lake Morning Kayaking.', '{"screen": "wallet"}', null, now()),
-  ('00000000-0000-4000-a000-000000000025', 'offer', 'PKR 500 off coastal trips', 'Use KARACHI500 on Karachi Coastal Co. bookings.', '{"screen": "offers"}', null, now() - interval '2 days');
+  ('00000000-0000-4000-a000-000000000026', 'refund', 'Refund added to your wallet', 'Rs 4,500 for Rawal Lake Morning Kayaking.', '{"screen": "wallet"}', null, now()),
+  ('00000000-0000-4000-a000-000000000025', 'offer', 'Rs 500 off coastal trips', 'Use KARACHI500 on Karachi Coastal Co. bookings.', '{"screen": "offers"}', null, now() - interval '2 days');
 
 insert into public.support_tickets (id, user_id, business_id, booking_id, subject, status) values
   ('00000000-0000-4000-5000-000000000001', '00000000-0000-4000-a000-000000000025', '00000000-0000-4000-b000-000000000006', '00000000-0000-4000-8000-000000000008', 'Marked as no-show but I was stuck in traffic', 'open');
@@ -929,8 +929,8 @@ insert into public.support_messages (ticket_id, sender_id, is_staff_reply, body)
   ('00000000-0000-4000-5000-000000000001', '00000000-0000-4000-a000-000000000001', true, 'Sorry about that, Usman. We have asked Karachi Coastal Co. about moving you to another night.');
 
 insert into public.legal_documents (type, version, title, body, published_at) values
-  ('terms', '2026-11', 'Terms of Service', E'# Terms of Service\n\nPlaceholder terms for local development.', now() - interval '30 days'),
-  ('privacy', '2026-11', 'Privacy Policy', E'# Privacy Policy\n\nPlaceholder privacy policy for local development.', now() - interval '30 days'),
+  ('terms', '2026-11', 'Terms & Conditions', E'# Terms & Conditions\n\nThese terms apply when you use Moment to discover and book local experiences and services in Pakistan. By creating an account or making a booking you agree to them.\n\n## 1. Who we are\n\nMoment is a marketplace. Hosts and businesses (\"providers\") list experiences and services; you book them through Moment. The provider is responsible for delivering what they list. Moment handles discovery, booking and payment.\n\n## 2. Your account\n\n- You must be 18 or older, or use Moment with a parent or guardian.\n- Keep your phone number, email and passcode private. You are responsible for activity on your account.\n- Give accurate details. We may ask you to verify your identity with your CNIC before some bookings.\n\n## 3. Bookings\n\n- A booking is confirmed when the provider accepts it and you see it as **Confirmed** in Bookings.\n- Prices are shown in Pakistani Rupees (PKR) and include the provider''s price, applicable taxes and Moment''s service fee, which are listed before you pay.\n- Arrive on time. If you miss a booking without cancelling, the provider may mark it as a no-show and no refund is due.\n\n## 4. Cancellations and refunds\n\nEach listing shows its cancellation policy (Flexible, Moderate, Strict or Non-refundable) before you book. Refunds follow that policy and go back to your original payment method or, if you choose, to your Moment wallet. If a provider cancels, you get a full refund.\n\n## 5. Wallet, coupons and referrals\n\n- Wallet credit can only be used on Moment and cannot be withdrawn as cash, except where the law requires.\n- Coupons have their own conditions (minimum spend, expiry, one use per person) shown on the Offers screen.\n- Referral rewards are paid when your friend completes their first booking. We may withhold rewards for fake or duplicate accounts.\n\n## 6. Groups and reviews\n\nWhat you post in groups, chats and reviews must be honest and respectful. Do not share other people''s personal details. We may remove content or suspend accounts that break these rules.\n\n## 7. Liability\n\nProviders are independent and responsible for the safety and quality of their experiences. To the extent the law allows, Moment is not liable for losses caused by a provider, but we will help you resolve problems and refund you where a booking was not delivered.\n\n## 8. Changes and contact\n\nWe may update these terms; we will tell you in the app before important changes take effect. These terms are governed by the laws of Pakistan. Questions: support@moment.pk.', now() - interval '30 days'),
+  ('privacy', '2026-11', 'Privacy Policy', E'# Privacy Policy\n\nThis policy explains what personal data Moment collects, why, and the choices you have.\n\n## What we collect\n\n- **Account details:** name, phone number, email, date of birth, pronouns and profile photo.\n- **Identity checks:** CNIC photos and a selfie, only if you choose to verify your identity.\n- **Bookings and payments:** what you book, when, who with, and payment references from our payment partners. We never store your full card number.\n- **Location:** your city, and your device location only while you use features like Explore and only if you allow it.\n- **Activity:** likes, bucket lists, groups, quiz answers, reviews and messages with providers.\n\n## How we use it\n\n- To run your bookings and send confirmations, reminders and receipts.\n- To recommend experiences (for example from your Adventure Quiz badge and likes).\n- To keep Moment safe: preventing fraud, fake accounts and misuse.\n- To improve the app, using aggregated statistics.\n\n## Who we share it with\n\n- **Providers** see what they need for your booking: your name, guest count, notes and, if you allow it, your booking history with them.\n- **Group members** see your likes in a group if that group shares likes and you have not turned this off.\n- **Payment partners** process payments and refunds.\n- **Authorities** when Pakistani law requires it.\n\nWe do not sell your personal data.\n\n## Your choices\n\n- Change what others see under Profile > Privacy & sharing.\n- Download a copy of your data or delete your account from Privacy & sharing > Manage my data.\n- Turn notifications on or off in your device settings.\n\n## Keeping data\n\nWe keep booking and payment records for as long as tax and accounting rules require (usually 6 years). Other data is deleted within 30 days of deleting your account.\n\n## Contact\n\nQuestions about your data: privacy@moment.pk.', now() - interval '30 days'),
   ('cancellation', '2026-11', 'Cancellation Policy', E'# Cancellation Policy\n\n- **Flexible:** full refund up to 24 hours before.\n- **Moderate:** full refund up to 48 hours before.\n- **Strict:** 50% refund up to 7 days before.\n- **Non-refundable:** no refund.', now() - interval '30 days');
 
 insert into public.legal_acceptances (user_id, document_id)
@@ -1622,3 +1622,57 @@ join public.listings l on l.slug = g.slug;
 -- Margalla Explorers already asked Islamabad Hiking Crew to match.
 insert into public.group_match_requests (from_group_id, to_group_id, status, created_by)
 values ('00000000-0000-4000-7000-000000000005', '00000000-0000-4000-7000-000000000003', 'pending', '00000000-0000-4000-a000-000000000099');
+
+-- ---------------------------------------------------------------------------
+-- Profile Screens: the dev user's badge, notifications, wallet, saved payment
+-- methods, membership and personal details. Referral invites are a mock
+-- (apps/mobile/src/features/referrals/mock.ts).
+-- ---------------------------------------------------------------------------
+select pg_temp.act_as('00000000-0000-4000-a000-000000000099'); select public.submit_quiz(pg_temp.quiz_picks('{3,3,2,1,2,1}')); -- Ali: trailblazer
+select pg_temp.act_as(null);
+
+update public.profile_private
+set pronouns = 'he/him',
+    emergency_contact_name = 'Sara Raza', emergency_contact_relation = 'Sister', emergency_contact_phone = '+923331234567'
+where user_id = '00000000-0000-4000-a000-000000000099';
+
+-- Booking notifications come from the booking triggers, all stamped "now" by the
+-- seed. Date them around each booking and mark the older ones read.
+update public.notifications n
+set created_at = case
+      when b.status = 'completed' then b.starts_at + interval '3 hours'
+      when b.status::text like 'cancelled%' then least(now() - interval '6 hours', b.starts_at - interval '2 days')
+      else least(now() - interval '20 minutes', b.starts_at - interval '4 days')
+    end
+from public.bookings b
+where n.user_id = '00000000-0000-4000-a000-000000000099'
+  and b.id = (n.data ->> 'booking_id')::uuid;
+
+insert into public.notifications (user_id, type, title, body, data, created_at) values
+  ('00000000-0000-4000-a000-000000000099', 'offer', '10% off your first booking', 'Use WELCOME10 on any experience or service, up to Rs 1,000 off.', '{"screen": "offers"}', now() - interval '9 days'),
+  ('00000000-0000-4000-a000-000000000099', 'refund', 'Refund added to your wallet', 'Rs 4,500 for Rawal Lake Morning Kayaking is in your Moment wallet.', '{"screen": "wallet"}', now() - interval '2 hours'),
+  ('00000000-0000-4000-a000-000000000099', 'payment_received', 'Deposit received', 'Rs 5,000 from JazzCash was added to your wallet.', '{"screen": "wallet"}', now() - interval '20 days');
+
+update public.notifications
+set read_at = created_at + interval '1 hour'
+where user_id = '00000000-0000-4000-a000-000000000099' and created_at < now() - interval '2 days';
+
+-- Wallet: Rs 6,500 balance, spread over a year for the history filters.
+insert into public.wallet_transactions (user_id, type, amount, description, booking_id, created_at) values
+  ('00000000-0000-4000-a000-000000000099', 'promo', 50000, 'Welcome credit', null, now() - interval '200 days'),
+  ('00000000-0000-4000-a000-000000000099', 'credit', 500000, 'Deposit from JazzCash', null, now() - interval '20 days'),
+  ('00000000-0000-4000-a000-000000000099', 'debit', -200000, 'Classic Haircut',
+   (select b.id from public.bookings b join public.listings l on l.id = b.listing_id where b.consumer_id = '00000000-0000-4000-a000-000000000099' and l.title = 'Classic Haircut' limit 1), now() - interval '6 days'),
+  ('00000000-0000-4000-a000-000000000099', 'refund_credit', 450000, 'Refund: Rawal Lake Morning Kayaking',
+   (select b.id from public.bookings b join public.listings l on l.id = b.listing_id where b.consumer_id = '00000000-0000-4000-a000-000000000099' and l.title = 'Rawal Lake Morning Kayaking' limit 1), now() - interval '2 hours'),
+  ('00000000-0000-4000-a000-000000000099', 'debit', -150000, 'Saidpur Village & Faisal Mosque Golden Hour Walk',
+   (select b.id from public.bookings b join public.listings l on l.id = b.listing_id where b.consumer_id = '00000000-0000-4000-a000-000000000099' and l.title like 'Saidpur Village%' limit 1), now() - interval '40 minutes');
+
+-- Payment methods: a default card and a JazzCash wallet (tokens are mock values).
+insert into public.saved_payment_methods (user_id, method, brand, last4, exp_month, exp_year, holder_name, provider, provider_token, created_at) values
+  ('00000000-0000-4000-a000-000000000099', 'card', 'Visa', '4242', 8, 2028, 'Ali Raza', 'mock', 'mock_tok_visa_4242', now() - interval '30 days'),
+  ('00000000-0000-4000-a000-000000000099', 'jazzcash', null, '4567', null, null, null, 'mock', 'mock_tok_jc_4567', now() - interval '20 days');
+
+-- Membership: Saffron Wellness Club, one massage left this month.
+insert into public.memberships (plan_id, user_id, status, started_at, current_period_end, sessions_remaining, provider, provider_subscription_ref) values
+  ('00000000-0000-4000-8200-000000000002', '00000000-0000-4000-a000-000000000099', 'active', now() - interval '12 days', now() + interval '18 days', 1, 'mock', 'MOCK-SUB-0099');

@@ -11,7 +11,7 @@ import { BookingSheet } from './booking-sheet';
  * "Phone number > Add" on Confirm Reservation: a +92 number, then the code
  * screen confirms it (verify-code, mode phone-change). No Figma frame.
  */
-export function PhoneSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+export function PhoneSheet({ visible, onClose, title = 'Add phone number' }: { visible: boolean; onClose: () => void; title?: string }) {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -38,7 +38,7 @@ export function PhoneSheet({ visible, onClose }: { visible: boolean; onClose: ()
     <BookingSheet
       visible={visible}
       onClose={onClose}
-      title="Add phone number"
+      title={title}
       titleAlign="left"
       top={BOOK.sheet.top.notes}
       action={{ label: 'Send code', onPress: send, loading: sending, disabled: phone.replace(/\D/g, '').length < 10 }}

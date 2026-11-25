@@ -31,6 +31,7 @@ import { firstVisit, useListing, useQuote } from '@/features/booking/queries';
 import type { ChainedVisit } from '@/features/booking/chain';
 import { serviceCart } from '@/features/business/cart';
 import { useBusiness, useBusinessLocation } from '@/features/business/queries';
+import { useAutoApplyCoupon } from '@/features/offers/use-auto-coupon';
 import { ComingNext } from '@/features/placeholders/coming-next';
 import { api } from '@/lib/api';
 
@@ -82,6 +83,8 @@ function Confirm({ draft, success, onSuccess }: { draft: BookingDraft; success: 
   const location = useBusinessLocation(item.businessId);
   const policyListing = useListing(item.kind === 'services' ? item.services[0]?.listingId : item.kind === 'slot' ? item.listingId : undefined);
   const quote = useQuote(draft);
+  // A coupon saved on Offers is pre-applied; dropped quietly if this booking doesn't qualify.
+  useAutoApplyCoupon(draft, quote.isFetching || quote.isPlaceholderData ? undefined : quote.data?.couponError);
 
   const [sheet, setSheet] = useState<SheetName | null>(null);
   const [pickedDate, setPickedDate] = useState<string | null>(null);

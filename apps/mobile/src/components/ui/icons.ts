@@ -229,6 +229,47 @@ export const icons = {
   'eye-privacy': { source: require('../../../assets/icons/eye-privacy.svg'), multicolor: true },
   /** New Group cover picker: grey circle with a camera (48:4074), 41pt. */
   'camera-button': { source: require('../../../assets/icons/camera-button.svg'), multicolor: true },
+
+  // Profile (48:3255 ... 48:6483)
+  /** Profile header: Notifications (48:3423), 28pt. */
+  bell: { source: require('../../../assets/icons/bell.svg') },
+  /** Profile rows (48:3255): Membership, Wallet, Offers, Privacy & sharing. */
+  award: { source: require('../../../assets/icons/award.svg') },
+  wallet: { source: require('../../../assets/icons/wallet.svg') },
+  percent: { source: require('../../../assets/icons/percent.svg') },
+  'file-key': { source: require('../../../assets/icons/file-key.svg') },
+  /** Profile rows (48:3255): Get started, Receive help, feedback, Follow us, Rate us, legal. */
+  rocket: { source: require('../../../assets/icons/rocket.svg') },
+  'help-circle': { source: require('../../../assets/icons/help-circle.svg') },
+  'message-square': { source: require('../../../assets/icons/message-square.svg') },
+  smile: { source: require('../../../assets/icons/smile.svg') },
+  'star-outline': { source: require('../../../assets/icons/star-outline.svg') },
+  'file-text': { source: require('../../../assets/icons/file-text.svg') },
+  'heart-handshake': { source: require('../../../assets/icons/heart-handshake.svg') },
+  /** Red "!" after the name while identity isn't verified (48:3423), 14.6pt. */
+  'alert-badge': { source: require('../../../assets/icons/alert-badge.svg'), multicolor: true },
+  /** Show profile: empty photo (48:3951), 134pt incl. the white ring. */
+  'avatar-placeholder': { source: require('../../../assets/icons/avatar-placeholder.svg'), multicolor: true },
+  /** Show profile: black camera badge on the photo (48:3951), 30pt. */
+  'camera-badge': { source: require('../../../assets/icons/camera-badge.svg'), multicolor: true },
+  /** Identity Verification row: red shield (48:3951), 40pt. */
+  'shield-alert': { source: require('../../../assets/icons/shield-alert.svg'), multicolor: true },
+  /** Verified mark after the name (48:6140), 15 x 18. */
+  'verified-shield': { source: require('../../../assets/icons/verified-shield.svg'), glyph: { width: 20, height: 24 }, multicolor: true },
+  /** Nature Lover badge glyph (48:3951 44pt, 48:3686 100pt). */
+  'badge-nature': { source: require('../../../assets/icons/badge-nature.svg') },
+  /** Wallet: Deposit (48:5297), stroke 1.5. */
+  add: { source: require('../../../assets/icons/add.svg') },
+  /** Wallet: Transaction History arrow (48:5297), 28pt. */
+  'arrow-forward': { source: require('../../../assets/icons/arrow-forward.svg') },
+  /** Choose Location: Use current location (48:4398), 28pt. */
+  'mappin-ellipse': { source: require('../../../assets/icons/mappin-ellipse.svg') },
+  /** Follow us sheet (48:5772). */
+  'social-instagram': { source: require('../../../assets/icons/social-instagram.svg') },
+  'social-facebook': { source: require('../../../assets/icons/social-facebook.svg') },
+  'social-tiktok': { source: require('../../../assets/icons/social-tiktok.svg'), glyph: { width: 20.9, height: 24 } },
+  'social-linkedin': { source: require('../../../assets/icons/social-linkedin.svg'), glyph: { width: 22, height: 22 }, multicolor: true },
+  'social-x': { source: require('../../../assets/icons/social-x.svg') },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;

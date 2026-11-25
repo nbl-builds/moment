@@ -2502,11 +2502,16 @@ export type Database = {
         Row: {
           date_of_birth: string | null;
           email: string | null;
+          emergency_contact_name: string | null;
+          emergency_contact_phone: string | null;
+          emergency_contact_relation: string | null;
           first_name: string | null;
           last_name: string | null;
           locale: string;
           notification_prefs: NonNullable<Json>;
           phone: string | null;
+          privacy_prefs: NonNullable<Json>;
+          pronouns: string | null;
           sign_up_completed_at: string | null;
           updated_at: string;
           user_id: string;
@@ -2515,11 +2520,16 @@ export type Database = {
         Insert: {
           date_of_birth?: string | null;
           email?: string | null;
+          emergency_contact_name?: string | null;
+          emergency_contact_phone?: string | null;
+          emergency_contact_relation?: string | null;
           first_name?: string | null;
           last_name?: string | null;
           locale?: string;
           notification_prefs?: NonNullable<Json>;
           phone?: string | null;
+          privacy_prefs?: NonNullable<Json>;
+          pronouns?: string | null;
           sign_up_completed_at?: string | null;
           updated_at?: string;
           user_id: string;
@@ -2527,11 +2537,16 @@ export type Database = {
         Update: {
           date_of_birth?: string | null;
           email?: string | null;
+          emergency_contact_name?: string | null;
+          emergency_contact_phone?: string | null;
+          emergency_contact_relation?: string | null;
           first_name?: string | null;
           last_name?: string | null;
           locale?: string;
           notification_prefs?: NonNullable<Json>;
           phone?: string | null;
+          privacy_prefs?: NonNullable<Json>;
+          pronouns?: string | null;
           sign_up_completed_at?: string | null;
           updated_at?: string;
           user_id?: string;
@@ -2546,6 +2561,7 @@ export type Database = {
           display_name: string;
           home_city: string | null;
           id: string;
+          identity_verified_at: string | null;
           personality_badge_id: string | null;
           updated_at: string;
         };
@@ -2557,6 +2573,7 @@ export type Database = {
           display_name?: string;
           home_city?: string | null;
           id: string;
+          identity_verified_at?: string | null;
           personality_badge_id?: string | null;
           updated_at?: string;
         };
@@ -2567,6 +2584,7 @@ export type Database = {
           display_name?: string;
           home_city?: string | null;
           id?: string;
+          identity_verified_at?: string | null;
           personality_badge_id?: string | null;
           updated_at?: string;
         };
@@ -2864,6 +2882,79 @@ export type Database = {
             referencedColumns: ["business_id", "id"];
           },
         ];
+      };
+      saved_coupons: {
+        Row: {
+          coupon_id: string;
+          created_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          coupon_id: string;
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          coupon_id?: string;
+          created_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "saved_coupons_coupon_id_fkey";
+            columns: ["coupon_id"];
+            isOneToOne: false;
+            referencedRelation: "coupons";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      saved_payment_methods: {
+        Row: {
+          brand: string | null;
+          created_at: string;
+          exp_month: number | null;
+          exp_year: number | null;
+          holder_name: string | null;
+          id: string;
+          is_default: boolean;
+          last4: string;
+          method: string;
+          provider: string | null;
+          provider_token: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          brand?: string | null;
+          created_at?: string;
+          exp_month?: number | null;
+          exp_year?: number | null;
+          holder_name?: string | null;
+          id?: string;
+          is_default?: boolean;
+          last4: string;
+          method: string;
+          provider?: string | null;
+          provider_token?: string | null;
+          user_id: string;
+        };
+        Update: {
+          brand?: string | null;
+          created_at?: string;
+          exp_month?: number | null;
+          exp_year?: number | null;
+          holder_name?: string | null;
+          id?: string;
+          is_default?: boolean;
+          last4?: string;
+          method?: string;
+          provider?: string | null;
+          provider_token?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       slots: {
         Row: {
@@ -3732,6 +3823,10 @@ export type Database = {
           rating_count: number;
           slug: string;
         }[];
+      };
+      set_default_payment_method: {
+        Args: { p_id: string };
+        Returns: undefined;
       };
       start_business_conversation: {
         Args: { p_booking_id?: string; p_business_id: string };

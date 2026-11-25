@@ -388,6 +388,14 @@ export function createSupportApi(db: MomentSupabaseClient) {
       return ticket;
     },
 
+    /** Contact Moment Support: opens a ticket with the first message. */
+    openTicket: async (subject: string, body: string) => {
+      const userId = await requireUserId(db);
+      const ticket = await unwrap(db.from('support_tickets').insert({ user_id: userId, subject }).select().single());
+      await unwrap(db.from('support_messages').insert({ ticket_id: ticket.id, sender_id: userId, body }));
+      return ticket;
+    },
+
     listTickets: async () => {
       const userId = await requireUserId(db);
       return unwrap(db.from('support_tickets').select('*').eq('user_id', userId).order('updated_at', { ascending: false }));

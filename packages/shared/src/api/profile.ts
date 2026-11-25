@@ -1,6 +1,6 @@
-import type { NotificationPrefs, PersonalInfo } from '../validation/profile';
+import type { EmergencyContact, NotificationPrefs, PersonalDetails, PersonalInfo, PrivacyPrefs } from '../validation/profile';
 import { toDisplayName } from '../validation/profile';
-import { ApiError, requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
+import { ApiError, fromPostgrestError, requireUserId, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
 
 export function createProfileApi(db: MomentSupabaseClient) {
   return {
@@ -64,6 +64,57 @@ export function createProfileApi(db: MomentSupabaseClient) {
     updateAvatar: async (avatarUrl: string | null) => {
       const userId = await requireUserId(db);
       return unwrap(db.from('profiles').update({ avatar_url: avatarUrl }).eq('id', userId));
+    },
+
+    /** Edit personal info > Save: public display name plus private first / last name and pronouns. */
+    updateDetails: async (form: PersonalDetails) => {
+      const userId = await requireUserId(db);
+      await unwrap(db.from('profiles').update({ display_name: toDisplayName(form.firstName, form.lastName) }).eq('id', userId));
+      await unwrap(
+        db
+          .from('profile_private')
+          .update({ first_name: form.firstName, last_name: form.lastName, pronouns: form.pronouns ?? null })
+          .eq('user_id', userId),
+      );
+    },
+
+    /** Emergency contact sheet; null removes it. */
+    updateEmergencyContact: async (contact: EmergencyContact | null) => {
+      const userId = await requireUserId(db);
+      return unwrap(
+        db
+          .from('profile_private')
+          .update({
+            emergency_contact_name: contact?.name ?? null,
+            emergency_contact_relation: contact?.relation ?? null,
+            emergency_contact_phone: contact?.phone ?? null,
+          })
+          .eq('user_id', userId),
+      );
+    },
+
+    /** Choose Location: the home city that Home's rails use. */
+    updateHomeCity: async (city: string | null) => {
+      const userId = await requireUserId(db);
+      return unwrap(db.from('profiles').update({ home_city: city }).eq('id', userId));
+    },
+
+    /** Privacy & Sharing toggles. */
+    updatePrivacy: async (prefs: PrivacyPrefs) => {
+      const userId = await requireUserId(db);
+      return unwrap(db.from('profile_private').update({ privacy_prefs: prefs }).eq('user_id', userId));
+    },
+
+    /** Adventure Quiz badge: "Retake Quiz?" unlocks after this many completed bookings. */
+    completedBookingCount: async () => {
+      const userId = await requireUserId(db);
+      const { count, error, status } = await db
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('consumer_id', userId)
+        .eq('status', 'completed');
+      if (error) throw fromPostgrestError(error, status);
+      return count ?? 0;
     },
 
     updateNotificationPrefs: async (prefs: NotificationPrefs) => {

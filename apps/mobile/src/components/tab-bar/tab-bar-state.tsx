@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ReduceMotion,
@@ -17,6 +17,9 @@ interface TabBarState {
   collapse: SharedValue<number>;
   /** Expand (0) or compact (1), animated unless Reduce Motion is on. */
   setCollapsed: (collapsed: boolean) => void;
+  /** 1 while a tab screen shows a bottom sheet: the bar slides away so it doesn't cover the sheet. */
+  hidden: SharedValue<number>;
+  setHidden: (hidden: boolean) => void;
 }
 
 const TabBarContext = createContext<TabBarState | null>(null);
@@ -29,11 +32,17 @@ const TOP_ZONE = 24;
 
 export function TabBarProvider({ children }: { children: ReactNode }) {
   const collapse = useSharedValue(0);
+  const hidden = useSharedValue(0);
   const reduceMotion = useReducedMotion();
 
   const value = useMemo<TabBarState>(
     () => ({
       collapse,
+      hidden,
+      setHidden: (value) => {
+        const target = value ? 1 : 0;
+        hidden.set(reduceMotion ? target : withTiming(target, { duration: DURATION_MS, reduceMotion: ReduceMotion.System }));
+      },
       setCollapsed: (collapsed) => {
         const target = collapsed ? 1 : 0;
         collapse.set(
@@ -43,7 +52,7 @@ export function TabBarProvider({ children }: { children: ReactNode }) {
         );
       },
     }),
-    [collapse, reduceMotion],
+    [collapse, hidden, reduceMotion],
   );
 
   return <TabBarContext.Provider value={value}>{children}</TabBarContext.Provider>;
@@ -93,4 +102,13 @@ export function useCollapsibleTabBarScroll() {
 export function useTabBarContentInset(): number {
   const insets = useSafeAreaInsets();
   return TAB_BAR.bottomOffset(insets.bottom) + TAB_BAR.expanded.height + TAB_BAR.contentGap;
+}
+
+/** Hides the floating bar while `sheetOpen` is true (tab screens that show bottom sheets). */
+export function useHideTabBarWhile(sheetOpen: boolean) {
+  const { setHidden } = useTabBar();
+  useEffect(() => {
+    setHidden(sheetOpen);
+    return () => setHidden(false);
+  }, [sheetOpen, setHidden]);
 }

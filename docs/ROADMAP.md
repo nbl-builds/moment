@@ -10,13 +10,13 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Dev auth bypass for testing screens: `EXPO_PUBLIC_AUTH_BYPASS=1` in `apps/mobile/.env.local` (dev builds only; see `.env.example`). Remove it, or keep it dev-only, when the production SMS provider is wired
 - Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
 - Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
-- Next: section 10, Profile Screens (General, Support, Legal), then Recommend a place. Test on a real device: Explore map gestures and pin taps (AXe can't drive MapKit in the simulator), voice notes and the chat keyboard
+- Next: Recommend a place (section 5), then review the "Copy to review" list below and wire the mocks under "To wire after UI". Test on a real device: Explore map gestures and pin taps (AXe can't drive MapKit in the simulator), voice notes and the chat keyboard
 - Next screens behind Home's placeholder routes: Experience details (`/listing/[id]`, has a "Check availability" button into Select dates for now), host profile (`/host/[id]`), Recommend a place, and the Bookings / Explore / Groups / Profile tabs
 - Promo banners are static in `apps/mobile/src/features/home/promos.ts`; move them to `platform_settings` when the team needs to change them without a release
 - "Recently viewed" is stored on the device (AsyncStorage); move it to the server if it should follow the user
 - Seed photos are the Figma images in `supabase/seed-media` (local only). Real listings need media upload in the business portal
 - Icons: Figma's "Huge Icons" page is not the npm Hugeicons library, so icons are exported from Figma per screen into `apps/mobile/assets/icons` and registered in `components/ui/icons.ts`
-- Figma fields with no column yet (add a migration when the screens are built): profile pronouns and emergency contact, recommendation type (experience vs business; stored in the note for now)
+- Figma fields with no column yet (add a migration when the screens are built): recommendation type (experience vs business; stored in the note for now)
 - Search by distance and date (`near`, `maxDistanceKm`, `date`, `sort: 'distance'`) needs a search RPC; `catalog.searchListings` throws `unsupported` for these until then. Build it with the Explore map (card distances already use `listing_distances`)
 - Set the same password rule (8+ characters, letters and digits) on the hosted Supabase project under Auth settings; `config.toml` only covers local
 - Check the date helpers on Hermes devices (they use `Intl.DateTimeFormat` with `timeZone`, verified on Node only)
@@ -31,11 +31,11 @@ One branch per section (`feat/<section>`), merged into `staging`. Frames: `docs/
 - [x] 3. Booking Flow: Select dates (Dates / Guests / Private group), Confirm Reservation, the date / time / guests / notes / payment / coupon / success sheets; real bookings through `create_booking` / `create_bookings`, payment mocked
 - [x] 4. Booking Status Screens: Bookings tab (one row per business, unread badges, cart and ••• in the header), All Bookings with the period/year filter, Cart (saved on the device, swipe to remove), Reservation details by status (pending, confirmed, completed, cancelled) with cancel, reschedule, book again and review, and Chat with a business (Realtime messages, typing, read state, photos, voice notes)
 - [ ] 5. Bucket List + Recommend a place (Bucket List done: named lists, save sheets, list screens; Recommend a place next)
-- [x] 6. Customer Dashboard (Adventure Quiz) + personality badge (badge on Profile comes with section 10)
+- [x] 6. Customer Dashboard (Adventure Quiz) + personality badge (badge on Show profile and the Adventure Quiz badge screen)
 - [x] 7. Customer Dashboard (Section Screens): "See all" lists (with Search typing screen and Filters updates)
 - [x] 8. Explore Screens (`/map`, from the tab bar's Explore button): map with clustered pins, selected-pin card, Search this area, locate, Hosts / Businesses switch, search and filters, category chips, and the draggable results list
 - [x] 9. Group Screens: Groups tab (empty, search, rows with sharing eye), Moment Groups intro (first time) with FAQ, New Group (cover upload, name, topic) and Congratulations, group page (Liked by group with "Liked by" faces respecting likes visibility, Group Match deck with match requests, Recommended Group), share sheet, Invite others (people search by name or phone), members sheet (remove), ••• menu (rename, settings, leave), Group Settings (sharing, private, who can see likes, delete). The heart's "Add to Groups" saves to group likes; a bucket list's "Invite others" turns it into a group
-- [ ] 10. Profile Screens (General, Support, Legal)
+- [x] 10. Profile Screens: Profile tab (bell with unread count, profile card with the unverified alert, General / Support / Legal, Sign Out confirm, app version; guests get a sign-in card and protected rows open the login sheet), Notifications (real feed from booking, payment and refund triggers, marks read on open, taps open the booking), Show profile (photo upload, verified tick, identity verification, MAQ badge, Choose Location), Edit personal info (names, pronouns, email change, phone change through the OTP screen, emergency contact, Delete Account), Adventure Quiz badge (retake after 3 completed bookings), Wallet (balance, deposit, history, All Transactions by period), Payment method (Card / JazzCash / Easypaisa, default, remove), Membership, Offers (Apply saves a coupon that Confirm Reservation pre-applies), Invite friends + My Recent Invites, Privacy & Sharing (manage my data, sharing toggles), Get started, Receive help (FAQ + answer sheet), Contact Moment Support (support ticket chat), Give us feedback, Follow us, Rate us (store review prompt), Privacy policy and Terms in-app
 
 ## To wire after UI
 Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`). Swap each for the `api.*` call when the backend lands.
@@ -59,11 +59,33 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - **Report host** (`features/host/mock.ts` `reportHost`): the reason sheet works, nothing is stored. Needs a `reports` table (reporter, host, reason, note) and a super admin queue
 - **Experience share links**: `moment://experience/<id>` is shared but opening it isn't wired yet (same as business and bucket list links)
 - **Host intro video**: Figma's play icon on the host avatar (48:4175) has no video behind it yet, so it isn't shown
-- **Contact Moment Support** (`/support`): placeholder until support chat (Chat section)
+- **Identity verification** (`features/profile/mock.ts` `submitIdentityVerification`, `getVerificationStatus`): CNIC front/back and selfie are picked but not uploaded; the status turns "in review" for the app session. Needs a private `identity-documents` bucket, a review row, and the Moment team setting `profiles.identity_verified_at`
+- **Delete / deactivate account, download my data** (`features/profile/mock.ts`): confirm sheets work and sign the user out; nothing is deleted, deactivated or exported. Needs an edge function (30-day grace delete, keep booking and payment records)
+- **Wallet deposit** (`features/wallet/mock.ts` `depositToWallet`): nothing is charged; the deposit shows as "Pending" at the top of the history for the app session. Wire with the payment provider; the server adds the `wallet_transactions` credit on the webhook
+- **Payment method tokenising** (`features/payment-methods/mock.ts` `tokenize`): returns a `mock` token; the real `saved_payment_methods` row stores only the token and display details. Replace with the provider SDK (card number and CVC must go straight to the provider)
+- **Referrals** (`features/referrals/mock.ts` `getMyReferral`, `listMyInvites`): code from the first name, link `https://moment.pk/r/<code>`, five invites. Needs a `referrals` table, unique codes, the reward (`referrals.reward_amount` in `platform_settings`) paid as wallet credit after the friend's first completed booking, and the link opening the app
+- **Privacy & Sharing toggles**: saved in `profile_private.privacy_prefs` but not enforced yet (public profile, likes visible to groups, bookings visible to hosts). Enforce in RLS / RPCs (e.g. `group_likes` read policy, host booking history)
+- **Contact Moment Support**: real tickets (`support_tickets` / `support_messages`); the screen polls every 15 s. Add Realtime on `support_messages` and a super admin inbox to reply; replies should bump the ticket's `updated_at`
+- **Follow us / store links / support email** (`platform_settings`: `app.social_links`, `app.store_urls`, `app.support`): placeholder URLs until the accounts and store listings exist
+- **Notifications push**: the feed is real (triggers on bookings, payments, refunds), but no push is sent yet (Expo push via `push_tokens`)
 - **Service animals** link on Add Guest shows an explanation alert; no separate service-animal field (pets count goes in the booking notes via `guestDetailsNote`)
 
 - **Business links**: share uses `moment://business/<slug>`; opening it is not wired yet (same as bucket list links)
 - **Business logo "play" badge** (25:2265): no business videos/stories yet, so the play overlay isn't shown
+
+### Copy to review
+Invented text (Figma had lorem ipsum, US data or nothing). Please check:
+- **Legal documents** (`supabase/seed.sql`, `legal_documents`): Terms & Conditions and Privacy Policy bodies (ages, refunds, wallet, referrals, data retention 6 years / 30 days, privacy@ and support@moment.pk). Needs a lawyer before launch
+- **FAQ** (`apps/mobile/src/features/support/faq.ts`): all 14 questions and answers. The phone sign-in answer mentions Apple, Google and Facebook, which still say "Coming soon"
+- **Get started** (`app/get-started.tsx`): hero, Explore / Book / Enjoy paragraphs, "Start exploring"
+- **Profile tab**: guest card "Sign in or create an account" / "Book experiences, save favourites and plan with friends."; Sign out sheet "Sign out of Moment?" / "You can sign back in any time with your phone number or email."
+- **Show profile / Edit**: "Identity Verification" notes ("Show the community you are real.", "We’re checking your documents."), "Take the Adventure Quiz to get one.", "Add your home city for picks near you.", email and emergency contact sheets, Delete Account sheet ("We’ll delete your profile, lists and groups after 30 days...")
+- **Verify Identity** (`app/me/verify.tsx`): intro, the three step notes, privacy note, "Thanks! We’ll check your documents within 24 hours."
+- **Adventure Quiz badge**: unlocked retake text ("You’ve explored enough to see how your taste has changed..."), "N of 3 bookings done"
+- **Notifications** (trigger text in `20261126000030_profile_account.sql`): "Booking requested / confirmed / cancelled", "How was it? Tell others about ... Leave a review.", "Payment received", "Refund added to your wallet / Refund on its way"; empty state
+- **Wallet / Deposit, Payment method, Membership, Offers, Invite friends**: sheet labels, toasts, empty and error states, share message "Here’s Rs X off your first experience on Moment."
+- **Support, Feedback, Privacy & Sharing, Follow us**: support header and hours, empty state, feedback area list, the Manage my data and Sharing rows and their confirm sheets
+- **Config placeholders**: referral reward Rs 500, social URLs, store URLs, support email / phone / hours
 
 ### Needs design
 - **Badge illustrations**: only Nature Lover has one in Figma (20:3543). Adventure Lover, Culture Lover, Food Lover, Wellness Lover and Party Lover show a neutral placeholder on the quiz result. Export each into `seed-media/badges` and set `badges.icon` when drawn
@@ -135,9 +157,9 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - [x] Business page (`/business/[slug]`): hero carousel with a panel that slides over it (snaps collapsed/expanded, tabs pin), header with verified badge, address to Maps, km distance, bookings, Open now from opening hours; tabs Popular, Services (category chips, + to a per-business cart with total in PKR and Continue), Membership (plans -> Membership Details, payment methods from `PAYMENT_METHODS`), Reviews (star filters with counts, photo strip and full-screen viewer, Write a review with photo uploads; only after a completed visit), About (description, map); share sheet; heart saves the business to a bucket list
 - [x] Bucket List: several named lists (`bucket_lists`), heart -> save sheet -> list picker (ticks, toggle) -> name a new list -> first-save sheet or "Saved to ..." toast with View; all lists and one list screens with share link, rename and delete; optimistic hearts and lists
 - [x] Adventure Quiz + personality badge driving recommendations: Figma's six questions (photo lists, glass, emoji, plane seat, thermometer) as `quiz_questions.kind` + `config`, guests sign in at the end and Home resumes the submit, retaking replaces the result, Services near you refetches (the badge breaks ties)
-- [ ] Personality badge on Profile
+- [x] Personality badge on Profile
 - [x] Groups: group travel, group likes, group match requests, recommendations (accepting match requests and invite links still to wire)
-- [ ] Profile: membership, offers, notifications, support, legal
+- [x] Profile: membership, offers, notifications, support, legal (UI; several mocks listed under "To wire after UI")
 
 ## Phase 7: Consumer web and gamification
 - [ ] Consumer web login and lightweight browsing/booking
