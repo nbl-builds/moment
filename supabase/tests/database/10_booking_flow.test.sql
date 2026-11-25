@@ -36,6 +36,8 @@ select has_function('public', 'available_dates', 'available_dates exists');
 -- ---------------------------------------------------------------------------
 -- Quotes and coupons (as the dev user)
 -- ---------------------------------------------------------------------------
+-- Drop coupon uses left by trying the app locally (rolled back at the end).
+delete from public.coupon_redemptions where user_id = '00000000-0000-4000-a000-000000000099';
 select pg_temp.login('00000000-0000-4000-a000-000000000099');
 
 select is(
@@ -112,6 +114,13 @@ select is(
     p_coupon_code => 'SAFFRON20', p_idempotency_key => 'cart-test-1')),
   2, 'retrying the same cart returns the same bookings');
 select is((select count(*)::int from public.bookings where idempotency_key like 'cart-test-1:%'), 2, 'and books nothing twice');
+
+-- The app sends "items": null for services without options.
+select is(
+  (select count(*)::int from public.create_bookings(
+    jsonb_build_array(jsonb_build_object('listing_id', pg_temp.listing('hot-stone-massage'), 'starts_at', pg_temp.free_time(pg_temp.listing('hot-stone-massage'), 6), 'items', null)),
+    p_idempotency_key => 'cart-test-null-items')),
+  1, 'a cart line with items: null books');
 
 -- All or nothing: the second service's time is taken (keratin has one stylist),
 -- so the first isn't booked either.

@@ -69,7 +69,7 @@ export function createBookingsApi(db: MomentSupabaseClient) {
             listing_id: s.listingId,
             starts_at: s.startsAt,
             staff_id: s.staffId ?? null,
-            items: s.optionId ? [{ option_id: s.optionId, quantity: 1 }] : null,
+            ...(s.optionId ? { items: [{ option_id: s.optionId, quantity: 1 }] } : null),
           })),
           p_coupon_code: form.couponCode,
           p_notes: form.notes,
