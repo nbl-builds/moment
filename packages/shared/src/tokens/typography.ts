@@ -31,6 +31,8 @@ export const textStyles = {
   h3: { fontSize: 24, lineHeight: 1.5, fontWeight: fontWeight.bold, letterSpacing: 0 },
   /** Figma: Mobile App Headings / H1 Mobile Extra Bold (quiz temperature, 20:2527). Use with weight "extrabold". */
   display32: { fontSize: 32, lineHeight: 1.4, fontWeight: fontWeight.extrabold, letterSpacing: 0.32 },
+  /** Figma: wallet balance (48:5297), ExtraBold 40. Use with weight "extrabold". */
+  display40: { fontSize: 40, lineHeight: 1.4, fontWeight: fontWeight.extrabold, letterSpacing: 0.4 },
   h4: { fontSize: 20, lineHeight: 1.2, fontWeight: fontWeight.bold, letterSpacing: 0 },
   /** Figma: Body XX-Large - 18. */
   body18: { fontSize: 18, lineHeight: 1.5, fontWeight: fontWeight.regular, letterSpacing: 0 },

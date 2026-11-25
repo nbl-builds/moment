@@ -104,7 +104,7 @@ export function createAccountApi(db: MomentSupabaseClient) {
         return unwrap(
           db
             .from('memberships')
-            .select('*, plan:membership_plans!inner(id, name, description, price_amount, currency, interval, benefits), business:businesses(id, name, slug, logo_url)')
+            .select('*, plan:membership_plans!inner(id, name, description, price_amount, currency, interval, benefits, included_sessions), business:businesses(id, name, slug, logo_url)')
             .eq('user_id', userId)
             .order('started_at', { ascending: false }),
         );
