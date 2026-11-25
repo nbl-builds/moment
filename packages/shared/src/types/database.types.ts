@@ -3343,6 +3343,15 @@ export type Database = {
           listing_id: string;
         }[];
       };
+      my_business_unread: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          business_id: string;
+          conversation_id: string;
+          last_message_at: string;
+          unread: number;
+        }[];
+      };
       quote_booking: {
         Args: {
           p_coupon_code?: string;
