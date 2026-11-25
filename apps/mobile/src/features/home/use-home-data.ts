@@ -7,6 +7,7 @@ import { useUserPlace } from './use-user-place';
 export type ListingCardData = Awaited<ReturnType<typeof api.catalog.popularActivities>>[number];
 export type HostCardData = Awaited<ReturnType<typeof api.catalog.topHosts>>[number];
 export type CategoryData = Awaited<ReturnType<typeof api.catalog.listCategories>>[number];
+export type ServiceBusinessData = Awaited<ReturnType<typeof api.catalog.servicesNearYou>>[number];
 
 const RAIL = 10;
 
@@ -14,7 +15,8 @@ const RAIL = 10;
  * Everything Home shows, from local Supabase through `api.*`:
  * - Popular activities: published experiences by popularity (in the user's city when known)
  * - Top Hosts: hosts by rating
- * - Just for you: by quiz badge tags, else popular (server falls back)
+ * - Services near you: service businesses, nearest first with location, else
+ *   the user's city by rating; the quiz badge breaks ties
  * - More to explore: experience categories
  * - Recently viewed: listings opened on this device
  * - Local fun / Must-trys: curated tags in the user's city
@@ -27,7 +29,7 @@ export function useHomeData() {
 
   const recentIds = useQuery({ queryKey: RECENTLY_VIEWED_QUERY_KEY, queryFn: getRecentlyViewedIds });
 
-  const [popular, hosts, forYou, categories, recent, localFun, mustTry] = useQueries({
+  const [popular, hosts, services, categories, recent, localFun, mustTry] = useQueries({
     queries: [
       {
         queryKey: ['home', 'popular', city],
@@ -40,8 +42,8 @@ export function useHomeData() {
       },
       { queryKey: ['home', 'hosts'], queryFn: () => api.catalog.topHosts({ limit: RAIL }) },
       {
-        queryKey: ['home', 'for-you', city],
-        queryFn: () => api.catalog.justForYou({ city, limit: RAIL }),
+        queryKey: ['home', 'services', place.coords?.lat, place.coords?.lng, city],
+        queryFn: () => api.catalog.servicesNearYou({ near: place.coords, city, limit: RAIL }),
         enabled: ready,
       },
       { queryKey: ['home', 'categories'], queryFn: () => api.catalog.listCategories() },
@@ -65,12 +67,10 @@ export function useHomeData() {
 
   // Distances for every listing on screen, only when location is allowed.
   const popularData = popular.data;
-  const forYouData = forYou.data;
   const recentData = recent.data;
   const listingIds = useMemo(
-    () =>
-      [...new Set([popularData, forYouData, recentData].flatMap((items) => (items ?? []).map((l) => l.id)))].sort(),
-    [popularData, forYouData, recentData],
+    () => [...new Set([popularData, recentData].flatMap((items) => (items ?? []).map((l) => l.id)))].sort(),
+    [popularData, recentData],
   );
   const distances = useQuery({
     queryKey: ['home', 'distances', place.coords?.lat, place.coords?.lng, listingIds],
@@ -96,7 +96,7 @@ export function useHomeData() {
     city,
     popular,
     hosts,
-    forYou,
+    services,
     categories,
     recent,
     localFun,

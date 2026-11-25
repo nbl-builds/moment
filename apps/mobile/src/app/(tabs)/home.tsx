@@ -21,6 +21,7 @@ import { SectionHeader } from '@/features/home/components/section-header';
 import { Skeleton } from '@/features/home/components/skeleton';
 import { HOME } from '@/features/home/layout';
 import { useBucketList } from '@/features/home/use-bucket-list';
+import { ServiceBusinessCard } from '@/features/home/components/service-business-card';
 import { useHomeData, type ListingCardData } from '@/features/home/use-home-data';
 import { OnboardingPermissions } from '@/features/permissions/onboarding-permissions';
 import { takePendingQuiz } from '@/features/quiz/model';
@@ -140,13 +141,28 @@ export default function HomeScreen() {
         </Section>
 
         <Section
-          title="Just for you"
-          query={data.forYou}
-          onSeeAll={seeAll('for-you')}
+          title="Services near you"
+          query={data.services}
+          onSeeAll={seeAll('services')}
           skeleton={<CardSkeletons height={CARD.short.height} />}
         >
           {(items) => (
-            <Rail data={items} keyOf={(l) => l.id} renderItem={({ item }) => renderCard(item, 'short')} itemWidth={CARD.width} gap={CARD.gap} accessibilityLabel="Just for you" />
+            <Rail
+              data={items}
+              keyOf={(b) => b.id}
+              renderItem={({ item }) => (
+                <ServiceBusinessCard
+                  business={item}
+                  size="short"
+                  saved={bucket.isBusinessSaved(item.id)}
+                  onPress={() => go({ pathname: '/business/[slug]', params: { slug: item.slug } })}
+                  onToggleSaved={() => bucket.toggleBusiness(item.id)}
+                />
+              )}
+              itemWidth={CARD.width}
+              gap={CARD.gap}
+              accessibilityLabel="Services near you"
+            />
           )}
         </Section>
 

@@ -1,5 +1,5 @@
 import { api } from '@/lib/api';
-import type { HostCardData, ListingCardData } from '@/features/home/use-home-data';
+import type { HostCardData, ListingCardData, ServiceBusinessData } from '@/features/home/use-home-data';
 import { getRecentlyViewedIds } from '@/features/home/recently-viewed';
 
 // Home "See all" screens (Figma 18:1085, 20:1479, 20:1676, 20:1897). Local fun,
@@ -10,16 +10,21 @@ const LIMIT = 50;
 type ListingSection = {
   kind: 'listings';
   title: string;
-  /** 'wide': Popular (392pt cards). 'wideShort': Just For You / Explore (304pt). */
+  /** 'wide': Popular (392pt cards). 'wideShort': Explore (304pt). */
   card: 'wide' | 'wideShort';
   load: (city: string | undefined) => Promise<ListingCardData[]>;
+};
+type BusinessSection = {
+  kind: 'businesses';
+  title: string;
+  load: (city: string | undefined, near: { lat: number; lng: number } | null) => Promise<ServiceBusinessData[]>;
 };
 type HostSection = {
   kind: 'hosts';
   title: string;
   load: () => Promise<HostCardData[]>;
 };
-export type SeeAllSection = ListingSection | HostSection;
+export type SeeAllSection = ListingSection | BusinessSection | HostSection;
 
 export const SEE_ALL_SECTIONS = {
   popular: {
@@ -32,11 +37,11 @@ export const SEE_ALL_SECTIONS = {
     },
   },
   hosts: { kind: 'hosts', title: 'Top Hosts', load: () => api.catalog.topHosts({ limit: LIMIT }) },
-  'for-you': {
-    kind: 'listings',
-    title: 'Just For You',
-    card: 'wideShort',
-    load: (city) => api.catalog.justForYou({ city, limit: LIMIT }),
+  /** 20:1676 (was "Just For You"): same cards as the Home rail, full width. */
+  services: {
+    kind: 'businesses',
+    title: 'Services near you',
+    load: (city, near) => api.catalog.servicesNearYou({ near, city, limit: LIMIT }),
   },
   explore: {
     kind: 'listings',

@@ -83,9 +83,9 @@ export default function QuizScreen() {
     try {
       const [result] = await Promise.all([api.quiz.submit(answerIds), sleep(QUIZ.analyzingMinMs)]);
       setBadge(result.badge);
-      // "Just for you" follows the new badge.
-      void queryClient.invalidateQueries({ queryKey: ['home', 'for-you'] });
-      void queryClient.invalidateQueries({ queryKey: ['see-all', 'for-you'] });
+      // "Services near you" uses the badge to break ties.
+      void queryClient.invalidateQueries({ queryKey: ['home', 'services'] });
+      void queryClient.invalidateQueries({ queryKey: ['see-all', 'services'] });
       void queryClient.invalidateQueries({ queryKey: ['me'] });
       setPhase('result');
     } catch {
