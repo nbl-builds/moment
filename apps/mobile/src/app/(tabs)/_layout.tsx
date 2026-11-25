@@ -1,6 +1,8 @@
+import { router } from 'expo-router';
 import { Tabs } from 'expo-router/tabs';
 import { FloatingTabBar, TabBarProvider } from '@/components/tab-bar';
 import { PickReservationProvider } from '@/features/bookings/pick-reservation';
+import { exploreStore } from '@/features/explore/store';
 import { useUnread } from '@/features/bookings/queries';
 
 /**
@@ -18,7 +20,18 @@ export default function TabsLayout() {
         <Tabs screenOptions={{ headerShown: false }} tabBar={(props) => <FloatingTabBar {...props} />}>
           <Tabs.Screen name="home" options={{ title: 'Home' }} />
           <Tabs.Screen name="bookings" options={{ title: 'Bookings', tabBarBadge: badge }} />
-          <Tabs.Screen name="explore" options={{ title: 'Explore' }} />
+          {/* The lime Explore button opens Explore full screen over the tabs (no tab bar). */}
+          <Tabs.Screen
+            name="explore"
+            options={{ title: 'Explore' }}
+            listeners={{
+              tabPress: (e) => {
+                e.preventDefault();
+                exploreStore.reset();
+                router.push('/map');
+              },
+            }}
+          />
           <Tabs.Screen name="groups" options={{ title: 'Groups' }} />
           <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
         </Tabs>
