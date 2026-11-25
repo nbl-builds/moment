@@ -2,7 +2,7 @@ import type { Enums } from '../types';
 import type { SearchFilters } from '../validation/discovery';
 import { ApiError, fromPostgrestError, unwrap, unwrapRequired, type MomentSupabaseClient } from './errors';
 
-// Discovery: Home (Popular Activities, Top Hosts, Just For You), Search,
+// Discovery: Home (Popular Activities, Top Hosts, Services near you), Search,
 // Business details, Experience details and host profiles. Anonymous users can
 // call all of these; RLS only returns published listings and active businesses.
 
@@ -71,13 +71,21 @@ export function createCatalogApi(db: MomentSupabaseClient) {
       ),
 
     /**
-     * Home > Just For You: ranked by the quiz badge's tags, falling back to
-     * popularity when there is no quiz result (or no session). Returns cards.
+     * Home > "Services near you" (and its See all): active service businesses
+     * (spas, salons, barbers). With `near` they come nearest first with
+     * `distance_km`; without it, the `city` (all cities when omitted) by
+     * rating. The quiz badge's tags break ties. `from_price` is the cheapest
+     * published service.
      */
-    justForYou: async ({ city, limit = 20 }: { city?: string; limit?: number } = {}) => {
-      const ranked = await unwrap(db.rpc('recommended_listings', { p_city: city, p_limit: limit }).select('id'));
-      return listingsByIds(ranked.map((r) => r.id));
-    },
+    servicesNearYou: ({ near, city, limit = 20 }: { near?: { lat: number; lng: number } | null; city?: string; limit?: number } = {}) =>
+      unwrap(
+        db.rpc('services_near_you', {
+          p_lat: near?.lat,
+          p_lng: near?.lng,
+          p_city: near ? undefined : city,
+          p_limit: limit,
+        }),
+      ),
 
     /** Cards for these listings, in the given order (Recently viewed). Unknown or hidden ids are skipped. */
     listingsByIds: (ids: string[]) => listingsByIds(ids),
