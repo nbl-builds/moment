@@ -1041,6 +1041,11 @@ insert into seed_venues values
   (11, 'bahadurabad-hair-house','Bahadurabad Hair House', 'Family salon for cuts and colour',          'Bahadurabad',     'Plot 22, Bahadur Yar Jang Road',   'Karachi',   'Sindh',                       '74800', 24.8820, 67.0700, 'beauty',   4.4, 188, 'Sameer Hussain', 'Stylist'),
   (12, 'pechs-skin-care',       'PECHS Skin Care',        'Clean-ups and facials off Tariq Road',      'PECHS',           '44-A, Block 2, Tariq Road',        'Karachi',   'Sindh',                       '75400', 24.8722, 67.0607, 'serenity', 4.6, 58,  'Dr. Sana Mirza', 'Skin therapist');
 
+-- The first venues' covers were placeholder photos; use the salon photos.
+update public.businesses set cover_url = 'storage://seed-media/' || case slug
+    when 'saffron-spa' then 'business/spa-1.jpg' when 'gulberg-glow' then 'business/spa-2.jpg' else 'business/spa-3.jpg' end
+where kind = 'venue';
+
 insert into public.businesses (id, slug, name, kind, status, tagline, description, phone, logo_url, cover_url, is_verified, rating_avg, rating_count)
 select ('00000000-0000-4000-b000-' || lpad((100 + n)::text, 12, '0'))::uuid, slug, name, 'venue', 'active', tagline, tagline || '. Book online with Moment.',
        '+92300000' || lpad((200 + n)::text, 4, '0'), 'storage://seed-media/logos/' || logo || '.png',
