@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui';
 import { openBusiness } from '@/features/business/navigation';
@@ -18,6 +18,13 @@ export default function ListingPlaceholder() {
 
   return (
     <ComingNext title={listing.data?.title ?? 'Experience details'} note="Experience details, the host and booking come next.">
+      {listing.data?.booking_mode === 'slot' && (
+        <Button
+          label="Check availability"
+          onPress={() => listing.data && router.push({ pathname: '/booking/dates/[listingId]', params: { listingId: listing.data.id } })}
+          style={{ marginTop: 24 }}
+        />
+      )}
       {listing.data && (
         <Button
           label={`Visit ${listing.data.business.name}`}
