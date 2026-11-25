@@ -1188,3 +1188,97 @@ from (values
   ('00000000-0000-4000-8000-000000000027', 4, 'Comfortable jeep and a careful driver on the KKH.', '{}', 26)
 ) as v(booking, rating, body, photos, days_ago)
 join public.bookings b on b.id = v.booking::uuid;
+
+-- ---------------------------------------------------------------------------
+-- Booking Flow: upcoming slots for every experience, bookable staff with
+-- schedules for every service, request-to-book listings, pets and private
+-- groups, a sold-out and an almost-full slot, and coupons in every city.
+-- ---------------------------------------------------------------------------
+
+-- Every service gets a bookable staff member with a weekly schedule.
+update public.staff_members s set is_bookable = true
+where s.business_id in (select business_id from public.listings where type = 'service')
+  and not exists (select 1 from public.staff_members o where o.business_id = s.business_id and o.is_bookable);
+
+insert into public.listing_staff (business_id, listing_id, staff_id)
+select l.business_id, l.id, (select s.id from public.staff_members s where s.business_id = l.business_id and s.is_bookable order by s.display_name limit 1)
+from public.listings l
+where l.type = 'service'
+  and not exists (
+    select 1 from public.listing_staff ls join public.staff_members s on s.id = ls.staff_id
+    where ls.listing_id = l.id and s.is_bookable
+  );
+
+-- Schedules (ISO weekday, 1 = Monday) for bookable staff who have none yet.
+insert into public.staff_schedules (business_id, staff_id, location_id, weekday, start_time, end_time)
+select s.business_id, s.id, l.id, d.weekday, d.start_time, d.end_time
+from public.staff_members s
+join public.business_locations l on l.business_id = s.business_id and l.is_primary
+cross join (values
+  (1, '09:00'::time, '19:00'::time), (2, '09:00', '19:00'), (3, '09:00', '19:00'),
+  (4, '09:00', '19:00'), (5, '09:00', '12:30'), (5, '14:30', '19:00'), (6, '10:00', '18:00')
+) as d(weekday, start_time, end_time)
+where s.is_bookable and not exists (select 1 from public.staff_schedules x where x.staff_id = s.id);
+
+-- Daily sessions for the next three weeks for experiences without upcoming slots,
+-- at a time of day that suits each one (food in the evening, the rest earlier).
+insert into public.slots (business_id, listing_id, staff_id, starts_at, ends_at, capacity)
+select l.business_id, l.id,
+       (select ls.staff_id from public.listing_staff ls where ls.listing_id = l.id limit 1),
+       pg_temp.pk(pg_temp.today() + d, t.start_at),
+       pg_temp.pk(pg_temp.today() + d, t.start_at) + make_interval(mins => l.duration_minutes),
+       l.max_guests
+from public.listings l
+cross join generate_series(1, 21) d
+cross join lateral (
+  select case when c.slug = 'food-drink' then '18:00'::time
+              when l.duration_minutes >= 360 then '07:00'::time
+              else ('09:00'::time + make_interval(hours => abs(hashtext(l.slug)) % 6)) end as start_at
+  from public.categories c where c.id = l.category_id
+) t
+where l.status = 'published' and l.booking_mode = 'slot'
+  and not exists (select 1 from public.slots s where s.listing_id = l.id and s.starts_at > now());
+
+-- Some listings need the owner to accept (request to book).
+update public.listings set instant_book = false
+where slug in ('sandspit-mangrove-kayaking', 'lahori-home-cooking-class', 'keratin-treatment', 'bridal-trial-makeup',
+               'private-dinner-at-home', 'skardu-fly-in-day-trip', 'fort-road-food-street-dinner');
+
+-- Pets welcome on outdoor family trips; private sessions on a few experiences.
+update public.listings set pets_allowed = true
+where slug in ('margalla-sunrise-hike', 'daman-e-koh-family-evening', 'jallo-park-family-day', 'clifton-beach-family-day');
+update public.listings set private_price_amount = v.price
+from (values
+  ('margalla-sunrise-hike', 2000000), ('rawal-lake-kayaking', 3000000), ('lahori-home-cooking-class', 4500000),
+  ('churna-island-snorkeling', 8000000), ('fort-road-food-street-dinner', 4000000), ('lok-virsa-heritage-museum', 2000000)
+) as v(slug, price)
+where listings.slug = v.slug;
+
+-- Tomorrow's Saidpur walk is sold out; the day after has one seat left.
+insert into public.bookings (
+  id, business_id, consumer_id, listing_id, slot_id, location_id, starts_at, ends_at, guest_count, status,
+  contact_name, contact_phone, subtotal_amount, discount_amount, total_amount, source
+)
+select v.id::uuid, l.business_id, v.consumer::uuid, l.id, s.id, l.location_id, s.starts_at, s.ends_at,
+       s.capacity - v.leave, 'confirmed', 'Seed guest', '+923000000099',
+       l.price_amount * (s.capacity - v.leave), 0, l.price_amount * (s.capacity - v.leave), 'app'
+from (values
+  ('00000000-0000-4000-8000-000000000031', '00000000-0000-4000-a000-000000000023', 1, 0),
+  ('00000000-0000-4000-8000-000000000032', '00000000-0000-4000-a000-000000000024', 2, 1)
+) as v(id, consumer, day, leave)
+join public.listings l on l.slug = 'saidpur-faisal-golden-hour'
+join lateral (
+  select * from public.slots s where s.listing_id = l.id and s.starts_at::date >= pg_temp.today() + v.day
+  order by s.starts_at limit 1
+) s on true;
+
+-- Coupons: one public deal per city, a big-spend deal, and two that fail.
+insert into public.coupons (business_id, code, title, description, discount_type, discount_value, max_discount_amount, min_subtotal_amount, per_user_limit, starts_at, ends_at, is_public)
+select b.id, v.code, v.title, v.description, v.dtype::public.discount_type, v.value, v.max_discount, v.min_spend, 1, v.starts::timestamptz, v.ends::timestamptz, v.public
+from (values
+  ('margalla-trails', 'ISB15', 'Islamabad 15% off', '15% off any Margalla Trails booking, up to Rs 1,500.', 'percent', 15, 150000, 0, now() - interval '1 day', now() + interval '60 days', true),
+  ('androon-walks', 'LAHORE300', 'Rs 300 off in Lahore', 'Rs 300 off any Androon Walks booking over Rs 2,000.', 'fixed', 30000, null, 200000, now() - interval '1 day', now() + interval '60 days', true),
+  (null, 'BIGSPEND', '20% off big plans', '20% off bookings over Rs 20,000, up to Rs 5,000.', 'percent', 20, 500000, 2000000, now() - interval '1 day', now() + interval '60 days', true),
+  (null, 'SUMMER24', 'Summer 2024', 'Last summer''s deal.', 'percent', 25, null, 0, now() - interval '200 days', now() - interval '100 days', false)
+) as v(slug, code, title, description, dtype, value, max_discount, min_spend, starts, ends, public)
+left join public.businesses b on b.slug = v.slug;
