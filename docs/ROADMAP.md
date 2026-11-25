@@ -10,7 +10,8 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Dev auth bypass for testing screens: `EXPO_PUBLIC_AUTH_BYPASS=1` in `apps/mobile/.env.local` (dev builds only; see `.env.example`). Remove it, or keep it dev-only, when the production SMS provider is wired
 - Face ID needs a development build to test: Expo Go has no Face ID usage description, so `authenticateAsync` fails with `missing_usage_description` there (the app shows an alert and continues). `app.json` already has the usage text for real builds
 - Passcode entry screens are not in the "Sign Up / Screens with phone" section; build them when the passcode screens are found in Figma (the "Passcode & Face ID" screen only offers Face ID today)
-- Next screens behind Home's placeholder routes: Experience details (`/listing/[id]`), host profile (`/host/[id]`), Recommend a place, and the Bookings / Explore / Groups / Profile tabs
+- Next: section 4, Booking Status Screens (the Bookings tab is still a placeholder; "Sounds Good!" after booking already opens it)
+- Next screens behind Home's placeholder routes: Experience details (`/listing/[id]`, has a "Check availability" button into Select dates for now), host profile (`/host/[id]`), Recommend a place, and the Bookings / Explore / Groups / Profile tabs
 - Promo banners are static in `apps/mobile/src/features/home/promos.ts`; move them to `platform_settings` when the team needs to change them without a release
 - "Recently viewed" is stored on the device (AsyncStorage); move it to the server if it should follow the user
 - Seed photos are the Figma images in `supabase/seed-media` (local only). Real listings need media upload in the business portal
@@ -27,7 +28,7 @@ Keep this file current: tick items as they land and update **Next up** so any se
 One branch per section (`feat/<section>`), merged into `staging`. Frames: `docs/FIGMA.md`.
 - [x] 1. Search Filter
 - [ ] 2. Business Look (business, experience detail, host profile, reviews). Business page done (`/business/[slug]`); experience detail and host profile next
-- [ ] 3. Booking Flow
+- [x] 3. Booking Flow: Select dates (Dates / Guests / Private group), Confirm Reservation, the date / time / guests / notes / payment / coupon / success sheets; real bookings through `create_booking` / `create_bookings`, payment mocked
 - [ ] 4. Booking Status Screens
 - [ ] 5. Bucket List + Recommend a place (Bucket List done: named lists, save sheets, list screens; Recommend a place next)
 - [x] 6. Customer Dashboard (Adventure Quiz) + personality badge (badge on Profile comes with section 10)
@@ -45,7 +46,13 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - **Bucket List: Groups** ("Add to Groups" on the heart sheet, "Invite others" on the share sheet): show a "Coming with Groups" toast. Wire when Groups (section 9) is built; inviting converts the list to a group
 - **Bucket List: shared links**: "Share a link" sends `moment://bucket-list/<share_token>`; opening it (read-only view by token, RLS or an RPC) is not built yet
 
-- **Booking Flow entry** (`/booking/new`): placeholder. The cart's "Continue" passes `businessId` + `services` (ids); "Apply Membership" passes `planId`. Replace with the Booking Flow (section 3); clear the cart (`serviceCart.clear`) once booked
+- **Payments** (`features/booking/mock.ts` `payForBookings`): Confirm & Pay books for real, then the mock returns a pending `TEST-...` payment after 600ms and nothing is charged; bookings stay `payment_status = 'unpaid'`. Wire to the chosen Pakistan provider (card, JazzCash, Easypaisa in `PAYMENT_METHODS`); the server marks bookings paid by webhook
+- **Membership apply** (`features/booking/mock.ts` `applyForMembership`): "Apply Membership" goes through Confirm & Pay and shows "Your membership request is sent", but nothing is stored. Needs a membership checkout endpoint (memberships are created by backend code after payment)
+- **Tax and service fee** (`BOOKING_CHARGES` in `packages/shared/src/constants.ts`: 16% tax on the amount after the coupon, Rs 150 fee per checkout): placeholder rates shown on Price Details only; the booking's `total_amount` excludes them. Confirm the rates with finance and add them server side with payments
+- **Refunds**: the refund note and Cancellation card come from `CANCELLATION_POLICIES` on the device; cancelling with a refund needs server-side rules when payments land
+- **Contact Moment Support** (`/support`): placeholder until support chat (Chat section)
+- **Service animals** link on Add Guest shows an explanation alert; no separate service-animal field (pets count goes in the booking notes via `guestDetailsNote`)
+
 - **Business links**: share uses `moment://business/<slug>`; opening it is not wired yet (same as bucket list links)
 - **Business logo "play" badge** (25:2265): no business videos/stories yet, so the play overlay isn't shown
 
@@ -96,8 +103,8 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - [ ] Bucket List, Recommend a place
 
 ## Phase 3: Booking and payments
-- [ ] Booking flow: reservation, day, slot, guests, notes
-- [ ] Stripe payments (test mode), coupons
+- [x] Booking flow: reservation, day, slot, guests, notes, coupons (quotes and coupon reasons from the server)
+- [ ] Payments: provider for Pakistan (Stripe is unavailable); mocked in the app today
 - [ ] Bookings list and status
 - [ ] Wallet
 

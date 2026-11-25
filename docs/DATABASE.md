@@ -94,7 +94,7 @@ RLS helpers live in the `private` schema (not exposed through the API), are `sec
 - `bookings`: code, consumer, business, listing, slot or appointment time and staff, guests, status, payment status, contact snapshot, amounts, coupon, group, source (`app | web | portal | pos`), idempotency key, external ref, cancellation details.
 - `booking_items` (option lines), `booking_events` (status history, written by trigger).
 - RPCs: `create_booking`, `cancel_booking` (consumer), `update_booking_status` (business).
-- `create_bookings(p_bookings jsonb, ...)`: a services cart (several appointment services, one visit) in one transaction, all or nothing; the coupon applies to the most expensive service; idempotent per key (`<key>:<index>`).
+- `create_bookings(p_bookings jsonb, ...)`: a services cart (several appointment services, one visit) in one transaction, all or nothing (a line's `items` may be omitted or `null`); the coupon applies to the most expensive service; idempotent per key (`<key>:<index>`).
 - `quote_booking(listing, guests, items, coupon, private)`: the Confirm screen's subtotal and coupon discount, priced exactly as `create_booking` will (shared `private.booking_subtotal` and `private.apply_coupon`). A bad coupon returns `coupon_error` ("This code has expired", "Spend at least ... to use this code", ...) instead of raising.
 - `available_dates(listing, from, to)`: days with at least one free appointment time ("Select Date").
 - Private groups: `listings.private_price_amount` (null = not offered) books a whole session for one price; `bookings.is_private` makes the slot count as full. `listings.pets_allowed` drives the Pets stepper on Add Guest.
