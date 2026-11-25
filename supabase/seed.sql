@@ -1556,3 +1556,69 @@ update public.staff_members s set cover_url = (
   select m.url from public.listing_staff ls join public.listing_media m on m.listing_id = ls.listing_id
   where ls.staff_id = s.id order by m.sort_order limit 1)
 where s.is_host;
+
+-- ---------------------------------------------------------------------------
+-- Groups: the dev user owns a group with likes from several members, owns a
+-- group open to Group Match (with matching groups in Islamabad), and is a
+-- member of Lahore Food Squad. Consumers get profile photos for avatar stacks.
+-- ---------------------------------------------------------------------------
+update public.profiles p set avatar_url = 'storage://seed-media/' || v.path
+from (values
+  ('00000000-0000-4000-a000-000000000021', 'hosts/host-1.png'), ('00000000-0000-4000-a000-000000000022', 'avatars/avatar-1.png'),
+  ('00000000-0000-4000-a000-000000000023', 'hosts/host-3.png'), ('00000000-0000-4000-a000-000000000024', 'avatars/avatar-2.png'),
+  ('00000000-0000-4000-a000-000000000025', 'hosts/host-4.png'), ('00000000-0000-4000-a000-000000000026', 'hosts/host-2.png')
+) as v(id, path)
+where p.id = v.id::uuid and p.avatar_url is null;
+
+update public.groups set cover_url = 'storage://seed-media/listings/' || case id
+    when '00000000-0000-4000-7000-000000000001' then 'food-tasting.jpg'
+    when '00000000-0000-4000-7000-000000000002' then 'night-market.jpg'
+    else 'kids-adventure.jpg' end
+where id in ('00000000-0000-4000-7000-000000000001', '00000000-0000-4000-7000-000000000002', '00000000-0000-4000-7000-000000000003');
+
+insert into public.groups (id, owner_id, name, description, destination_city, destination_geo, visibility, is_open_to_match, sharing_enabled, max_members, cover_url, created_at) values
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000099', 'Islamabad Weekend Squad',
+   'Hikes, food streets and lazy brunches around Islamabad.', 'Islamabad', pg_temp.pt(33.6844, 73.0479), 'private', false, true, 12,
+   'storage://seed-media/listings/old-town-walk.jpg', now() - interval '40 days'),
+  ('00000000-0000-4000-7000-000000000005', '00000000-0000-4000-a000-000000000099', 'Margalla Explorers',
+   'Looking for other groups to hike and kayak with.', 'Islamabad', pg_temp.pt(33.7386, 73.0747), 'public', true, false, 10,
+   'storage://seed-media/listings/kids-adventure.jpg', now() - interval '12 days'),
+  ('00000000-0000-4000-7000-000000000006', '00000000-0000-4000-a000-000000000023', 'Saidpur Sunset Club',
+   'Golden-hour walks and chai in Saidpur Village.', 'Islamabad', pg_temp.pt(33.7432, 73.0644), 'public', true, false, 8,
+   'storage://seed-media/listings/museum-gallery.jpg', now() - interval '20 days'),
+  ('00000000-0000-4000-7000-000000000007', '00000000-0000-4000-a000-000000000024', 'Rawal Lake Paddlers',
+   'Sunrise kayaking every other Saturday.', 'Islamabad', pg_temp.pt(33.7023, 73.1263), 'public', true, false, 8,
+   'storage://seed-media/listings/plane-window.jpg', now() - interval '8 days');
+
+-- The owner joins through the groups trigger; add the others.
+insert into public.group_members (group_id, user_id, role, status, invited_by) values
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000021', 'admin', 'active', '00000000-0000-4000-a000-000000000099'),
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000022', 'member', 'active', '00000000-0000-4000-a000-000000000099'),
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000024', 'member', 'active', '00000000-0000-4000-a000-000000000099'),
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000026', 'member', 'invited', '00000000-0000-4000-a000-000000000099'),
+  ('00000000-0000-4000-7000-000000000005', '00000000-0000-4000-a000-000000000026', 'member', 'active', '00000000-0000-4000-a000-000000000099'),
+  ('00000000-0000-4000-7000-000000000006', '00000000-0000-4000-a000-000000000021', 'member', 'active', null),
+  ('00000000-0000-4000-7000-000000000006', '00000000-0000-4000-a000-000000000025', 'member', 'active', null),
+  ('00000000-0000-4000-7000-000000000007', '00000000-0000-4000-a000-000000000022', 'member', 'active', null),
+  ('00000000-0000-4000-7000-000000000002', '00000000-0000-4000-a000-000000000099', 'member', 'active', '00000000-0000-4000-a000-000000000021');
+
+-- Liked by group: several members, overlapping picks.
+insert into public.group_likes (group_id, user_id, listing_id, created_at)
+select g.gid::uuid, g.uid::uuid, l.id, now() - make_interval(hours => g.hours_ago)
+from (values
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000099', 'margalla-sunrise-hike', 30),
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000021', 'margalla-sunrise-hike', 28),
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000022', 'margalla-sunrise-hike', 20),
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000021', 'saidpur-faisal-golden-hour', 26),
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000024', 'saidpur-faisal-golden-hour', 12),
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000099', 'melody-food-street-tasting', 10),
+  ('00000000-0000-4000-7000-000000000004', '00000000-0000-4000-a000-000000000022', 'rawal-lake-kayaking', 6),
+  ('00000000-0000-4000-7000-000000000002', '00000000-0000-4000-a000-000000000021', 'walled-city-food-walk', 50),
+  ('00000000-0000-4000-7000-000000000002', '00000000-0000-4000-a000-000000000022', 'walled-city-food-walk', 48),
+  ('00000000-0000-4000-7000-000000000002', '00000000-0000-4000-a000-000000000099', 'lahori-home-cooking-class', 40)
+) as g(gid, uid, slug, hours_ago)
+join public.listings l on l.slug = g.slug;
+
+-- Margalla Explorers already asked Islamabad Hiking Crew to match.
+insert into public.group_match_requests (from_group_id, to_group_id, status, created_by)
+values ('00000000-0000-4000-7000-000000000005', '00000000-0000-4000-7000-000000000003', 'pending', '00000000-0000-4000-a000-000000000099');
