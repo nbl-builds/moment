@@ -170,7 +170,7 @@ site_url = "http://127.0.0.1:3000"
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 # moment:// is the app (password reset link); exp:// is Expo Go during development.
-additional_redirect_urls = ["https://127.0.0.1:3000", "moment://**", "exp://**"]
+additional_redirect_urls = ["https://127.0.0.1:3000", "http://localhost:3000/**", "http://127.0.0.1:3000/**", "moment://**", "exp://**"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -456,8 +456,9 @@ project_id = "iltnkqxgdnhsnkvvhpxp"
 [remotes.staging.auth]
 # Emails show a 6-digit code, so the site URL is only a fallback for links.
 site_url = "moment-staging://"
-# The staging app (moment-staging://) and the future live app (moment://).
-additional_redirect_urls = ["moment-staging://**", "moment://**"]
+# The staging app (moment-staging://), the future live app (moment://) and the
+# staging web portal (Cloudflare Worker, docs/STAGING.md).
+additional_redirect_urls = ["moment-staging://**", "moment://**", "https://moment-web-staging.work-nabeelahmed.workers.dev/**"]
 
 [remotes.staging.auth.email]
 # Hosted: one code email per address per minute (local uses 1s for testing).
