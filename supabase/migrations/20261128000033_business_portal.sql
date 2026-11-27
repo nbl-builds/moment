@@ -338,9 +338,10 @@ begin
     ),
     'newly_added', (
       select coalesce(jsonb_agg(jsonb_build_object('id', x.id, 'title', x.title, 'city', x.city, 'views', x.views,
-        'published_at', x.published_at) order by x.published_at desc), '[]'::jsonb)
+        'published_at', x.published_at, 'cover', x.cover) order by x.published_at desc), '[]'::jsonb)
       from (
         select l.id, l.title, l.city, l.published_at,
+               (select m.url from public.listing_media m where m.listing_id = l.id order by m.sort_order limit 1) as cover,
                (select count(*)::integer from public.listing_views v where v.listing_id = l.id) as views
         from public.listings l
         where l.business_id = p_business_id and l.status = 'published'
@@ -348,14 +349,15 @@ begin
       ) x
     ),
     'most_viewed', (
-      select coalesce(jsonb_agg(jsonb_build_object('id', x.id, 'title', x.title, 'city', x.city, 'views', x.views)
-        order by x.views desc), '[]'::jsonb)
+      select coalesce(jsonb_agg(jsonb_build_object('id', x.id, 'title', x.title, 'city', x.city, 'views', x.views,
+        'cover', x.cover) order by x.views desc), '[]'::jsonb)
       from (
         select l.id, l.title, l.city,
+               (select m.url from public.listing_media m where m.listing_id = l.id order by m.sort_order limit 1) as cover,
                (select count(*)::integer from public.listing_views v where v.listing_id = l.id) as views
         from public.listings l
         where l.business_id = p_business_id and l.status = 'published'
-        order by 4 desc limit 3
+        order by 5 desc limit 3
       ) x
     )
   ) into v_result;

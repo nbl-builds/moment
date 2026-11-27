@@ -75,8 +75,8 @@ export interface BusinessInsights {
   wallet: { balance: number; currency: string } | null;
   rating: { average: number; count: number; trend: { month: string; average: number }[] };
   categories: { slug: string; name: string; count: number }[];
-  newly_added: { id: string; title: string; city: string; views: number; published_at: string | null }[];
-  most_viewed: { id: string; title: string; city: string; views: number }[];
+  newly_added: { id: string; title: string; city: string; views: number; published_at: string | null; cover: string | null }[];
+  most_viewed: { id: string; title: string; city: string; views: number; cover: string | null }[];
 }
 
 export function createPortalApi(db: MomentSupabaseClient) {

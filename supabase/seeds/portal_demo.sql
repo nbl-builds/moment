@@ -415,33 +415,33 @@ values ('00000000-0000-4000-b000-000000000031', 25000000, pg_temp.d_today() - 60
 -- ---------------------------------------------------------------------------
 insert into public.reviews (booking_id, author_id, rating, body, photos, business_reply, replied_at, replied_by, created_at)
 select b.id, b.consumer_id, r.rating, r.body, r.photos,
-       case when r.reply then 'Shukriya! It was lovely having you, come back for the winter menu.' end,
+       case when r.reply then 'Shukriya! It was lovely having you, come back again soon.' end,
        case when r.reply then b.ends_at + interval '2 days' end,
        case when r.reply then '00000000-0000-4000-a000-000000000031'::uuid end,
        b.ends_at + interval '1 day'
 from (
-  select b.*, row_number() over (order by b.starts_at desc) as k
+  select b.*, row_number() over (partition by b.listing_id order by b.starts_at desc) as k
   from public.bookings b
   where b.business_id = '00000000-0000-4000-b000-000000000031' and b.status = 'completed'
 ) b
 join (values
-  (1, 5, 'Nadia knew every stall owner by name. The fried fish and the final doodh patti were the highlights. Come hungry!',
+  ('331', 1, 5, 'Nadia knew every stall owner by name. The fried fish and the final doodh patti were the highlights. Come hungry!',
    '{storage://seed-media/listings/food-tasting.jpg,storage://seed-media/listings/night-market.jpg,storage://seed-media/listings/street-drinks.jpg}'::text[], false),
-  (2, 5, 'The mosque at sunrise was unreal, pink marble and no crowds. Breakfast on Fort Road was the cherry on top.', '{}', true),
-  (3, 4, 'Great workshop, my kettle now lives on the kitchen shelf. Ran a little over time but nobody minded.',
+  ('331', 2, 5, 'Best evening of our Lahore trip. Small group, lots of stories, and the vegetarian options were thoughtful.', '{}', true),
+  ('331', 3, 3, 'Food was great but the group was larger than I expected and it was hard to hear the guide.', '{}', false),
+  ('331', 4, 2, 'We waited 25 minutes at Delhi Gate before the walk started.', '{}', false),
+  ('331', 5, 5, 'Fantastic food, and Nadia made sure everyone was comfortable.', '{storage://seed-media/listings/family-cooking.jpg}', true),
+  ('332', 1, 5, 'The mosque at sunrise was unreal, pink marble and no crowds. Breakfast on Fort Road was the cherry on top.', '{}', true),
+  ('332', 2, 4, 'Early start but worth it. Bring a shawl, it is chilly at dawn.', '{}', false),
+  ('332', 3, 5, 'Worth every rupee. Already recommended it to friends visiting from Karachi.', '{storage://seed-media/listings/old-town-walk.jpg}', false),
+  ('333', 1, 4, 'Great workshop, my kettle now lives on the kitchen shelf. Ran a little over time but nobody minded.',
    '{storage://seed-media/listings/museum-gallery.jpg}', false),
-  (4, 5, 'Best evening of our Lahore trip. Small group, lots of stories, and the vegetarian options were thoughtful.', '{}', true),
-  (5, 3, 'Food was great but the group was larger than I expected and it was hard to hear the guide.', '{}', false),
-  (6, 5, 'Rickshaw ride through the gates with chai at a 200-year-old haveli. Felt like time travel.',
+  ('333', 2, 5, 'Zara is a patient teacher. Even my 10 year old painted a proper peacock.', '{}', true),
+  ('334', 1, 5, 'Rickshaw ride through the gates with chai at a 200-year-old haveli. Felt like time travel.',
    '{storage://seed-media/listings/old-town-walk.jpg,storage://seed-media/listings/kids-adventure.jpg}', false),
-  (7, 4, 'Early start but worth it. Bring a shawl, it is chilly at dawn.', '{}', true),
-  (8, 5, 'Zara is a patient teacher. Even my 10 year old painted a proper peacock.', '{}', false),
-  (9, 2, 'We waited 25 minutes at Delhi Gate before the walk started.', '{}', false),
-  (10, 5, 'Worth every rupee. Already recommended it to friends visiting from Karachi.', '{}', false),
-  (12, 4, 'Loved the stories about the havelis. Wish it was a bit longer.', '{}', false),
-  (14, 5, 'Fantastic food, and Nadia made sure everyone was comfortable.',
-   '{storage://seed-media/listings/family-cooking.jpg}', true)
-) as r(k, rating, body, photos, reply) on r.k = b.k
+  ('334', 2, 4, 'Loved the stories about the havelis. Wish it was a bit longer.', '{}', false)
+) as r(listing, k, rating, body, photos, reply)
+  on b.listing_id = ('00000000-0000-4000-e000-000000000' || r.listing)::uuid and r.k = b.k
 on conflict (booking_id) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -516,5 +516,4 @@ select '00000000-0000-4000-b000-000000000031',
             else null end,
        null, 'demo-session-' || g, 'app',
        now() - make_interval(secs => (power(random(), 1.6) * 365 * 86400)::integer)
-from generate_series(1, 4200) g
-cross join lateral (select random() as r) x;
+from (select g, random() as r from generate_series(1, 4200) g) x;
