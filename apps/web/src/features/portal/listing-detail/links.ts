@@ -11,9 +11,10 @@ export function appLink(listing: { id: string; type: string; business?: { id: st
 
 export type ListingStatusLabel = "Published" | "Draft" | "Under review" | "Archived";
 
-/** Pill label: a published listing of a business that isn't approved yet is "Under review". */
+/** Pill label: waiting for Moment's review, or published by a business that isn't approved yet, is "Under review". */
 export function statusLabel(status: string, businessStatus: string): ListingStatusLabel {
   if (status === "archived") return "Archived";
   if (status === "draft") return "Draft";
+  if (status === "pending_review") return "Under review";
   return businessStatus === "active" ? "Published" : "Under review";
 }

@@ -99,7 +99,7 @@ export function SideCards({
           <p className={styles.small}>
             {ready
               ? "Everything guests need is in place."
-              : `${checklist.filter((c) => !c.done).length} of ${checklist.length} still to do before you can publish.`}
+              : `${checklist.filter((c) => !c.done).length} of ${checklist.length} still to do before you can submit it.`}
           </p>
           <ul className={styles.checklist}>
             {checklist.map((c) => (
@@ -119,21 +119,15 @@ export function SideCards({
             ))}
           </ul>
           {canEdit ? (
-            <button
-              type="button"
-              className={`${styles.wideButton} ${styles.wideLime}`}
-              disabled={!ready || actions.busy}
-              onClick={() =>
-                void actions.setStatus(
-                  "published",
-                  businessStatus === "active"
-                    ? "Published. Guests can find and book it now."
-                    : "Published. It will go live once your business is approved.",
-                )
-              }
-            >
-              Publish
-            </button>
+            ready ? (
+              <Link href={editHref(listing.id, "review")} className={`${styles.wideButton} ${styles.wideLime}`}>
+                Review &amp; submit
+              </Link>
+            ) : (
+              <button type="button" className={`${styles.wideButton} ${styles.wideLime}`} disabled>
+                Review &amp; submit
+              </button>
+            )
           ) : null}
           {businessStatus !== "active" ? (
             <p className={styles.small}>

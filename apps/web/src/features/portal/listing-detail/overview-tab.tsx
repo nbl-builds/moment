@@ -1,19 +1,18 @@
 /* eslint-disable @next/next/no-img-element -- avatars come from Supabase Storage */
-import { CANCELLATION_POLICIES, formatDuration, formatPrice, priceUnitLabel, type ListingStep, type PortalListingDetail } from "@moment/shared";
+import { CANCELLATION_POLICIES, formatDuration, languageLabel, formatPrice, priceUnitLabel, type ListingStep, type PortalListingDetail } from "@moment/shared";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { createServerApi } from "@/lib/api/server";
 import { editHref } from "./links";
 import styles from "./listing-detail.module.css";
 
-const LANGUAGES: Record<string, string> = { en: "English", ur: "Urdu", pa: "Punjabi", ps: "Pashto", sd: "Sindhi" };
 
-function Section({ title, step, listingId, canEdit, children }: { title: string; step: ListingStep; listingId: string; canEdit: boolean; children: ReactNode }) {
+function Section({ title, step, listingId, canEdit, children }: { title: string; step?: ListingStep; listingId: string; canEdit: boolean; children: ReactNode }) {
   return (
     <section className={styles.section}>
       <header className={styles.sectionHead}>
         <h3 className={styles.sectionTitle}>{title}</h3>
-        {canEdit ? (
+        {canEdit && step ? (
           <Link href={editHref(listingId, step)} className={styles.editLink} aria-label={`Edit ${title.toLowerCase()}`}>
             Edit
           </Link>
@@ -33,7 +32,7 @@ export async function OverviewTab({ listing: l, canEdit }: { listing: PortalList
     { label: "Booking", value: l.booking_mode === "slot" ? "Set sessions" : "Appointments" },
     { label: "Duration", value: formatDuration(l.duration_minutes) },
     { label: "Group size", value: l.min_guests === l.max_guests ? `${l.max_guests}` : `${l.min_guests}–${l.max_guests} guests` },
-    { label: "Languages", value: l.languages.map((c) => LANGUAGES[c] ?? c).join(", ") || "Not set" },
+    { label: "Languages", value: l.languages.map(languageLabel).join(", ") || "Not set" },
     { label: "Instant book", value: l.instant_book ? "On (confirmed at once)" : "Off (you approve requests)" },
   ];
   const options = l.options.filter((o) => o.is_active);
@@ -90,7 +89,7 @@ export async function OverviewTab({ listing: l, canEdit }: { listing: PortalList
       </Section>
 
       {l.highlights.length || l.includes.length || l.excludes.length ? (
-        <Section title="What’s included" step="details" listingId={l.id} canEdit={canEdit}>
+        <Section title="What’s included" step="provide" listingId={l.id} canEdit={canEdit}>
           {l.highlights.length ? (
             <>
               <p className={styles.subhead}>
@@ -127,7 +126,7 @@ export async function OverviewTab({ listing: l, canEdit }: { listing: PortalList
       ) : null}
 
       {l.itinerary.length ? (
-        <Section title="Itinerary" step="details" listingId={l.id} canEdit={canEdit}>
+        <Section title="Itinerary" listingId={l.id} canEdit={canEdit}>
           <ol className={styles.timeline}>
             {l.itinerary.map((s) => (
               <li key={s.id}>
@@ -143,7 +142,7 @@ export async function OverviewTab({ listing: l, canEdit }: { listing: PortalList
       ) : null}
 
       {l.what_to_bring.length ? (
-        <Section title="What to bring" step="details" listingId={l.id} canEdit={canEdit}>
+        <Section title="What to bring" listingId={l.id} canEdit={canEdit}>
           <ul className={styles.bullets}>
             {l.what_to_bring.map((h) => (
               <li key={h}>{h}</li>
@@ -172,13 +171,13 @@ export async function OverviewTab({ listing: l, canEdit }: { listing: PortalList
         </Section>
       ) : null}
 
-      <Section title="Cancellation policy" step="policies" listingId={l.id} canEdit={canEdit}>
+      <Section title="Cancellation policy" step="booking" listingId={l.id} canEdit={canEdit}>
         <p className={styles.stepTitle}>{CANCELLATION_POLICIES[l.cancellation_policy].label}</p>
         <p className={styles.text}>{CANCELLATION_POLICIES[l.cancellation_policy].summary}</p>
       </Section>
 
       {l.staff.length ? (
-        <Section title={l.type === "experience" ? "Hosts" : "Staff"} step="team" listingId={l.id} canEdit={canEdit}>
+        <Section title={l.type === "experience" ? "Hosts" : "Staff"} step={l.type === "experience" ? "host" : "staff"} listingId={l.id} canEdit={canEdit}>
           <ul className={styles.people}>
             {l.staff.map((s) => (
               <li key={s.id}>
