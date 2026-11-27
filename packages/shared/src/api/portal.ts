@@ -1,3 +1,4 @@
+import { listingMissing, WIZARD_STEPS, type WizardStep } from '../listing-wizard';
 import { DEFAULT_TIMEZONE } from '../constants';
 import { addDaysToLocalDate, localDateTimeToIso, toLocalDate } from '../format/datetime';
 import type { Enums } from '../types';
@@ -58,8 +59,8 @@ export type ListingTab = 'published' | 'draft' | 'archived';
 export type InsightsPeriod = 'weekly' | 'monthly' | 'yearly';
 
 /** Listing wizard steps the details page links to (`/business/listings/[id]/edit?step=`). */
-export const LISTING_STEPS = ['details', 'photos', 'pricing', 'availability', 'location', 'policies', 'team'] as const;
-export type ListingStep = (typeof LISTING_STEPS)[number];
+export const LISTING_STEPS = WIZARD_STEPS;
+export type ListingStep = WizardStep;
 
 export const PORTAL_LISTING_DETAIL_SELECT = `
   id, business_id, type, booking_mode, slug, title, summary, description, status, accepting_bookings,
@@ -93,28 +94,46 @@ export interface ChecklistItem {
   step: ListingStep;
 }
 
-/** Minimum to publish (the consumer app needs these to show and book a listing). */
-export const PUBLISH_MIN_PHOTOS = 3;
-export const PUBLISH_MIN_DESCRIPTION = 40;
-
-/** "Finish your listing": what's missing before it can be published. */
+/** "Finish your listing": every rule from `listingMissing`, ticked when met. */
 export function listingChecklist(l: {
+  type: 'experience' | 'service';
+  booking_mode: 'slot' | 'appointment';
+  title: string;
   description: string | null;
-  category: unknown;
+  category: { id: string } | null;
   media: unknown[] | null;
   price_amount: number;
   location_id: string | null;
   hasMeetingPoint?: boolean;
   hasAvailability: boolean;
+  staff: unknown[];
 }): ChecklistItem[] {
-  return [
-    { key: 'description', label: `Description (${PUBLISH_MIN_DESCRIPTION}+ characters)`, done: (l.description?.trim().length ?? 0) >= PUBLISH_MIN_DESCRIPTION, step: 'details' },
-    { key: 'category', label: 'Category', done: Boolean(l.category), step: 'details' },
-    { key: 'photos', label: `At least ${PUBLISH_MIN_PHOTOS} photos`, done: (l.media?.length ?? 0) >= PUBLISH_MIN_PHOTOS, step: 'photos' },
-    { key: 'price', label: 'Price', done: l.price_amount > 0, step: 'pricing' },
-    { key: 'location', label: 'Location or meeting point', done: Boolean(l.location_id) || Boolean(l.hasMeetingPoint), step: 'location' },
-    { key: 'availability', label: 'Availability', done: l.hasAvailability, step: 'availability' },
-  ];
+  const input = {
+    type: l.type,
+    booking_mode: l.booking_mode,
+    title: l.title,
+    description: l.description,
+    category_id: l.category?.id ?? null,
+    photoCount: l.media?.length ?? 0,
+    price_amount: l.price_amount,
+    hasLocation: Boolean(l.location_id) || Boolean(l.hasMeetingPoint),
+    hasAvailability: l.hasAvailability,
+    staffCount: l.staff.length,
+  };
+  const missing = new Set(listingMissing(input).map((m) => m.key));
+  // Every rule, by asking with everything empty.
+  const all = listingMissing({
+    ...input,
+    title: '',
+    description: '',
+    category_id: null,
+    photoCount: 0,
+    price_amount: 0,
+    hasLocation: false,
+    hasAvailability: false,
+    staffCount: 0,
+  });
+  return all.map((m) => ({ key: m.key, label: m.label, step: m.step, done: !missing.has(m.key) }));
 }
 
 export interface InsightsSeries {
@@ -281,7 +300,8 @@ export function createPortalApi(db: MomentSupabaseClient) {
           .from('listings')
           .select(PORTAL_LISTING_SELECT)
           .eq('business_id', businessId)
-          .eq('status', status)
+          // Listings waiting for review aren't live yet: they stay with the drafts.
+          .in('status', status === 'draft' ? ['draft', 'pending_review'] : [status])
           .order(status === 'draft' ? 'updated_at' : 'published_at', { ascending: false, nullsFirst: false })
           .order('sort_order', { referencedTable: 'listing_media' }),
       );
@@ -300,7 +320,7 @@ export function createPortalApi(db: MomentSupabaseClient) {
       const rows = await unwrap(db.from('listings').select('status').eq('business_id', businessId));
       return {
         published: rows.filter((r) => r.status === 'published').length,
-        draft: rows.filter((r) => r.status === 'draft').length,
+        draft: rows.filter((r) => r.status === 'draft' || r.status === 'pending_review').length,
         archived: rows.filter((r) => r.status === 'archived').length,
       };
     },

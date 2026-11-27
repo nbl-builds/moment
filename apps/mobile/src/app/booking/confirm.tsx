@@ -129,7 +129,9 @@ function Confirm({ draft, success, onSuccess }: { draft: BookingDraft; success: 
         ? { kind: 'invalid', reason: quote.data.couponError }
         : { kind: 'applied', title: quote.data?.couponTitle ?? null };
 
-  const total = quote.data ? checkoutTotal(quote.data.subtotal, quote.data.discount) : null;
+  const total = quote.data
+    ? checkoutTotal(quote.data.subtotal, quote.data.offerDiscount + (quote.data.couponError ? 0 : quote.data.discount))
+    : null;
 
   // Why Confirm & Pay is off, in the order the user can fix things.
   const blocker = !signedIn
@@ -333,6 +335,7 @@ function Confirm({ draft, success, onSuccess }: { draft: BookingDraft; success: 
             itemsLabel={itemsLabel(draft)}
             subtotal={quote.data?.subtotal}
             discount={quote.data && !quote.data.couponError ? quote.data.discount : 0}
+            offer={quote.data ? { amount: quote.data.offerDiscount, label: quote.data.offerLabel } : undefined}
             loading={quote.isFetching}
             error={quote.isError}
           />

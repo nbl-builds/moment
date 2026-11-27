@@ -274,7 +274,8 @@ function Reservation({ booking: b, refreshing, onRefresh }: { booking: BookingDe
             style={styles.priceSection}
             itemsLabel={b.items.length > 1 ? `${b.items.length} Services` : b.listing.type === 'service' ? '1 Service' : `${b.guest_count} Guest${b.guest_count === 1 ? '' : 's'}`}
             subtotal={b.subtotal_amount}
-            discount={b.discount_amount}
+            discount={b.discount_amount - b.offer_discount_amount}
+            offer={{ amount: b.offer_discount_amount, label: b.offer_label }}
             loading={false}
             error={false}
           />

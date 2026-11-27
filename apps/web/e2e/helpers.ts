@@ -102,3 +102,19 @@ export async function signOut(page: Page) {
   await page.getByRole("menuitem", { name: "Logout" }).click();
   await expect(page).toHaveURL(/\/business\/login/);
 }
+
+let publishableKey: string | undefined = process.env.E2E_SUPABASE_PUBLISHABLE_KEY;
+/** What the mobile app sees: a signed-out (anon) PostgREST call against local Supabase. */
+export async function anonRest<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+  if (!publishableKey) {
+    const out = execSync("pnpm exec supabase status -o env", { cwd: `${__dirname}/../../..`, encoding: "utf8" });
+    publishableKey = /^PUBLISHABLE_KEY="?([^"\n]+)"?$/m.exec(out)?.[1];
+    if (!publishableKey) throw new Error("Could not read PUBLISHABLE_KEY from `supabase status`.");
+  }
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...init,
+    headers: { apikey: publishableKey, Authorization: `Bearer ${publishableKey}`, "Content-Type": "application/json", ...init?.headers },
+  });
+  if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);
+  return (await res.json()) as T;
+}

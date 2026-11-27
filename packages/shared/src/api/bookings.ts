@@ -84,7 +84,7 @@ export function createBookingsApi(db: MomentSupabaseClient) {
      * Price lines for Confirm Reservation, priced by the server exactly as the
      * booking will be. A bad coupon doesn't throw: `coupon_error` says why.
      */
-    quote: async (args: { listingId: string; guestCount?: number; optionId?: string; couponCode?: string; private?: boolean }) => {
+    quote: async (args: { listingId: string; guestCount?: number; optionId?: string; couponCode?: string; private?: boolean; startsAt?: string }) => {
       const data = await unwrap(
         db.rpc('quote_booking', {
           p_listing_id: args.listingId,
@@ -92,10 +92,31 @@ export function createBookingsApi(db: MomentSupabaseClient) {
           p_items: args.optionId ? [{ option_id: args.optionId, quantity: 1 }] : undefined,
           p_coupon_code: args.couponCode,
           p_private: args.private ?? false,
+          p_starts_at: args.startsAt,
         }),
       );
-      const q = data as { subtotal: number; discount: number; total: number; currency: string; coupon_title: string | null; coupon_error: string | null };
-      return { subtotal: q.subtotal, discount: q.discount, total: q.total, currency: q.currency, couponTitle: q.coupon_title, couponError: q.coupon_error };
+      const q = data as {
+        subtotal: number;
+        offer_discount: number;
+        offer_label: string | null;
+        discount: number;
+        total: number;
+        currency: string;
+        coupon_title: string | null;
+        coupon_error: string | null;
+      };
+      return {
+        subtotal: q.subtotal,
+        /** The listing's own discount (large group or early bird), before the coupon. */
+        offerDiscount: q.offer_discount ?? 0,
+        offerLabel: q.offer_label,
+        /** Coupon discount. */
+        discount: q.discount,
+        total: q.total,
+        currency: q.currency,
+        couponTitle: q.coupon_title,
+        couponError: q.coupon_error,
+      };
     },
 
     /** "Select Date" for appointments: local dates with at least one free time. */

@@ -96,6 +96,10 @@ export function usePublicCoupons(businessId: string | undefined) {
 
 export interface Quote {
   subtotal: number;
+  /** The listing's own discount (large group or early bird). */
+  offerDiscount: number;
+  offerLabel: string | null;
+  /** Coupon discount. */
   discount: number;
   couponTitle: string | null;
   couponError: string | null;
@@ -110,23 +114,36 @@ export function useQuote(draft: BookingDraft | null) {
   const guests = draft ? guestCount(draft.guests) : 1;
   const coupon = draft?.couponCode ?? null;
   return useQuery({
-    queryKey: ['booking', 'quote', quoteKey(draft), guests, coupon],
+    queryKey: ['booking', 'quote', quoteKey(draft), guests, coupon, startKey(draft)],
     queryFn: async (): Promise<Quote> => {
       if (!item) throw new Error('No checkout');
-      if (item.kind === 'membership') return { subtotal: item.price, discount: 0, couponTitle: null, couponError: null };
+      if (item.kind === 'membership') return { subtotal: item.price, offerDiscount: 0, offerLabel: null, discount: 0, couponTitle: null, couponError: null };
       if (item.kind === 'slot') {
-        const q = await api.bookings.quote({ listingId: item.listingId, guestCount: guests, couponCode: coupon ?? undefined, private: item.private });
-        return { subtotal: q.subtotal, discount: q.discount, couponTitle: q.couponTitle, couponError: q.couponError };
+        const q = await api.bookings.quote({
+          listingId: item.listingId,
+          guestCount: guests,
+          couponCode: coupon ?? undefined,
+          private: item.private,
+          startsAt: item.startsAt,
+        });
+        return { subtotal: q.subtotal, offerDiscount: q.offerDiscount, offerLabel: q.offerLabel, discount: q.discount, couponTitle: q.couponTitle, couponError: q.couponError };
       }
       const top = mostExpensive(item.services);
       const quotes = await Promise.all(
         item.services.map((s) =>
-          api.bookings.quote({ listingId: s.listingId, couponCode: s.listingId === top?.listingId ? (coupon ?? undefined) : undefined }),
+          api.bookings.quote({
+            listingId: s.listingId,
+            couponCode: s.listingId === top?.listingId ? (coupon ?? undefined) : undefined,
+            startsAt: item.visit?.times.find((t) => t.listingId === s.listingId)?.startsAt ?? item.visit?.startsAt,
+          }),
         ),
       );
       const withCoupon = quotes[item.services.findIndex((s) => s.listingId === top?.listingId)];
+      const offered = quotes.filter((q) => q.offerDiscount > 0);
       return {
         subtotal: quotes.reduce((sum, q) => sum + q.subtotal, 0),
+        offerDiscount: offered.reduce((sum, q) => sum + q.offerDiscount, 0),
+        offerLabel: offered.length === 1 ? offered[0]!.offerLabel : offered.length > 1 ? 'Offers' : null,
         discount: withCoupon?.discount ?? 0,
         couponTitle: withCoupon?.couponTitle ?? null,
         couponError: withCoupon?.couponError ?? null,
@@ -135,6 +152,13 @@ export function useQuote(draft: BookingDraft | null) {
     enabled: Boolean(item),
     placeholderData: keepPreviousData,
   });
+}
+
+function startKey(draft: BookingDraft | null) {
+  const item = draft?.item;
+  if (item?.kind === 'slot') return item.startsAt;
+  if (item?.kind === 'services') return item.visit?.startsAt ?? '';
+  return '';
 }
 
 function quoteKey(draft: BookingDraft | null) {

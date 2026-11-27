@@ -128,7 +128,7 @@ test.describe("portal", () => {
 
     await page.goto("/business/listings");
     await expect(page.getByRole("heading", { name: "My Listings" })).toBeVisible();
-    await page.getByRole("link", { name: /Draft \(02\)/ }).click();
+    await page.getByRole("link", { name: /Draft \(\d+\)/ }).click();
     await expect(page.getByRole("heading", { name: "My Drafts" })).toBeVisible();
     await page.getByRole("button", { name: "All" }).click();
     await page.getByRole("menuitemradio", { name: "Art & Culture" }).click();

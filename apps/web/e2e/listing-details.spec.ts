@@ -71,9 +71,9 @@ test.describe("listing details", () => {
     await login(page);
     await page.goto(`/business/listings/${KITE}`);
     await expect(page.getByRole("heading", { name: "Finish your listing" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Publish" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Review & submit" })).toBeDisabled();
     await expect(page.getByRole("link", { name: "Availability", exact: true }).last()).toHaveAttribute("href", /step=availability/);
-    await expect(page.getByRole("link", { name: /At least 3 photos/ })).toHaveAttribute("href", `/business/listings/${KITE}/edit?step=photos`);
+    await expect(page.getByRole("link", { name: /At least 5 photos/ })).toHaveAttribute("href", `/business/listings/${KITE}/edit?step=photos`);
 
     await page.getByRole("button", { name: "More actions" }).click();
     await page.getByRole("menuitem", { name: "Duplicate" }).click();
