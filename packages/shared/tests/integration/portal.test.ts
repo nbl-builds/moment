@@ -2,7 +2,7 @@
 // (supabase/seeds/portal_demo.sql). pnpm db:reset first.
 import { createClient } from '@supabase/supabase-js';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { ApiError, createMomentApi, RESERVATION_TABS, type MomentApi } from '../../src/api';
+import { ApiError, createMomentApi, listingChecklist, RESERVATION_TABS, type MomentApi } from '../../src/api';
 import type { Database } from '../../src/types';
 
 const url = process.env.SUPABASE_URL ?? '';
@@ -98,6 +98,41 @@ describe.skipIf(!url || !key)('portal API', () => {
     expect(theirs.revenue).toBeNull();
     expect(theirs.wallet).toBeNull();
     expect(theirs.views.series).toHaveLength(12);
+  });
+
+  it('listing details: detail, stats, sessions, blocks, pause, duplicate, publish checklist', async () => {
+    const walk = '00000000-0000-4000-e000-000000000331';
+    const l = (await owner.portal.getListing(walk))!;
+    expect(l.title).toBe('Walled City Food Walk at Dusk');
+    expect(l.media.length).toBeGreaterThanOrEqual(6);
+    expect(l.itinerary.map((s) => s.position)).toEqual([0, 1, 2, 3]);
+    expect(l.point?.lat).toBeGreaterThan(31);
+    expect(listingChecklist(l).every((i) => i.done)).toBe(true);
+
+    const stats = await owner.portal.listingStats(walk);
+    expect(stats.series).toHaveLength(30);
+    expect(stats.revenue).not.toBeNull();
+
+    const slots = await owner.portal.listingSlots(walk, { limit: 5 });
+    expect(slots.length).toBeGreaterThan(0);
+    const blocks = await owner.portal.listingBlocks({ businessId: BIZ, listingId: walk, staffIds: l.staff.map((s) => s.id) });
+    expect(blocks.some((b) => b.reason === 'Private event')).toBe(true);
+
+    await owner.portal.setAcceptingBookings(walk, false);
+    expect((await owner.portal.getListing(walk))!.accepting_bookings).toBe(false);
+    await owner.portal.setAcceptingBookings(walk, true);
+
+    const draft = (await owner.portal.getListing('00000000-0000-4000-e000-000000000335'))!;
+    const missing = listingChecklist(draft).filter((i) => !i.done).map((i) => i.key);
+    expect(missing).toEqual(expect.arrayContaining(['photos', 'availability']));
+    expect(missing).not.toContain('description');
+
+    const copyId = await manager.portal.duplicateListing(walk);
+    const copy = (await manager.portal.getListing(copyId))!;
+    expect(copy.status).toBe('draft');
+    await manager.portal.deleteDraft(copyId);
+    expect(await manager.portal.getListing(copyId)).toBeNull();
+    await expect(manager.portal.deleteDraft(walk)).rejects.toBeInstanceOf(ApiError);
   });
 
   it('outsiders cannot read the business', async () => {

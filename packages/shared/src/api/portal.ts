@@ -1,7 +1,7 @@
 import { DEFAULT_TIMEZONE } from '../constants';
 import { addDaysToLocalDate, localDateTimeToIso, toLocalDate } from '../format/datetime';
 import type { Enums } from '../types';
-import { requireUserId, unwrap, type MomentSupabaseClient } from './errors';
+import { ApiError, requireUserId, unwrap, type MomentSupabaseClient } from './errors';
 
 // Business portal reads and actions (Dashboard, Calendar, Inbox, Listings,
 // Insights, Reviews). Every query is scoped by business_id; RLS enforces it.
@@ -56,6 +56,66 @@ export const PORTAL_LISTING_SELECT = `
 export type ListingTab = 'published' | 'draft' | 'archived';
 
 export type InsightsPeriod = 'weekly' | 'monthly' | 'yearly';
+
+/** Listing wizard steps the details page links to (`/business/listings/[id]/edit?step=`). */
+export const LISTING_STEPS = ['details', 'photos', 'pricing', 'availability', 'location', 'policies', 'team'] as const;
+export type ListingStep = (typeof LISTING_STEPS)[number];
+
+export const PORTAL_LISTING_DETAIL_SELECT = `
+  id, business_id, type, booking_mode, slug, title, summary, description, status, accepting_bookings,
+  city, duration_minutes, min_guests, max_guests, price_amount, price_unit, currency, instant_book,
+  cancellation_policy, languages, includes, excludes, highlights, what_to_bring, meeting_point_notes,
+  location_id, rating_avg, rating_count, booking_count, published_at, created_at, updated_at,
+  category:categories(id, slug, name, parent:parent_id(id, slug, name)),
+  location:business_locations(id, address_line1, area, city),
+  media:listing_media(id, url, alt, sort_order),
+  options:listing_options(id, name, description, price_amount, duration_minutes, is_active, sort_order),
+  staff:listing_staff(staff:staff_members(id, display_name, title, avatar_url, is_host, is_bookable)),
+  itinerary:listing_itinerary_steps(id, position, title, description, duration_minutes),
+  business:businesses!inner(id, status, timezone, currency, name)
+` as const;
+
+export interface ListingStats {
+  views: number;
+  views_previous: number;
+  bookings: number;
+  bookings_previous: number;
+  /** Owners and managers only. */
+  revenue: number | null;
+  currency: string;
+  series: { day: string; views: number }[];
+}
+
+export interface ChecklistItem {
+  key: string;
+  label: string;
+  done: boolean;
+  step: ListingStep;
+}
+
+/** Minimum to publish (the consumer app needs these to show and book a listing). */
+export const PUBLISH_MIN_PHOTOS = 3;
+export const PUBLISH_MIN_DESCRIPTION = 40;
+
+/** "Finish your listing": what's missing before it can be published. */
+export function listingChecklist(l: {
+  description: string | null;
+  category: unknown;
+  media: unknown[] | null;
+  price_amount: number;
+  location_id: string | null;
+  hasMeetingPoint?: boolean;
+  hasAvailability: boolean;
+}): ChecklistItem[] {
+  return [
+    { key: 'description', label: `Description (${PUBLISH_MIN_DESCRIPTION}+ characters)`, done: (l.description?.trim().length ?? 0) >= PUBLISH_MIN_DESCRIPTION, step: 'details' },
+    { key: 'category', label: 'Category', done: Boolean(l.category), step: 'details' },
+    { key: 'photos', label: `At least ${PUBLISH_MIN_PHOTOS} photos`, done: (l.media?.length ?? 0) >= PUBLISH_MIN_PHOTOS, step: 'photos' },
+    { key: 'price', label: 'Price', done: l.price_amount > 0, step: 'pricing' },
+    { key: 'location', label: 'Location or meeting point', done: Boolean(l.location_id) || Boolean(l.hasMeetingPoint), step: 'location' },
+    { key: 'availability', label: 'Availability', done: l.hasAvailability, step: 'availability' },
+  ];
+}
 
 export interface InsightsSeries {
   series: { start: string; value: number }[];
@@ -278,6 +338,128 @@ export function createPortalApi(db: MomentSupabaseClient) {
     insights: async (businessId: string, period: InsightsPeriod = 'weekly') =>
       (await unwrap(db.rpc('business_insights', { p_business_id: businessId, p_period: period }))) as unknown as BusinessInsights,
 
+    /** Everything the Listing Details page shows about one listing (null if missing or not yours). */
+    getListing: async (listingId: string) => {
+      const listing = await unwrap(
+        db
+          .from('listings')
+          .select(PORTAL_LISTING_DETAIL_SELECT)
+          .eq('id', listingId)
+          .order('sort_order', { referencedTable: 'media' })
+          .order('sort_order', { referencedTable: 'options' })
+          .order('position', { referencedTable: 'itinerary' })
+          .maybeSingle(),
+      );
+      if (!listing) return null;
+      const [rules, slots, point] = await Promise.all([
+        db.from('availability_rules').select('id', { count: 'exact', head: true }).eq('listing_id', listingId),
+        db.from('slots').select('id', { count: 'exact', head: true }).eq('listing_id', listingId).eq('status', 'open').gt('starts_at', new Date().toISOString()),
+        db.rpc('listing_point', { p_listing_id: listingId }),
+      ]);
+      const staff = listing.staff.map((s) => s.staff).filter((s): s is NonNullable<typeof s> => Boolean(s));
+      const schedules = staff.length
+        ? ((await db.from('staff_schedules').select('id', { count: 'exact', head: true }).in('staff_id', staff.map((s) => s.id))).count ?? 0)
+        : 0;
+      const parent = listing.category?.parent as unknown;
+      const category = listing.category
+        ? { ...listing.category, parent: ((Array.isArray(parent) ? parent[0] : parent) ?? null) as { id: string; slug: string; name: string } | null }
+        : null;
+      const hasAvailability =
+        listing.booking_mode === 'appointment' ? schedules > 0 : (rules.count ?? 0) > 0 || (slots.count ?? 0) > 0;
+      const p = (point.data ?? [])[0] ?? null;
+      return { ...listing, category, staff, point: p, hasAvailability };
+    },
+
+    /** Last 30 days for one listing. Revenue is null for staff. */
+    listingStats: async (listingId: string) =>
+      (await unwrap(db.rpc('listing_stats', { p_listing_id: listingId }))) as unknown as ListingStats,
+
+    /** Publish (from draft), unpublish (to draft), archive, unarchive (to draft). */
+    setListingStatus: (listingId: string, status: Enums<'listing_status'>) =>
+      unwrap(db.from('listings').update({ status }).eq('id', listingId).select('id, status, published_at').single()),
+
+    /** "Accepting bookings": off pauses new guest bookings without unpublishing. */
+    setAcceptingBookings: (listingId: string, accepting: boolean) =>
+      unwrap(db.from('listings').update({ accepting_bookings: accepting }).eq('id', listingId).select('id, accepting_bookings').single()),
+
+    /** A full copy as a new draft; returns its id. */
+    duplicateListing: (listingId: string) => unwrap(db.rpc('duplicate_listing', { p_listing_id: listingId })),
+
+    /** Deletes a draft (published and archived listings keep their history). */
+    deleteDraft: async (listingId: string) => {
+      const rows = await unwrap(db.from('listings').delete().eq('id', listingId).eq('status', 'draft').select('id'));
+      if (!rows.length) throw new ApiError('invalid', 'Only drafts can be deleted');
+    },
+
+    /** Upcoming sessions (slot mode) with seats booked. */
+    listingSlots: (listingId: string, { limit = 30 }: { limit?: number } = {}) =>
+      unwrap(
+        db
+          .from('slots')
+          .select('id, starts_at, ends_at, capacity, seats_booked, status, staff:staff_members(display_name)')
+          .eq('listing_id', listingId)
+          .gt('ends_at', new Date().toISOString())
+          .order('starts_at')
+          .limit(limit),
+      ),
+
+    /** Blocks one local day for this listing; empty sessions that day are cancelled. */
+    blockListingDate: (args: { businessId: string; listingId: string; date: string; timeZone: string; reason?: string }) =>
+      unwrap(
+        db.from('availability_exceptions').insert({
+          business_id: args.businessId,
+          scope: 'listing',
+          listing_id: args.listingId,
+          starts_at: localDateTimeToIso(args.date, '00:00', args.timeZone),
+          ends_at: localDateTimeToIso(addDaysToLocalDate(args.date, 1), '00:00', args.timeZone),
+          reason: args.reason || null,
+        }),
+      ),
+
+    removeBlock: (exceptionId: string) => unwrap(db.from('availability_exceptions').delete().eq('id', exceptionId)),
+
+    /** "Add session": one extra slot at a local date and time. */
+    addSession: (args: { businessId: string; listingId: string; date: string; time: string; timeZone: string; durationMinutes: number; capacity: number; staffId?: string }) => {
+      const startsAt = localDateTimeToIso(args.date, args.time, args.timeZone);
+      const endsAt = new Date(new Date(startsAt).getTime() + args.durationMinutes * 60000).toISOString();
+      return unwrap(
+        db
+          .from('slots')
+          .insert({ business_id: args.businessId, listing_id: args.listingId, staff_id: args.staffId ?? null, starts_at: startsAt, ends_at: endsAt, capacity: args.capacity })
+          .select('id')
+          .single(),
+      );
+    },
+
+    /** Upcoming blocked dates that affect a listing: its own, its staff's and the whole business's. */
+    listingBlocks: (args: { businessId: string; listingId: string; staffIds: string[] }) => {
+      const parts = [`listing_id.eq.${args.listingId}`, 'scope.eq.business'];
+      if (args.staffIds.length) parts.push(`staff_id.in.(${args.staffIds.join(',')})`);
+      return unwrap(
+        db
+          .from('availability_exceptions')
+          .select('id, scope, starts_at, ends_at, reason, staff:staff_members(display_name)')
+          .eq('business_id', args.businessId)
+          .gt('ends_at', new Date().toISOString())
+          .or(parts.join(','))
+          .order('starts_at')
+          .limit(20),
+      );
+    },
+
+    /** Weekly hours of the listing's staff (appointment mode). */
+    staffSchedules: (staffIds: string[]) =>
+      staffIds.length
+        ? unwrap(
+            db
+              .from('staff_schedules')
+              .select('id, staff_id, weekday, start_time, end_time')
+              .in('staff_id', staffIds)
+              .order('weekday')
+              .order('start_time'),
+          )
+        : Promise.resolve([]),
+
     /** What "Complete your profile" checks. */
     profileGaps: async (businessId: string) => {
       const b = await unwrap(
@@ -300,6 +482,7 @@ export type PortalReservationRow = Awaited<ReturnType<ReturnType<typeof createPo
 export type PortalReservation = Awaited<ReturnType<ReturnType<typeof createPortalApi>['getReservation']>>;
 export type PortalListing = Awaited<ReturnType<ReturnType<typeof createPortalApi>['listListings']>>[number];
 export type PortalInboxRow = Awaited<ReturnType<ReturnType<typeof createPortalApi>['inbox']>>[number];
+export type PortalListingDetail = NonNullable<Awaited<ReturnType<ReturnType<typeof createPortalApi>['getListing']>>>;
 export type PortalReview = Awaited<ReturnType<ReturnType<typeof createPortalApi>['listReviews']>>[number];
 
 /** Lowest sort_order photo of a listing (embedded media come back unordered). */

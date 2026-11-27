@@ -253,6 +253,16 @@ export const webLayout = {
   cardMinColumn: 340,
   ratingColumn: 136,
   accentBorder: 3,
+  /** Listing Details (Figma 629:7360): left column 847 (cover 847 x 447), right column 413 from x 967. */
+  /** Customer preview frame (mobile Figma frames are 428 wide). */
+  mobileFrame: 428,
+  detailLeft: 847,
+  detailRight: 413,
+  detailCoverHeight: 447,
+  detailThumb: 96,
+  mapTile: 140,
+  switchWidth: 44,
+  switchHeight: 24,
 } as const;
 
 /**

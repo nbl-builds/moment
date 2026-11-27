@@ -1787,6 +1787,7 @@ export type Database = {
       };
       listings: {
         Row: {
+          accepting_bookings: boolean;
           booking_count: number;
           booking_mode: Database["public"]["Enums"]["booking_mode"];
           buffer_minutes: number;
@@ -1831,6 +1832,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          accepting_bookings?: boolean;
           booking_count?: number;
           booking_mode: Database["public"]["Enums"]["booking_mode"];
           buffer_minutes?: number;
@@ -1874,6 +1876,7 @@ export type Database = {
           what_to_bring?: string[];
         };
         Update: {
+          accepting_bookings?: boolean;
           booking_count?: number;
           booking_mode?: Database["public"]["Enums"]["booking_mode"];
           buffer_minutes?: number;
@@ -3662,6 +3665,7 @@ export type Database = {
           key_prefix: string;
         }[];
       };
+      duplicate_listing: { Args: { p_listing_id: string }; Returns: string };
       email_sign_in_method: { Args: { p_email: string }; Returns: string };
       explore_businesses: {
         Args: {
@@ -3800,6 +3804,15 @@ export type Database = {
           listing_id: string;
         }[];
       };
+      listing_point: {
+        Args: { p_listing_id: string };
+        Returns: {
+          from_meeting_point: boolean;
+          lat: number;
+          lng: number;
+        }[];
+      };
+      listing_stats: { Args: { p_listing_id: string }; Returns: Json };
       my_business_unread: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -3822,6 +3835,7 @@ export type Database = {
       recommended_listings: {
         Args: { p_city?: string; p_limit?: number };
         Returns: {
+          accepting_bookings: boolean;
           booking_count: number;
           booking_mode: Database["public"]["Enums"]["booking_mode"];
           buffer_minutes: number;

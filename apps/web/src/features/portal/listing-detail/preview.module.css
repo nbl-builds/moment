@@ -1,0 +1,208 @@
+/* Customer preview: the app's Experience details in a 428 px phone frame (mobile Figma frame width). */
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--web-space-24);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--web-space-12);
+  width: 100%;
+  padding: var(--web-space-14) var(--web-space-20);
+  border-radius: var(--web-radius-card-large);
+  background: var(--color-notice-surface);
+  color: var(--color-notice-text);
+  font-size: var(--text-webBody14-size);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  height: var(--web-button-medium-height);
+  padding: 0 var(--web-button-medium-padding-x);
+  border-radius: var(--web-radius-card);
+  background: var(--color-secondary);
+  color: var(--color-white);
+  font-size: var(--text-webButton14-size);
+  font-weight: var(--font-weight-semibold);
+}
+
+.back:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.phone {
+  position: relative;
+  width: min(var(--web-mobile-frame), 100%);
+  overflow: hidden;
+  border: var(--web-space-10) solid var(--color-secondary);
+  border-radius: calc(var(--web-radius-bubble) + var(--web-space-10));
+  background: var(--color-white);
+  box-shadow: 0 var(--web-space-22) var(--web-shadow-blur) var(--color-shadow);
+}
+
+.hero {
+  display: block;
+  width: 100%;
+  height: calc(var(--web-mobile-frame) * 0.72);
+  object-fit: cover;
+}
+
+.noPhoto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-field);
+  color: var(--color-text-muted);
+}
+
+.body {
+  padding: var(--space-xl) var(--space-lg) var(--web-space-80);
+}
+
+.title {
+  font-size: var(--text-h3-size);
+  line-height: var(--text-h3-line-height);
+  font-weight: var(--font-weight-bold);
+}
+
+.meta {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-xs);
+  font-size: var(--text-body14-size);
+  color: var(--color-secondary-tint2);
+}
+
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.text,
+.small {
+  margin-top: var(--space-md);
+  font-size: var(--text-body14-size);
+  line-height: var(--text-body14-line-height);
+  color: var(--color-secondary-tint2);
+}
+
+.small {
+  margin-top: var(--space-xs);
+  font-size: var(--text-body12-size);
+}
+
+.facts {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  font-size: var(--text-body14-size);
+  font-weight: var(--font-weight-medium);
+}
+
+.facts li {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  background: var(--color-background-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.grid img {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+}
+
+.section {
+  margin-top: var(--space-xl);
+}
+
+.section h2 {
+  font-size: var(--text-h4-size);
+  line-height: var(--text-h4-line-height);
+  font-weight: var(--font-weight-bold);
+}
+
+.bullets {
+  margin-top: var(--space-sm);
+  padding-left: var(--space-lg);
+  font-size: var(--text-body14-size);
+  line-height: var(--text-body14-line-height);
+}
+
+.host {
+  display: flex;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.host img {
+  width: var(--web-row-photo);
+  height: var(--web-row-photo);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.third {
+  color: var(--color-third);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+  padding-left: var(--space-lg);
+  font-size: var(--text-body14-size);
+}
+
+.map {
+  height: calc(var(--web-mobile-frame) * 0.4);
+  margin-top: var(--space-md);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(90deg, transparent 47%, var(--color-white) 47%, var(--color-white) 52%, transparent 52%),
+    linear-gradient(0deg, transparent 60%, var(--color-white) 60%, var(--color-white) 65%, transparent 65%),
+    var(--color-background-muted);
+}
+
+.review {
+  margin-top: var(--space-md);
+  font-size: var(--text-body14-size);
+}
+
+.bookBar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-white);
+  font-size: var(--text-body14-size);
+}
+
+.book {
+  padding: var(--space-sm) var(--space-xl);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  opacity: 0.7;
+}
