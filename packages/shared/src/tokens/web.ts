@@ -82,8 +82,10 @@ export const webLayout = {
   authHeaderInsetY: 30,
   /** Phone-width gutter. */
   gutter: 16,
-  /** Web-Field: 18 padding, 10 radius, ~58 tall; fields stack with 8 to the label. */
-  fieldHeight: 58,
+  /** Web-Field: 60 tall, 18 padding, 10 radius; label 10 above; 24 between fields. */
+  fieldHeight: 60,
+  fieldLabelGap: 10,
+  fieldStackGap: 24,
   fieldPaddingX: 18,
   fieldRadius: 10,
   /** Full-width form buttons are 58 tall with a 10 radius. */
@@ -106,7 +108,24 @@ export const webLayout = {
   tileIcon: 60,
   socialIcon: 28,
   icon: 24,
+  /** Text column widths measured on the frames. */
+  introWidth: 409,
+  typeTextWidth: 236,
+  /** Header logo offset (logo top 37 vs Contact Us 30). */
+  logoTop: 37,
+  /** Placeholder pages (dashboard, terms). */
+  contentWidth: 960,
+  readingWidth: 760,
+  /** Compact type-card icon on phones. */
+  compactIcon: 44,
 } as const;
+
+/**
+ * Gaps measured on the Business App auth frames, in px, emitted as
+ * `--web-space-<n>` (e.g. 40 between a heading block and the first field,
+ * 50 between sections, 60 above a primary button).
+ */
+export const webSpace = [4, 8, 9, 10, 11, 12, 13, 14, 17, 18, 20, 22, 25, 30, 32, 38, 40, 50, 60, 80] as const;
 
 /**
  * Buttons page (127:886): Small 30, Medium 40, Large 48 tall; radius 10; label

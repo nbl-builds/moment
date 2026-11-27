@@ -46,20 +46,27 @@ export const businessForgotPasswordSchema = z.object({ identifier: loginIdentifi
 export const businessSignUpTypes = ['host', 'business'] as const;
 export type BusinessSignUpType = (typeof businessSignUpTypes)[number];
 
-/** "We need some more details to continue...". */
+const businessDetailsFields = {
+  name: textAtLeast('Name', 2, LIMITS.businessName),
+  address: textAtLeast('Address', 5, LIMITS.businessAddress),
+  countryCode: z.literal(COUNTRY_CODE, { message: 'Select your country' }),
+  city: z.enum(LAUNCH_CITIES, { message: 'Select your city' }),
+  /** Optional in the phone flow, prefilled and locked in the email flow. */
+  email: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v : undefined))
+    .pipe(emailSchema.optional()),
+};
+
+/**
+ * "We need some more details to continue..." with password + confirm, so the
+ * account can always log in with email / phone + password.
+ */
 export const businessDetailsSchema = z
   .object({
-    name: textAtLeast('Name', 2, LIMITS.businessName),
-    address: textAtLeast('Address', 5, LIMITS.businessAddress),
-    countryCode: z.literal(COUNTRY_CODE, { message: 'Select your country' }),
-    city: z.enum(LAUNCH_CITIES, { message: 'Select your city' }),
-    /** Optional in the phone flow, prefilled and locked in the email flow. */
-    email: z
-      .string()
-      .trim()
-      .optional()
-      .transform((v) => (v ? v : undefined))
-      .pipe(emailSchema.optional()),
+    ...businessDetailsFields,
     password: passwordSchema,
     confirmPassword: z.string({ message: 'Confirm your password' }),
   })
@@ -68,8 +75,12 @@ export const businessDetailsSchema = z
     path: ['confirmPassword'],
   });
 
+/** The same form for accounts that already have a password (signed in with it). */
+export const businessDetailsNoPasswordSchema = z.object(businessDetailsFields);
+
 export type BusinessDetailsInput = z.input<typeof businessDetailsSchema>;
 export type BusinessDetails = z.output<typeof businessDetailsSchema>;
+export type BusinessDetailsNoPassword = z.output<typeof businessDetailsNoPasswordSchema>;
 
 /** Everything `api.business.createBusiness` needs. */
 export const createBusinessSchema = z.object({
