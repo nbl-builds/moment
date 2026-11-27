@@ -6,12 +6,13 @@ import { Card, Divider, Line, SectionHeader } from './card';
 
 /**
  * Price Details (47:5143): the server subtotal, tax and Moment's fee, then
- * Sub total, the coupon discount and Total.
+ * Sub total, the listing's offer (when it has one), the coupon discount and Total.
  */
 export function PriceDetails({
   itemsLabel,
   subtotal,
   discount,
+  offer,
   loading,
   error,
   style,
@@ -20,6 +21,8 @@ export function PriceDetails({
   itemsLabel: string;
   subtotal: number | undefined;
   discount: number;
+  /** The listing's own discount (large group or early bird), applied before the coupon. */
+  offer?: { amount: number; label: string | null };
   loading: boolean;
   error: boolean;
   /** Reservation details show it as a full-width section. */
@@ -39,7 +42,8 @@ export function PriceDetails({
       </Card>
     );
   }
-  const p = priceBreakdown(subtotal, discount);
+  const offerAmount = offer?.amount ?? 0;
+  const p = priceBreakdown(subtotal, discount + offerAmount);
   // Every column adds up: Sub total = the lines above; Total = Sub total - Discount.
   // Tax is on the amount actually paid (after the coupon).
   const beforeDiscount = p.subtotal + p.tax + p.serviceFee;
@@ -57,7 +61,8 @@ export function PriceDetails({
       <Divider style={styles.divider} />
       <View style={styles.totals}>
         <Line label="Sub total" value={formatPrice(beforeDiscount)} valueColor="secondary" />
-        <Line label="Discount(Coupon)" value={p.discount > 0 ? `- ${formatPrice(p.discount)}` : '- - -'} valueColor="black" />
+        {offerAmount > 0 && <Line label={offer?.label ?? 'Offer'} value={`- ${formatPrice(offerAmount)}`} valueColor="black" />}
+        <Line label="Discount(Coupon)" value={discount > 0 ? `- ${formatPrice(discount)}` : '- - -'} valueColor="black" />
         <Line label="Total" value={formatPrice(p.total)} strong />
       </View>
     </Card>
