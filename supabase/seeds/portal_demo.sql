@@ -128,7 +128,7 @@ insert into public.listings (
    'published', now() - interval '9 days', now() - interval '12 days'),
   ('00000000-0000-4000-e000-000000000335', '00000000-0000-4000-b000-000000000031', 'experience', 'slot', 'basant-kite-making',
    'Basant Kite-Making Class', 'Build and fly a paper kite the old Lahori way.',
-   'Learn to cut, glue and balance a guddi kite from paper and bamboo, then fly it from a rooftop.',
+   'Learn to cut, glue and balance a guddi kite from paper and bamboo the old Lahori way, then fly it from a rooftop over the Walled City.',
    pg_temp.d_cat('arts-workshops'), '00000000-0000-4000-c000-000000000031', null, null,
    'Lahore', 120, 1, 10, 350000, 'per_person',
    true, 'moderate', '{en,ur}', '{"Kite materials"}', '{}',
@@ -523,3 +523,59 @@ insert into public.availability_exceptions (business_id, scope, listing_id, star
 values ('00000000-0000-4000-b000-000000000031', 'listing', '00000000-0000-4000-e000-000000000331',
         pg_temp.d_pk(pg_temp.d_today() + 16, '00:00'), pg_temp.d_pk(pg_temp.d_today() + 17, '00:00'),
         'Private event', '00000000-0000-4000-a000-000000000031');
+
+-- ---------------------------------------------------------------------------
+-- Listing wizard: one draft stopped in each sidebar group, to resume.
+--   339 Your Idea       type chosen only            -> resumes at Basics
+--   340 Experience page basics, category, title     -> resumes at Photos
+--   341 Settings        page done (5 photos, pin)   -> resumes at Group size
+--   342 Your submission service, all but host card  -> resumes at Your information
+-- ---------------------------------------------------------------------------
+update public.profiles set bio = 'Founder of Lahore Heritage Trails. Born inside Delhi Gate, I love showing guests the old city''s food and stories.'
+where id = '00000000-0000-4000-a000-000000000031';
+
+insert into public.listings (
+  id, business_id, type, booking_mode, slug, title, description, category_id, city, duration_minutes,
+  min_guests, max_guests, price_amount, price_unit, instant_book, cancellation_policy, languages, includes,
+  address_line1, province, meeting_point, meeting_point_notes, min_age, activity_level, skill_level,
+  status, wizard_step, created_at
+) values
+  ('00000000-0000-4000-e000-000000000339', '00000000-0000-4000-b000-000000000031', 'experience', 'slot', 'draft-wizard-idea',
+   'Untitled experience', null, null, 'Lahore', 120, 1, 10, 0, 'per_person', true, 'flexible', '{en}', '{}',
+   null, null, null, null, null, null, null,
+   'draft', 'type', now() - interval '1 day'),
+  ('00000000-0000-4000-e000-000000000340', '00000000-0000-4000-b000-000000000031', 'experience', 'slot', 'draft-wizard-page',
+   'Anarkali Bazaar Shopping Walk', null, pg_temp.d_cat('tours-walks'), 'Lahore', 120, 1, 10, 0, 'per_person', true, 'flexible', '{en,ur}', '{}',
+   null, null, null, null, null, null, null,
+   'draft', 'title', now() - interval '3 hours'),
+  ('00000000-0000-4000-e000-000000000341', '00000000-0000-4000-b000-000000000031', 'experience', 'slot', 'draft-wizard-settings',
+   'Ravi River Sunset Boat Ride',
+   'Glide down the Ravi at golden hour in a wooden boat with a local boatman, past old ghats and the Kamran Baradari, with chai and pakoras on board.',
+   pg_temp.d_cat('water-activities'), 'Lahore', 90, 1, 10, 0, 'per_person', true, 'flexible', '{en,ur,pa}', '{"Chai and pakoras","Life jackets"}',
+   'Kamran Baradari Ghat, Ravi Road', 'Punjab', extensions.st_setsrid(extensions.st_makepoint(74.2869, 31.5992), 4326)::extensions.geography,
+   'Meet at the boat ghat below the baradari.', 6, 'light', 'beginner',
+   'draft', 'requirements', now() - interval '2 hours'),
+  ('00000000-0000-4000-e000-000000000342', '00000000-0000-4000-b000-000000000031', 'service', 'appointment', 'draft-wizard-submission',
+   'Traditional Mehndi Design Session',
+   'Intricate bridal-style or simple Arabic mehndi applied by an experienced artist in our studio near Liberty Market. Organic henna, aftercare tips included.',
+   pg_temp.d_cat('arts-workshops'), 'Lahore', 60, 1, 1, 250000, 'per_booking', false, 'moderate', '{en,ur}', '{"Organic henna","Aftercare lemon-sugar"}',
+   '23-C Liberty Market, Gulberg III', 'Punjab', extensions.st_setsrid(extensions.st_makepoint(74.3436, 31.5106), 4326)::extensions.geography,
+   null, null, null, null,
+   'draft', 'discount', now() - interval '1 hour')
+on conflict (id) do nothing;
+
+insert into public.listing_media (business_id, listing_id, url, alt, sort_order)
+select '00000000-0000-4000-b000-000000000031', l.id::uuid, 'storage://seed-media/listings/' || p.photo || '.jpg', p.photo, p.n
+from (values ('00000000-0000-4000-e000-000000000341'), ('00000000-0000-4000-e000-000000000342')) l(id)
+cross join (values ('old-town-walk', 0), ('night-market', 1), ('street-drinks', 2), ('family-cooking', 3), ('museum-gallery', 4)) p(photo, n);
+
+-- The mehndi artist: performs 342, Tuesday to Saturday.
+insert into public.staff_members (id, business_id, display_name, title, bio, languages, is_bookable, avatar_url) values
+  ('00000000-0000-4000-d000-000000000033', '00000000-0000-4000-b000-000000000031', 'Hira Baig', 'Mehndi artist',
+   'Ten years of bridal mehndi in Lahore.', '{en,ur}', true, 'storage://seed-media/hosts/host-1.png')
+on conflict (id) do nothing;
+insert into public.listing_staff (business_id, listing_id, staff_id) values
+  ('00000000-0000-4000-b000-000000000031', '00000000-0000-4000-e000-000000000342', '00000000-0000-4000-d000-000000000033')
+on conflict do nothing;
+insert into public.staff_schedules (business_id, staff_id, weekday, start_time, end_time)
+select '00000000-0000-4000-b000-000000000031', '00000000-0000-4000-d000-000000000033', d, '12:00', '20:00' from generate_series(2, 6) d;
