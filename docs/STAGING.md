@@ -169,17 +169,24 @@ pnpm web:deploy:staging        # from the repo root, on staging or a feature bra
 3. builds with the public values from `apps/web/wrangler.jsonc` (`vars`);
 4. fails if a Supabase secret key is in the bundle;
 5. checks the compressed size (dry run) against the free-plan limit (3 MiB
-   gzip) and only then deploys. Size on 2026-11-27: 1.3 MiB gzip.
+   gzip) and only then deploys. Size on 2026-11-27: 1.93 MiB gzip with the
+   business auth screens (1.3 MiB for the placeholder app).
 
 Wrangler is logged in on the dev Mac (`pnpm --filter web exec wrangler whoami`).
 `npx` is broken on that Mac: use `pnpm exec` / `pnpm dlx`.
 
-**Config.** Public values (`NEXT_PUBLIC_*`) live in `apps/web/wrangler.jsonc`
-`vars`; they're also inlined into the browser bundle at build time. Secrets are
-set once per Worker and never committed:
+**Config.** Public values live in `apps/web/wrangler.jsonc` `vars`
+(`NEXT_PUBLIC_*` are also inlined into the browser bundle at build time):
+`NEXT_PUBLIC_APP_ENV=staging`, site URL, contact email, Supabase URL and
+publishable key, and `AUTO_APPROVE_BUSINESSES=1` (new businesses go live at once
+so the portal can be tested; the code ignores it unless the app env is
+development or staging). Secrets are set once per Worker and never committed:
 ```bash
 cd apps/web
-pnpm exec wrangler secret put SUPABASE_SECRET_KEY     # paste the value when asked
+# The service ("secret") key for staging. Use --reveal: without it the CLI
+# prints a masked key, which uploads fine but fails with "Invalid API key".
+pnpm exec supabase projects api-keys --project-ref iltnkqxgdnhsnkvvhpxp --reveal
+pnpm exec wrangler secret put SUPABASE_SECRET_KEY     # paste the sb_secret_... value
 pnpm exec wrangler secret list
 ```
 
@@ -191,5 +198,17 @@ pushed with `config push`, answer **y** for auth and **n** for storage).
 `wrangler dev`). Local `.env.local` applies there, so it talks to local Supabase.
 
 **Limits.** Next.js Cache Components (`cacheComponents`) are off: OpenNext
-doesn't support them on Workers yet (requests hang). No incremental cache
-(R2/KV) is configured; the portal is dynamic and per user.
+doesn't support them on Workers yet (requests hang). Prerendered pages are read
+from the Worker's static assets (`staticAssetsIncrementalCache` in
+`open-next.config.ts`); without it `/business` 404'd on about one request in
+five. No revalidation is used, so no R2 / KV is needed. The Next.js image
+optimizer doesn't run on Workers: `src/lib/image-loader.ts` serves pre-sized
+WebP files instead.
+
+**Test the portal on staging.** Phone sign-up with the test number
++92 308 4282001 / code 051518 (email codes need custom SMTP, see above). After a
+run that number has an account and a business, so a second sign-up lands on the
+dashboard; log in with its phone and password instead, or delete the test
+account in Supabase > Authentication (delete its business first: a business must
+keep an owner). E2E against staging (phone flow only):
+`cd apps/web && E2E_BASE_URL=https://moment-web-staging.work-nabeelahmed.workers.dev pnpm exec playwright test --project=desktop`

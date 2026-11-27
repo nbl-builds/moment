@@ -3,6 +3,7 @@
 Keep this file current: tick items as they land and update **Next up** so any session can pick up where the last one stopped.
 
 ## Next up
+- **Business portal (current phase, `apps/web`)**: sign up / login / recovery are done (see "Business portal" below). Next: the portal dashboard and its sections from the "Business Web App Design" page (Figma file `hvSITt4VVdCeFArVVFUgl1`), section by section, UI first with typed mocks in `apps/web/src/features/<name>/mock.ts`
 - Maps: Explore uses react-native-maps with the default provider (Apple Maps on iOS, muted style; Google on Android). Decide Mapbox vs Google before launch; Figma's grey map style needs the Google provider (`customMapStyle`) or Mapbox
 - Phase 1 remaining: Supabase Auth providers for production (a Pakistan SMS provider for phone OTP, email, Apple, Google, Facebook). Locally, phone OTP works with the test numbers in `supabase/config.toml` (`+92 308 4282001` / `051518`, `+92 300 1234567` / `123456`)
 - Sign-in providers at the end: a Pakistan SMS provider (production phone OTP), Apple, Google and Facebook (buttons show "Coming soon" today), and production SMTP for auth emails (templates in `supabase/templates`)
@@ -30,6 +31,7 @@ Everything about the staging backend and app is in `docs/STAGING.md`.
 - **Rebuild the APK:** `cd apps/mobile && pnpm dlx eas-cli build -p android --profile preview` (bump `android.versionCode`; bump `version` for a new native release)
 - **Publish a JS update:** `cd apps/mobile && pnpm dlx eas-cli update --channel staging --environment preview --message "..."`
 - **New migrations:** `npx supabase db push --linked` (never `db reset --linked`)
+- **Web (business portal):** `pnpm web:deploy:staging` -> https://moment-web-staging.work-nabeelahmed.workers.dev (Cloudflare Worker `moment-web-staging`; `main` is never deployed). Test phone sign-up with +92 308 4282001 / 051518
 - **To do:** Google Maps key for Android (Explore shows the list with "Map coming soon" until then), custom SMTP so email codes work on staging, a real iOS icon (`assets/expo.icon` is still Expo's), production Supabase project + `[remotes.production]` + production EAS variables
 
 ## UI-first phase (consumer mobile)
@@ -82,6 +84,7 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - **Business logo "play" badge** (25:2265): no business videos/stories yet, so the play overlay isn't shown
 
 ### Copy to review
+- **Business portal auth**: "Tell us about yourself" and the 7 category descriptions are new copy (Figma repeats one placeholder); the type-page subtitle is Figma's ("Each experience is vetted..."). "Contact Us" mails `support@momentbooking.com` (`NEXT_PUBLIC_CONTACT_EMAIL`): confirm the real address. Forgot password says "a reset link (email) or a code (phone)" instead of Figma's "we'll email you a reset link"
 Invented text (Figma had lorem ipsum, US data or nothing). Please check:
 - **Legal documents** (`supabase/seed.sql`, `legal_documents`): Terms & Conditions and Privacy Policy bodies (ages, refunds, wallet, referrals, data retention 6 years / 30 days, privacy@ and support@moment.pk). Needs a lawyer before launch
 - **FAQ** (`apps/mobile/src/features/support/faq.ts`): all 14 questions and answers. The phone sign-in answer mentions Apple, Google and Facebook, which still say "Coming soon"
@@ -148,7 +151,17 @@ Invented text (Figma had lorem ipsum, US data or nothing). Please check:
 - [ ] Wallet
 
 ## Phase 4: Business portal (web)
-- [ ] Business onboarding and profile
+Figma: https://www.figma.com/design/hvSITt4VVdCeFArVVFUgl1/Moment-Business-App (index in `docs/FIGMA.md`). Routes under `/business`; `/` redirects there until consumer web exists.
+- [x] Cloudflare staging hosting: OpenNext on Workers, `pnpm web:deploy:staging` (size check, no env files in the bundle), staging URL in Supabase redirect URLs (`docs/STAGING.md`)
+- [x] Web tokens from the Business App Figma in `@moment/shared` (`tokens/web.ts`: colours, type scale, layout, spacing, buttons) as CSS variables
+- [x] Business sign up with phone (+92) and email: Welcome, Sign up, 6-box verification code (paste, auto-submit, wrong state, Send again with 60 s cooldown, Edit), Tell us about yourself (Host & Experiences -> `host`; Business -> `operator` / `venue` by category), What do you provide (7 category groups from the database), details form (Host / Business name, address, Pakistan + launch city, email locked in the email flow, password + confirm) -> `create_business` (owner, `pending_review`, primary location) -> dashboard placeholder with the "under review" banner
+- [x] `AUTO_APPROVE_BUSINESSES=1` on development and staging activates new businesses (server action with the service key; never production)
+- [x] Login with email or phone + password; Forgot password (email reset link via `/business/auth/callback`, or phone code) -> Set new password ("Save password") -> login with a toast
+- [x] Routing guard in `src/proxy.ts`: signed out -> login; no active business membership -> onboarding; with one -> dashboard. Existing consumer accounts can log in and create a business (no password fields when they signed in with one)
+- [x] Playwright E2E (`apps/web/e2e`, 1440 and 390): both sign-up flows, wrong code, login, email and phone reset; phone flow also passes on staging
+- [ ] Google / Facebook sign-in (buttons show "coming soon")
+- [ ] Portal dashboard and navigation (placeholder today)
+- [ ] Business profile
 - [ ] Listings and services management
 - [ ] Staff and availability
 - [ ] Bookings management

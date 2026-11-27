@@ -65,7 +65,8 @@ RLS helpers live in the `private` schema (not exposed through the API), are `sec
 - `email_sign_in_method(email)` (callable signed out) returns `password`, `code` or `new`, so the app can route "Login or sign up" with email to Enter Password, an email code, or sign up. It reveals whether an email has an account; that is an accepted product trade-off. Add rate limiting (e.g. an edge function or API gateway rule) before launch.
 
 ### Businesses and team
-- `businesses`: name, slug, kind (`host | operator | venue`), status (`draft | pending_review | active | suspended`), currency, timezone, ratings. Anyone signed in can create one (as `draft`); the creator becomes owner. Only super admins change `status`.
+- `businesses`: name, slug, kind (`host | operator | venue`), status (`draft | pending_review | active | suspended`), currency, timezone, ratings, `primary_category_id` (the sign-up group). Anyone signed in can create one (as `draft`); the creator becomes owner. Owners may only move `draft -> pending_review`; super admins change every other status.
+- `create_business(name, kind, category, address, city, country, email, phone)`: the portal's "Agree & Continue". Security invoker (RLS and triggers apply): creates the business with a unique slug, makes the caller owner, submits it for review (`pending_review`) and adds the primary location, in one transaction. Refuses a second business for an account that already has an active membership. `AUTO_APPROVE_BUSINESSES=1` (development / staging) then activates it from the web server with the service key.
 - `business_private`: legal name, tax ID (NTN), contact, payout model override. Owner only.
 - `business_locations`: address, city, PostGIS `geo` point, timezone. `business_location_points(business_id)` returns them as lat/lng (map pin, distance).
 - `businesses.is_verified`: the verified badge on the business page; set by admins.
@@ -78,7 +79,7 @@ RLS helpers live in the `private` schema (not exposed through the API), are `sec
 **Hosts.** A host is a `staff_member` with `is_host = true`. "Top Hosts" ranks them by rating. A solo local host is a business of kind `host` with one staff member linked to the owner's login.
 
 ### Catalog
-- `categories` (nestable, by kind), `tags` (drive recommendations).
+- `categories` (nestable, by kind), `tags` (drive recommendations). The 7 business sign-up tiles (Adventure, Tours, Food, Health & Wellness, Art & Culture, Entertainment, Beauty) are categories with `is_group = true`, a `description`, and `business_kind`: what a "Business" picking that tile becomes (`operator` for Adventure, Tours, Art & Culture; `venue` for Food, Health & Wellness, Entertainment, Beauty). Hosts are always `host`. Listing categories are their children (`parent_id`); `catalog.listCategories` leaves the groups out, `business.listSignUpCategories` returns only them.
 - Curation tags `local-fun` and `must-try` fill the Home rails "Local fun" and "Must-trys" (tagged listings in the user's city).
 - `listing_distances(lat, lng, listing_ids)` returns km to each listing (meeting point, else business location) for cards.
 - `listings`: type, booking mode, title, description, category, location, meeting point, duration, guest limits, price and price unit (`per_person | per_booking`), instant book, cancellation policy, languages, inclusions, status, ratings, popularity, full-text `search_vector`, `external_ref`.

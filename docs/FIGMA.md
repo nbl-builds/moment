@@ -177,3 +177,28 @@ Legal: Privacy Policy 48:5551 · Terms & Conditions 48:5579
 | Follow us sheet | 48:5772 | `features/profile/components/follow-us-sheet.tsx` |
 | Privacy Policy, Terms (not matched yet: built in our style from `legal_documents`) | 48:5551, 48:5579 | `app/legal/[type].tsx` |
 | Membership, Contact Moment Support (no frames) | | `app/memberships.tsx`, `app/support.tsx` |
+
+# Business portal (web)
+
+File: https://www.figma.com/design/hvSITt4VVdCeFArVVFUgl1/Moment-Business-App
+Page "Business Web App Design" is node `2:30`: never fetch it whole. Frames are
+1440 x 1024 (long forms are taller). Other pages: Typography `2:121` (frame
+`111:146`), Colors `4:82` (frame `4:139`), Icons `4:58`, Buttons `5:69` (component
+set `127:886`). Web tokens: `packages/shared/src/tokens/web.ts`.
+
+## Sign up, login and recovery
+| Frame | Node | Built |
+|---|---|---|
+| Welcome (phone / email flow) | 472:1633, 626:4555 | `app/business/(auth)/page.tsx` |
+| Sign up (phone / email) | 472:1944, 626:4593 | `app/business/(auth)/signup` (`?method=email`) |
+| Code empty / filled / wrong (phone) | 472:2042, 495:2112, 495:2167 | `app/business/(auth)/verify` |
+| Code empty / filled / wrong (email) | 626:4670, 626:4779, 626:4716 | `app/business/(auth)/verify` |
+| Tell us about yourself | 472:1880, 626:4832 | `app/business/(auth)/onboarding/type` |
+| What does your business provide | 472:1727, 626:4885 | `app/business/(auth)/onboarding/category` |
+| Details form (empty / filled / email) | 472:4804, 472:3616, 626:4974 | `app/business/(auth)/onboarding/details` |
+| Login | 472:4321 | `app/business/(auth)/login` |
+| Forgot password | 472:5023 | `app/business/(auth)/forgot-password` |
+| Set new password | 472:5102 | `app/business/(auth)/reset-password` |
+
+Photos per flow: phone (cave, `welcome`), email (harness, `email`), login (quad
+bikes), forgot (dog), reset (hiker); in `apps/web/public/business/auth` as WebP 710 / 1420.
