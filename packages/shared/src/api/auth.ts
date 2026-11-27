@@ -44,11 +44,16 @@ export function createAuthApi(db: MomentSupabaseClient) {
       return () => data.subscription.unsubscribe();
     },
 
-    /** "Sign in / Up with phone": texts an OTP. Creates the account on first use. */
-    sendPhoneOtp: (phone: string) => call(db.auth.signInWithOtp({ phone, options: { channel: 'sms' } })),
+    /**
+     * "Sign in / Up with phone": texts an OTP. Creates the account on first use
+     * unless `createUser` is false (phone password recovery).
+     */
+    sendPhoneOtp: (phone: string, { createUser = true }: { createUser?: boolean } = {}) =>
+      call(db.auth.signInWithOtp({ phone, options: { channel: 'sms', shouldCreateUser: createUser } })),
 
     /** "Sign Up with email" / "Sign in with email": emails an OTP. */
-    sendEmailOtp: (email: string) => call(db.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })),
+    sendEmailOtp: (email: string, { createUser = true }: { createUser?: boolean } = {}) =>
+      call(db.auth.signInWithOtp({ email, options: { shouldCreateUser: createUser } })),
 
     /** "Sign In OTP" after a phone number. */
     verifyPhoneOtp: ({ phone, code }: { phone: string; code: string }) =>
@@ -61,6 +66,10 @@ export function createAuthApi(db: MomentSupabaseClient) {
     /** "Enter Password". */
     signInWithPassword: ({ email, password }: { email: string; password: string }) =>
       call(db.auth.signInWithPassword({ email, password })),
+
+    /** Business portal login with a phone number (E.164) and password. */
+    signInWithPhonePassword: ({ phone, password }: { phone: string; password: string }) =>
+      call(db.auth.signInWithPassword({ phone, password })),
 
     /** "Forgot Password": emails a reset link that opens `redirectTo`. */
     sendPasswordReset: (email: string, redirectTo: string) =>

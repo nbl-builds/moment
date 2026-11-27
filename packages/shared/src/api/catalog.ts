@@ -44,8 +44,16 @@ export function createCatalogApi(db: MomentSupabaseClient) {
   };
 
   return {
+    /**
+     * Listing categories (chips, filters). The business sign-up groups
+     * (`is_group`, see `business.listSignUpCategories`) are left out.
+     */
     listCategories: (kind?: Enums<'category_kind'>) => {
-      let q = db.from('categories').select('id, parent_id, kind, slug, name, icon, sort_order').eq('is_active', true);
+      let q = db
+        .from('categories')
+        .select('id, parent_id, kind, slug, name, icon, sort_order')
+        .eq('is_active', true)
+        .eq('is_group', false);
       if (kind) q = q.eq('kind', kind);
       return unwrap(q.order('sort_order'));
     },
