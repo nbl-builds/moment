@@ -409,7 +409,7 @@ as $$
       or exists (
         select 1 from public.business_hours h
         where h.business_id = c.business_id
-          and h.weekday = extract(isodow from p_date)::smallint
+          and h.weekday = extract(dow from p_date)::smallint -- business_hours: 0 = Sunday
           and (c.starts_at at time zone c.timezone)::time >= h.opens_at
           and (case when h.closes_at <= h.opens_at then true
                     else (c.ends_at at time zone c.timezone)::time <= h.closes_at
@@ -467,7 +467,7 @@ begin
     v_city,
     case when p_type = 'service' then 60 else 120 end,
     0, 1, case when p_type = 'service' then 1 else 10 end,
-    true, 'flexible', '{en}', 'draft', 'basics'
+    true, 'flexible', '{en}', 'draft', 'type'
   );
   return v_id;
 end;

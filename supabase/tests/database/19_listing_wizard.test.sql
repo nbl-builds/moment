@@ -129,7 +129,7 @@ select is((
   cross join lateral public.get_available_times(:guide, d::date) t
   where not exists (
     select 1 from public.business_hours h
-    where h.business_id = :biz and h.weekday = extract(isodow from d)::smallint
+    where h.business_id = :biz and h.weekday = extract(dow from d)::smallint
       and (t.starts_at at time zone 'Asia/Karachi')::time >= h.opens_at
   )
 ), 0, 'no appointment times outside opening hours');
