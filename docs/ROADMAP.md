@@ -24,6 +24,14 @@ Keep this file current: tick items as they land and update **Next up** so any se
 - Business-side booking RPC for walk-ins and POS (`create_booking` is consumer-only today)
 - Membership benefits in pricing (`create_booking` ignores member discounts and included sessions for now)
 
+## Staging builds
+Everything about the staging backend and app is in `docs/STAGING.md`.
+- **Sign in on the staging APK:** +92 300 1234567 / code 123456 (dev user Ali Raza with data), +92 308 4282001 / 051518 (new account), or `dev@moment.test` / `password123`
+- **Rebuild the APK:** `cd apps/mobile && pnpm dlx eas-cli build -p android --profile preview` (bump `android.versionCode`; bump `version` for a new native release)
+- **Publish a JS update:** `cd apps/mobile && pnpm dlx eas-cli update --channel staging --environment preview --message "..."`
+- **New migrations:** `npx supabase db push --linked` (never `db reset --linked`)
+- **To do:** Google Maps key for Android (Explore shows the list with "Map coming soon" until then), custom SMTP so email codes work on staging, a real iOS icon (`assets/expo.icon` is still Expo's), production Supabase project + `[remotes.production]` + production EAS variables
+
 ## UI-first phase (consumer mobile)
 One branch per section (`feat/<section>`), merged into `staging`. Frames: `docs/FIGMA.md`.
 - [x] 1. Search Filter

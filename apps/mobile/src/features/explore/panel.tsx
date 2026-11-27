@@ -18,6 +18,8 @@ interface ResultsPanelProps {
   bottomInset: number;
   /** 0 = map, 1 = list; drives the map controls fading out too. */
   progress: SharedValue<number>;
+  /** No map to show (Android without a Maps key): the list stays open and the strip shows this note. */
+  lockedNote?: string;
   children: ReactNode;
 }
 
@@ -26,7 +28,7 @@ interface ResultsPanelProps {
  * with a chevron that you drag (or tap) to slide the result list up over the
  * map, and down again.
  */
-export function ResultsPanel({ expanded, onExpandedChange, travel, bottomInset, progress, children }: ResultsPanelProps) {
+export function ResultsPanel({ expanded, onExpandedChange, travel, bottomInset, progress, lockedNote, children }: ResultsPanelProps) {
   const reduceMotion = useReducedMotion();
   const start = useSharedValue(0);
 
@@ -36,6 +38,7 @@ export function ResultsPanel({ expanded, onExpandedChange, travel, bottomInset, 
   }, [expanded, progress, reduceMotion]);
 
   const pan = usePanGesture({
+    enabled: !lockedNote,
     activeOffsetY: [-8, 8],
     onActivate: () => {
       'worklet';
@@ -67,16 +70,19 @@ export function ResultsPanel({ expanded, onExpandedChange, travel, bottomInset, 
       <GestureDetector gesture={pan}>
         <Pressable
           onPress={() => onExpandedChange(!expanded)}
+          disabled={Boolean(lockedNote)}
           style={[styles.strip, { height: STRIP_HEIGHT + bottomInset, paddingBottom: bottomInset }]}
-          accessibilityRole="button"
-          accessibilityLabel={expanded ? 'Show the map' : 'Show all results as a list'}
-          accessibilityHint="Swipe up or down, or tap"
+          accessibilityRole={lockedNote ? 'text' : 'button'}
+          accessibilityLabel={lockedNote ?? (expanded ? 'Show the map' : 'Show all results as a list')}
+          accessibilityHint={lockedNote ? undefined : 'Swipe up or down, or tap'}
         >
-          <Animated.View style={chevronStyle}>
-            <Icon name="handle-up" size={28} />
-          </Animated.View>
+          {!lockedNote && (
+            <Animated.View style={chevronStyle}>
+              <Icon name="handle-up" size={28} />
+            </Animated.View>
+          )}
           <Text variant="subText14" weight="semibold" color="secondary" style={styles.copy}>
-            {expanded ? 'Swipe down to see map' : 'Swipe up to see all'}
+            {lockedNote ?? (expanded ? 'Swipe down to see map' : 'Swipe up to see all')}
           </Text>
         </Pressable>
       </GestureDetector>

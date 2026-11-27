@@ -443,3 +443,34 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# ---------------------------------------------------------------------------
+# Hosted STAGING project ("moment", iltnkqxgdnhsnkvvhpxp). `supabase config push
+# --project-ref iltnkqxgdnhsnkvvhpxp` applies the settings above with these
+# overrides, so local-only values (localhost URLs, exp://) never reach it.
+# See docs/STAGING.md. A production project gets its own [remotes.production].
+# ---------------------------------------------------------------------------
+[remotes.staging]
+project_id = "iltnkqxgdnhsnkvvhpxp"
+
+[remotes.staging.auth]
+# Emails show a 6-digit code, so the site URL is only a fallback for links.
+site_url = "moment-staging://"
+# The staging app (moment-staging://) and the future live app (moment://).
+additional_redirect_urls = ["moment-staging://**", "moment://**"]
+
+[remotes.staging.auth.email]
+# Hosted: one code email per address per minute (local uses 1s for testing).
+max_frequency = "60s"
+
+# Free tier with Supabase's built-in email can't change templates: keep the
+# hosted defaults until a custom SMTP provider is set (docs/STAGING.md).
+[remotes.staging.auth.email.template.magic_link]
+subject = "Your sign-in link"
+content_path = ""
+[remotes.staging.auth.email.template.confirmation]
+subject = "Confirm your email address"
+content_path = ""
+[remotes.staging.auth.email.template.recovery]
+subject = "Reset your password"
+content_path = ""

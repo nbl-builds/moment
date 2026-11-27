@@ -201,6 +201,12 @@ A trigger keeps `bookings.payment_status` in sync with succeeded payments and re
 - `group-covers` (public read, users write their own folder `<user_id>/...`)
 - `seed-media` (local dev only, public): images exported from Figma in `supabase/seed-media`, uploaded on `supabase db reset`. Media columns may hold `storage://<bucket>/<path>` references; the API client resolves them to public URLs for the app's own Supabase host.
 
+## Privileges
+
+RLS protects the rows; the API roles (`anon`, `authenticated`, `service_role`) still need table, sequence and function privileges to reach them. Local Supabase grants these by default; the hosted staging project did not, so `20261127000031_explicit_api_grants.sql` grants them explicitly (identical to local, including the column-only and revoked grants of earlier migrations) and sets default privileges for new objects in `public`.
+
+When a migration needs a restriction, write it explicitly (`revoke ... from anon, authenticated`, `grant update (col) ...`, `revoke execute ... from public, anon`) as before. To compare an environment with local, run `supabase/scripts/api_grants.sql` (lists `grant ...` statements for `public` and `private` tables, columns, sequences and functions) on both and diff the output. The migration was generated with it.
+
 ## Indexes
 
 Every foreign key is indexed. Notable extras:
