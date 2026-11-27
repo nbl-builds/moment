@@ -1,0 +1,94 @@
+/* 80px white row, radius 10; photo 60 (r6); title Bold 16, guest 12 S Tint 1, address 10 S Tint 3. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--web-space-14);
+  width: 100%;
+  min-height: var(--web-reservation-row-height);
+  padding: var(--web-space-10) var(--web-space-20) var(--web-space-10) var(--web-space-10);
+  border: 0;
+  border-radius: var(--web-radius-card);
+  background: var(--color-white);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.row[data-tone="muted"] {
+  min-height: var(--web-inbox-row-height);
+  padding: var(--web-space-20);
+  border-radius: var(--web-radius-card-large);
+  background: var(--color-row-muted);
+}
+
+.row:hover {
+  box-shadow: 0 var(--web-space-4) var(--web-space-20) var(--color-shadow);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.photo {
+  flex: 0 0 auto;
+  width: var(--web-row-photo);
+  height: var(--web-row-photo);
+  border-radius: var(--web-radius-photo);
+  object-fit: cover;
+  background: var(--color-field);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: var(--text-webBody16-size);
+  line-height: var(--text-webBody16-line-height);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-black);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.guest {
+  font-size: var(--text-webBody12-size);
+  line-height: var(--text-webBody12-line-height);
+  color: var(--color-secondary-tint1);
+}
+
+.address,
+.time {
+  font-size: var(--text-webBody10-size);
+  line-height: var(--text-webBody10-line-height);
+  color: var(--color-text-subtle);
+}
+
+.address {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.time {
+  align-self: flex-end;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 479.98px) {
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .time {
+    width: 100%;
+    padding-left: calc(var(--web-row-photo) + var(--web-space-14));
+  }
+}
