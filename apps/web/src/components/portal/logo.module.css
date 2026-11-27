@@ -1,0 +1,15 @@
+.logo {
+  /* Offsets between the two Figma glyph groups (472:1652 / 472:1654), part of the wordmark. */
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 1.5px;
+}
+
+.mark {
+  margin-top: 0.7px;
+}
+
+/* The SVGs are white; brightness(0) renders them black on light backgrounds. */
+.dark img {
+  filter: brightness(0);
+}

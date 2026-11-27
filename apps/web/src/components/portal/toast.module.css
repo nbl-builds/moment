@@ -1,0 +1,32 @@
+.region {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-xxl);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  z-index: 50;
+  pointer-events: none;
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--web-gutter));
+}
+
+.toast {
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-sm);
+  background: var(--color-toast);
+  color: var(--color-on-toast);
+  font-size: var(--text-webBody14-size);
+  line-height: var(--text-webBody14-line-height);
+  font-weight: var(--font-weight-semibold);
+  animation: rise 0.2s ease-out;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-sm));
+  }
+}
