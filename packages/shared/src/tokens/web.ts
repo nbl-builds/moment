@@ -122,6 +122,8 @@ export const webTextStyles = {
   webH3: { fontSize: 49, lineHeight: 1.5, fontWeight: fontWeight.bold, letterSpacing: 0 },
   webH4: { fontSize: 39, lineHeight: 1.5, fontWeight: fontWeight.bold, letterSpacing: 0 },
   webH5: { fontSize: 32, lineHeight: 1.5, fontWeight: fontWeight.bold, letterSpacing: 0.32 },
+  /** "Create New Listing": ExtraBold 40 / 1.4 / 1%. */
+  webTitle40: { fontSize: 40, lineHeight: 1.4, fontWeight: fontWeight.extrabold, letterSpacing: 0.4 },
   webBody25: { fontSize: 25, lineHeight: 1.5, fontWeight: fontWeight.regular, letterSpacing: 0 },
   webBody20: { fontSize: 20, lineHeight: 1.5, fontWeight: fontWeight.regular, letterSpacing: 0 },
   /** "Didn't get a code? Send again" (20 / 1.4 / 1%). */
@@ -263,6 +265,49 @@ export const webLayout = {
   mapTile: 140,
   switchWidth: 44,
   switchHeight: 24,
+
+  // Create New Listing wizard (Figma 614:2157 .. 616:4291)
+  /** Title at y 170 (40 below the top bar edge 100 + 70), cards from y 266. */
+  wizardTitleTop: 70,
+  wizardCardsTop: 40,
+  /** Sidebar card 305 wide (x 80), main card 955 (x 405): 20 apart. */
+  wizardSidebarWidth: 305,
+  wizardMainWidth: 955,
+  wizardColumnGap: 20,
+  wizardCardMinHeight: 674,
+  /** Sidebar rows: 265 x 50, 8 apart, 20 inset; text 16 in; state icon 16 from the right. */
+  wizardRowHeight: 50,
+  wizardRowGap: 8,
+  wizardRowInset: 20,
+  wizardRowTextInset: 16,
+  wizardStateInset: 16,
+  wizardDot: 8,
+  wizardCheck: 14,
+  /** Form column 521 wide, centred in the main card, 80 from its top. */
+  wizardFormWidth: 521,
+  wizardFormTop: 80,
+  /** Next: 152 x 48; Back 30 to its left. */
+  wizardNextWidth: 152,
+  wizardActionsGap: 30,
+  /** Progress bar: 5 tall, 16 under the main card; label 13 under the bar. */
+  wizardProgressHeight: 5,
+  wizardProgressGap: 16,
+  wizardProgressLabelGap: 13,
+  /** Title box 140 tall; description box 236; drop zone 266 (2px dashed). */
+  wizardTitleBox: 140,
+  wizardDescriptionBox: 236,
+  wizardDropZone: 266,
+  wizardDropIcon: 50,
+  /** Photo review grid: 262 x 319 tiles, 18 apart. */
+  wizardPhotoHeight: 319,
+  /** Requirement chips: 117 x 40, radius 10, 11 apart. */
+  wizardChipWidth: 117,
+  wizardChipHeight: 40,
+  wizardChipGap: 11,
+  /** Map for the meeting pin. */
+  wizardMapHeight: 280,
+  /** Phone preview on Review & submit. */
+  wizardPreviewWidth: 300,
 } as const;
 
 /**

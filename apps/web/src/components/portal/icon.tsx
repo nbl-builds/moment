@@ -45,7 +45,10 @@ export type PortalIconName =
   | "star"
   | "eye"
   | "m-mark"
-  | "star-14";
+  | "star-14"
+  | "image-add-50"
+  | "check-circle-14"
+  | "location-share";
 
 /** Native sizes of the Figma exports (the SVGs' own width / height). */
 const SIZES: Record<PortalIconName, [number, number]> = {
@@ -95,6 +98,9 @@ const SIZES: Record<PortalIconName, [number, number]> = {
   eye: [22.62, 22.62],
   "m-mark": [41.66, 36.71],
   "star-14": [14, 14],
+  "image-add-50": [50, 50],
+  "check-circle-14": [14, 14],
+  "location-share": [21.5, 16],
 };
 
 /** A Figma icon from /public/business/icons at its exported size. */
