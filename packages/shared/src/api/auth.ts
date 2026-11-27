@@ -87,6 +87,23 @@ export function createAuthApi(db: MomentSupabaseClient) {
     verifyPhoneChange: ({ phone, code }: { phone: string; code: string }) =>
       call(db.auth.verifyOtp({ phone, token: code, type: 'phone_change' })),
 
+    /** Confirms a new email with the code Supabase emailed (needs SMTP on hosted projects). */
+    verifyEmailChange: ({ email, code }: { email: string; code: string }) =>
+      call(db.auth.verifyOtp({ email, token: code, type: 'email_change' })),
+
+    /**
+     * Login & Security > Update password: checks the current password by signing
+     * in again, then sets the new one and records when (user metadata).
+     */
+    changePassword: async ({ login, current, next }: { login: { email: string } | { phone: string }; current: string; next: string }) => {
+      const check = await db.auth.signInWithPassword({ ...login, password: current });
+      if (check.error) throw new ApiError('invalid', 'Your current password isn’t right.', undefined, undefined, check.error);
+      return call(db.auth.updateUser({ password: next, data: { password_changed_at: new Date().toISOString() } }));
+    },
+
+    /** "Log out of other devices": ends every other session of this user. */
+    signOutOthers: () => call(db.auth.signOut({ scope: 'others' }).then((r) => ({ data: null, error: r.error }))).then(() => undefined),
+
     /** Native Apple / Google sign-in: pass the ID token from the platform SDK. */
     signInWithIdToken: ({ provider, token, nonce }: { provider: 'apple' | 'google'; token: string; nonce?: string }) =>
       call(db.auth.signInWithIdToken({ provider, token, nonce })),

@@ -308,6 +308,25 @@ export const webLayout = {
   wizardMapHeight: 280,
   /** Phone preview on Review & submit. */
   wizardPreviewWidth: 300,
+
+  // Profile (629:7232) and Account Settings (131:676, 515:3218 / 3352 / 3295)
+  /** Cover 1280 x 250 from y 150; avatar 200 (2px white border) at x 136, y 294. */
+  profileCoverHeight: 250,
+  profileAvatar: 200,
+  profileAvatarInset: 56,
+  profileAvatarOverlap: 106,
+  profileNameGap: 43,
+  /** About me card 466 wide; right column from x 622; cards 100 tall, 20 apart. */
+  profileAboutWidth: 466,
+  profileRowCardHeight: 100,
+  profileIcon: 50,
+  /** Settings: page title at y 170, cards from y 258; rows 120 tall with 30 insets; icons 42. */
+  settingsTop: 70,
+  settingsCardsTop: 40,
+  settingsInset: 30,
+  settingsRowHeight: 120,
+  settingsIcon: 42,
+  settingsIconGap: 29,
 } as const;
 
 /**
