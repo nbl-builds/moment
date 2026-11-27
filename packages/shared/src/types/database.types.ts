@@ -366,6 +366,8 @@ export type Database = {
           location_id: string | null;
           membership_id: string | null;
           notes: string | null;
+          offer_discount_amount: number;
+          offer_label: string | null;
           payment_status: Database["public"]["Enums"]["booking_payment_status"];
           slot_id: string | null;
           source: Database["public"]["Enums"]["booking_source"];
@@ -407,6 +409,8 @@ export type Database = {
           location_id?: string | null;
           membership_id?: string | null;
           notes?: string | null;
+          offer_discount_amount?: number;
+          offer_label?: string | null;
           payment_status?: Database["public"]["Enums"]["booking_payment_status"];
           slot_id?: string | null;
           source?: Database["public"]["Enums"]["booking_source"];
@@ -447,6 +451,8 @@ export type Database = {
           location_id?: string | null;
           membership_id?: string | null;
           notes?: string | null;
+          offer_discount_amount?: number;
+          offer_label?: string | null;
           payment_status?: Database["public"]["Enums"]["booking_payment_status"];
           slot_id?: string | null;
           source?: Database["public"]["Enums"]["booking_source"];
@@ -1788,7 +1794,10 @@ export type Database = {
       listings: {
         Row: {
           accepting_bookings: boolean;
+          activity_level: string | null;
+          address_line1: string | null;
           booking_count: number;
+          booking_cutoff_minutes: number;
           booking_mode: Database["public"]["Enums"]["booking_mode"];
           buffer_minutes: number;
           business_id: string;
@@ -1800,8 +1809,12 @@ export type Database = {
           currency: string;
           description: string | null;
           duration_minutes: number;
+          early_bird_days: number | null;
+          early_bird_percent: number | null;
           excludes: string[];
           external_ref: string | null;
+          group_discount_min_guests: number | null;
+          group_discount_percent: number | null;
           highlights: string[];
           id: string;
           includes: string[];
@@ -1811,29 +1824,39 @@ export type Database = {
           max_guests: number;
           meeting_point: unknown;
           meeting_point_notes: string | null;
+          min_age: number | null;
           min_guests: number;
           pets_allowed: boolean;
           popularity_score: number;
+          postal_code: string | null;
           price_amount: number;
           price_unit: Database["public"]["Enums"]["price_unit"];
+          private_max_guests: number;
           private_price_amount: number | null;
+          province: string | null;
           published_at: string | null;
           rating_avg: number;
           rating_count: number;
           search_vector: unknown;
+          skill_level: string | null;
           slot_interval_minutes: number;
           slug: string;
           status: Database["public"]["Enums"]["listing_status"];
+          submitted_at: string | null;
           summary: string | null;
           title: string;
           type: Database["public"]["Enums"]["listing_type"];
           updated_at: string;
           what_to_bring: string[];
+          wizard_step: string | null;
         };
         ComputedFields: never;
         Insert: {
           accepting_bookings?: boolean;
+          activity_level?: string | null;
+          address_line1?: string | null;
           booking_count?: number;
+          booking_cutoff_minutes?: number;
           booking_mode: Database["public"]["Enums"]["booking_mode"];
           buffer_minutes?: number;
           business_id: string;
@@ -1845,8 +1868,12 @@ export type Database = {
           currency?: string;
           description?: string | null;
           duration_minutes: number;
+          early_bird_days?: number | null;
+          early_bird_percent?: number | null;
           excludes?: string[];
           external_ref?: string | null;
+          group_discount_min_guests?: number | null;
+          group_discount_percent?: number | null;
           highlights?: string[];
           id?: string;
           includes?: string[];
@@ -1856,28 +1883,38 @@ export type Database = {
           max_guests?: number;
           meeting_point?: unknown;
           meeting_point_notes?: string | null;
+          min_age?: number | null;
           min_guests?: number;
           pets_allowed?: boolean;
           popularity_score?: number;
+          postal_code?: string | null;
           price_amount: number;
           price_unit?: Database["public"]["Enums"]["price_unit"];
+          private_max_guests?: number;
           private_price_amount?: number | null;
+          province?: string | null;
           published_at?: string | null;
           rating_avg?: number;
           rating_count?: number;
           search_vector?: never;
+          skill_level?: string | null;
           slot_interval_minutes?: number;
           slug: string;
           status?: Database["public"]["Enums"]["listing_status"];
+          submitted_at?: string | null;
           summary?: string | null;
           title: string;
           type: Database["public"]["Enums"]["listing_type"];
           updated_at?: string;
           what_to_bring?: string[];
+          wizard_step?: string | null;
         };
         Update: {
           accepting_bookings?: boolean;
+          activity_level?: string | null;
+          address_line1?: string | null;
           booking_count?: number;
+          booking_cutoff_minutes?: number;
           booking_mode?: Database["public"]["Enums"]["booking_mode"];
           buffer_minutes?: number;
           business_id?: string;
@@ -1889,8 +1926,12 @@ export type Database = {
           currency?: string;
           description?: string | null;
           duration_minutes?: number;
+          early_bird_days?: number | null;
+          early_bird_percent?: number | null;
           excludes?: string[];
           external_ref?: string | null;
+          group_discount_min_guests?: number | null;
+          group_discount_percent?: number | null;
           highlights?: string[];
           id?: string;
           includes?: string[];
@@ -1900,24 +1941,31 @@ export type Database = {
           max_guests?: number;
           meeting_point?: unknown;
           meeting_point_notes?: string | null;
+          min_age?: number | null;
           min_guests?: number;
           pets_allowed?: boolean;
           popularity_score?: number;
+          postal_code?: string | null;
           price_amount?: number;
           price_unit?: Database["public"]["Enums"]["price_unit"];
+          private_max_guests?: number;
           private_price_amount?: number | null;
+          province?: string | null;
           published_at?: string | null;
           rating_avg?: number;
           rating_count?: number;
           search_vector?: never;
+          skill_level?: string | null;
           slot_interval_minutes?: number;
           slug?: string;
           status?: Database["public"]["Enums"]["listing_status"];
+          submitted_at?: string | null;
           summary?: string | null;
           title?: string;
           type?: Database["public"]["Enums"]["listing_type"];
           updated_at?: string;
           what_to_bring?: string[];
+          wizard_step?: string | null;
         };
         Relationships: [
           {
@@ -3436,6 +3484,10 @@ export type Database = {
         Args: { p_from: string; p_listing_id: string; p_to: string };
         Returns: string[];
       };
+      business_commission_bps: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
       business_inbox: {
         Args: {
           p_business_id: string;
@@ -3507,6 +3559,8 @@ export type Database = {
           location_id: string | null;
           membership_id: string | null;
           notes: string | null;
+          offer_discount_amount: number;
+          offer_label: string | null;
           payment_status: Database["public"]["Enums"]["booking_payment_status"];
           slot_id: string | null;
           source: Database["public"]["Enums"]["booking_source"];
@@ -3570,6 +3624,8 @@ export type Database = {
           location_id: string | null;
           membership_id: string | null;
           notes: string | null;
+          offer_discount_amount: number;
+          offer_label: string | null;
           payment_status: Database["public"]["Enums"]["booking_payment_status"];
           slot_id: string | null;
           source: Database["public"]["Enums"]["booking_source"];
@@ -3626,6 +3682,8 @@ export type Database = {
           location_id: string | null;
           membership_id: string | null;
           notes: string | null;
+          offer_discount_amount: number;
+          offer_label: string | null;
           payment_status: Database["public"]["Enums"]["booking_payment_status"];
           slot_id: string | null;
           source: Database["public"]["Enums"]["booking_source"];
@@ -3664,6 +3722,13 @@ export type Database = {
           id: string;
           key_prefix: string;
         }[];
+      };
+      create_listing_draft: {
+        Args: {
+          p_business_id: string;
+          p_type: Database["public"]["Enums"]["listing_type"];
+        };
+        Returns: string;
       };
       duplicate_listing: { Args: { p_listing_id: string }; Returns: string };
       email_sign_in_method: { Args: { p_email: string }; Returns: string };
@@ -3804,6 +3869,7 @@ export type Database = {
           listing_id: string;
         }[];
       };
+      listing_missing: { Args: { p_listing_id: string }; Returns: string[] };
       listing_point: {
         Args: { p_listing_id: string };
         Returns: {
@@ -3829,6 +3895,7 @@ export type Database = {
           p_items?: Json;
           p_listing_id: string;
           p_private?: boolean;
+          p_starts_at?: string;
         };
         Returns: Json;
       };
@@ -3836,7 +3903,10 @@ export type Database = {
         Args: { p_city?: string; p_limit?: number };
         Returns: {
           accepting_bookings: boolean;
+          activity_level: string | null;
+          address_line1: string | null;
           booking_count: number;
+          booking_cutoff_minutes: number;
           booking_mode: Database["public"]["Enums"]["booking_mode"];
           buffer_minutes: number;
           business_id: string;
@@ -3848,8 +3918,12 @@ export type Database = {
           currency: string;
           description: string | null;
           duration_minutes: number;
+          early_bird_days: number | null;
+          early_bird_percent: number | null;
           excludes: string[];
           external_ref: string | null;
+          group_discount_min_guests: number | null;
+          group_discount_percent: number | null;
           highlights: string[];
           id: string;
           includes: string[];
@@ -3859,24 +3933,31 @@ export type Database = {
           max_guests: number;
           meeting_point: unknown;
           meeting_point_notes: string | null;
+          min_age: number | null;
           min_guests: number;
           pets_allowed: boolean;
           popularity_score: number;
+          postal_code: string | null;
           price_amount: number;
           price_unit: Database["public"]["Enums"]["price_unit"];
+          private_max_guests: number;
           private_price_amount: number | null;
+          province: string | null;
           published_at: string | null;
           rating_avg: number;
           rating_count: number;
           search_vector: unknown;
+          skill_level: string | null;
           slot_interval_minutes: number;
           slug: string;
           status: Database["public"]["Enums"]["listing_status"];
+          submitted_at: string | null;
           summary: string | null;
           title: string;
           type: Database["public"]["Enums"]["listing_type"];
           updated_at: string;
           what_to_bring: string[];
+          wizard_step: string | null;
         }[];
         SetofOptions: {
           from: "*";
@@ -4015,6 +4096,73 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      submit_listing: {
+        Args: { p_listing_id: string };
+        Returns: {
+          accepting_bookings: boolean;
+          activity_level: string | null;
+          address_line1: string | null;
+          booking_count: number;
+          booking_cutoff_minutes: number;
+          booking_mode: Database["public"]["Enums"]["booking_mode"];
+          buffer_minutes: number;
+          business_id: string;
+          cancellation_policy: Database["public"]["Enums"]["cancellation_policy"];
+          category_id: string | null;
+          city: string;
+          created_at: string;
+          cuisine: string | null;
+          currency: string;
+          description: string | null;
+          duration_minutes: number;
+          early_bird_days: number | null;
+          early_bird_percent: number | null;
+          excludes: string[];
+          external_ref: string | null;
+          group_discount_min_guests: number | null;
+          group_discount_percent: number | null;
+          highlights: string[];
+          id: string;
+          includes: string[];
+          instant_book: boolean;
+          languages: string[];
+          location_id: string | null;
+          max_guests: number;
+          meeting_point: unknown;
+          meeting_point_notes: string | null;
+          min_age: number | null;
+          min_guests: number;
+          pets_allowed: boolean;
+          popularity_score: number;
+          postal_code: string | null;
+          price_amount: number;
+          price_unit: Database["public"]["Enums"]["price_unit"];
+          private_max_guests: number;
+          private_price_amount: number | null;
+          province: string | null;
+          published_at: string | null;
+          rating_avg: number;
+          rating_count: number;
+          search_vector: unknown;
+          skill_level: string | null;
+          slot_interval_minutes: number;
+          slug: string;
+          status: Database["public"]["Enums"]["listing_status"];
+          submitted_at: string | null;
+          summary: string | null;
+          title: string;
+          type: Database["public"]["Enums"]["listing_type"];
+          updated_at: string;
+          what_to_bring: string[];
+          wizard_step: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "listings";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       submit_quiz: {
         Args: { p_answer_ids: string[] };
         Returns: {
@@ -4067,6 +4215,8 @@ export type Database = {
           location_id: string | null;
           membership_id: string | null;
           notes: string | null;
+          offer_discount_amount: number;
+          offer_label: string | null;
           payment_status: Database["public"]["Enums"]["booking_payment_status"];
           slot_id: string | null;
           source: Database["public"]["Enums"]["booking_source"];
@@ -4119,7 +4269,7 @@ export type Database = {
       group_visibility: "private" | "public";
       legal_document_type: "terms" | "privacy" | "cancellation" | "host_terms";
       likes_visibility: "everyone" | "only_me";
-      listing_status: "draft" | "published" | "archived";
+      listing_status: "draft" | "pending_review" | "published" | "archived";
       listing_type: "experience" | "service";
       match_request_status: "pending" | "accepted" | "declined";
       member_status: "invited" | "active";
@@ -4298,7 +4448,7 @@ export const Constants = {
       group_visibility: ["private", "public"],
       legal_document_type: ["terms", "privacy", "cancellation", "host_terms"],
       likes_visibility: ["everyone", "only_me"],
-      listing_status: ["draft", "published", "archived"],
+      listing_status: ["draft", "pending_review", "published", "archived"],
       listing_type: ["experience", "service"],
       match_request_status: ["pending", "accepted", "declined"],
       member_status: ["invited", "active"],
