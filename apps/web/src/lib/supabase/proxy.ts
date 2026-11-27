@@ -3,7 +3,10 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { supabasePublishableKey, supabaseUrl } from "./env";
 
-/** Refreshes the auth session cookie on every request. Route protection comes later. */
+/**
+ * Refreshes the auth session cookie on every request and returns the verified
+ * user id (null when signed out) plus a client bound to the request cookies.
+ */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -22,7 +25,8 @@ export async function updateSession(request: NextRequest) {
 
   // Do not run code between createServerClient and getClaims(): it validates
   // the JWT and triggers the refresh that keeps users signed in.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+  const userId = typeof data?.claims.sub === "string" ? data.claims.sub : null;
 
-  return response;
+  return { response: () => response, supabase, userId };
 }
