@@ -213,6 +213,8 @@ bikes), forgot (dog), reset (hiker); in `apps/web/public/business/auth` as WebP 
 | My Listings / My Drafts + category menu / My Archives | 126:302, 626:5263, 626:5371 | `app/business/(portal)/listings` |
 | Insights (top / full) | 127:456, 512:2143 | `app/business/(portal)/insights` |
 | Reviews | 513:2725 | `app/business/(portal)/reviews` |
+| Create New Listing: Type, Basics, Category, Title, Photos upload / review, Description, Location, What I'll provide, Guest requirements, Group size | 614:2157, 615:2507, 615:2633, 615:2912, 615:3179, 615:3270, 615:3361, 616:3462 (616:3603 duplicate), 616:3710, 616:3823, 616:3963 | `app/business/(wizard)/listings`, `features/listing-wizard/` |
+| Create New Listing placeholders (designed in the wizard style): Guest pricing, Discount, Your information, Review & submit | 616:4055, 616:4131, 616:4209, 616:4291 | `features/listing-wizard/steps/` |
 | Listing Details (start only: top bar, title, cover) | 629:7360 | `app/business/(portal)/listings/[id]`, `features/portal/listing-detail/` (rest designed in portal style) |
 
 Not in Figma, built in the portal style: the reservation side panel, the help and What's New sheets, review replies, the phone menu.
