@@ -109,6 +109,7 @@ returns table (
   booking_id uuid,
   listing_id uuid,
   listing_title text,
+  listing_cover text,
   guest_id uuid,
   guest_name text,
   guest_avatar_url text,
@@ -170,7 +171,9 @@ begin
       order by m.created_at desc limit 1
     ) lm on true
   )
-  select e.conversation_id, e.booking_id, e.listing_id, l.title, e.guest_id, e.guest_name, e.guest_avatar_url,
+  select e.conversation_id, e.booking_id, e.listing_id, l.title,
+         (select m.url from public.listing_media m where m.listing_id = e.listing_id order by m.sort_order limit 1),
+         e.guest_id, e.guest_name, e.guest_avatar_url,
          e.guest_city, e.last_message_at, e.last_message_body, e.last_message_has_attachment, e.unread
   from enriched e
   left join public.listings l on l.id = e.listing_id

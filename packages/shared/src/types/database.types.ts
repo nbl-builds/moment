@@ -3451,6 +3451,7 @@ export type Database = {
           last_message_at: string;
           last_message_body: string;
           last_message_has_attachment: boolean;
+          listing_cover: string;
           listing_id: string;
           listing_title: string;
           unread: number;
