@@ -1,0 +1,25 @@
+{
+  // Cloudflare Worker for apps/web (OpenNext). Only staging exists for now: deploy
+  // with `pnpm web:deploy:staging` from the repo root. main is never deployed.
+  // Public values only. Secrets go in with `wrangler secret put` (see docs/STAGING.md).
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "moment-web-staging",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-20",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": { "enabled": true },
+  // NEXT_PUBLIC_* are also inlined into the browser bundle at build time:
+  // scripts/deploy-staging.mjs passes these same values to `next build`.
+  "vars": {
+    "NEXT_PUBLIC_APP_ENV": "staging",
+    "NEXT_PUBLIC_SITE_URL": "https://moment-web-staging.work-nabeelahmed.workers.dev",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://iltnkqxgdnhsnkvvhpxp.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_uAyMdobTDPzo9Jbfv3S3_Q_McQ62XRE"
+  }
+}

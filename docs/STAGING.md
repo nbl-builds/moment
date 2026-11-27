@@ -1,8 +1,9 @@
 # Staging
 
 Staging is the hosted Supabase project **"moment"** (ref `iltnkqxgdnhsnkvvhpxp`,
-region ap-southeast-1) plus the Android app **"Moment (Staging)"**
-(`com.moment.app.staging`, scheme `moment-staging://`). Nothing is live yet. A
+region ap-southeast-1), the Android app **"Moment (Staging)"**
+(`com.moment.app.staging`, scheme `moment-staging://`) and the web app (business
+portal) at **https://moment-web-staging.work-nabeelahmed.workers.dev**. Nothing is live yet. A
 separate production project comes later; never point staging tools at it, and
 never run these commands against it.
 
@@ -12,6 +13,7 @@ never run these commands against it.
 | `EXPO_PUBLIC_APP_ENV` | `development` (`.env.local`) | `staging` (EAS env `preview`) | `production` (EAS env `production`) |
 | App | Expo Go | Moment (Staging), `com.moment.app.staging` | Moment, `com.moment.app` |
 | Dev auth bypass | allowed (`EXPO_PUBLIC_AUTH_BYPASS=1`) | never | never |
+| Web | `pnpm web` (localhost:3000) | Worker `moment-web-staging` | not set up; `main` is never deployed |
 
 ## Sign in on staging
 
@@ -146,3 +148,48 @@ To turn maps on:
 6. Rebuild the APK (`eas build -p android --profile preview`). An OTA update can't add it.
 
 Production later: a separate key restricted to `com.moment.app`, in the `production` environment.
+
+## Web app on Cloudflare Workers
+
+`apps/web` runs on Cloudflare Workers through the OpenNext adapter
+(`@opennextjs/cloudflare`), Worker **`moment-web-staging`** on the account
+"Work.nabeelahmed@gmail.com's Account" (subdomain `work-nabeelahmed.workers.dev`).
+Other Workers on that account (e.g. `prodzyn`) have nothing to do with Moment:
+never touch them.
+
+```bash
+pnpm web:deploy:staging        # from the repo root, on staging or a feature branch
+```
+`apps/web/scripts/deploy-staging.mjs`:
+1. refuses to run on `main`;
+2. moves local `.env*` files aside for the build (OpenNext compiles every
+   `.env*` it finds into the Worker, which would ship local keys) and restores
+   them afterwards. If a deploy is killed hard and a `*.deploy-hidden` file is
+   left behind, rename it back;
+3. builds with the public values from `apps/web/wrangler.jsonc` (`vars`);
+4. fails if a Supabase secret key is in the bundle;
+5. checks the compressed size (dry run) against the free-plan limit (3 MiB
+   gzip) and only then deploys. Size on 2026-11-27: 1.3 MiB gzip.
+
+Wrangler is logged in on the dev Mac (`pnpm --filter web exec wrangler whoami`).
+`npx` is broken on that Mac: use `pnpm exec` / `pnpm dlx`.
+
+**Config.** Public values (`NEXT_PUBLIC_*`) live in `apps/web/wrangler.jsonc`
+`vars`; they're also inlined into the browser bundle at build time. Secrets are
+set once per Worker and never committed:
+```bash
+cd apps/web
+pnpm exec wrangler secret put SUPABASE_SECRET_KEY     # paste the value when asked
+pnpm exec wrangler secret list
+```
+
+**Supabase Auth.** `https://moment-web-staging.work-nabeelahmed.workers.dev/**` is
+in the staging redirect URLs (`[remotes.staging.auth]` in `supabase/config.toml`,
+pushed with `config push`, answer **y** for auth and **n** for storage).
+
+**Preview the Worker locally:** `pnpm --filter web preview:cf` (builds, then
+`wrangler dev`). Local `.env.local` applies there, so it talks to local Supabase.
+
+**Limits.** Next.js Cache Components (`cacheComponents`) are off: OpenNext
+doesn't support them on Workers yet (requests hang). No incremental cache
+(R2/KV) is configured; the portal is dynamic and per user.
