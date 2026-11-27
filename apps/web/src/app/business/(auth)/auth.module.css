@@ -1,0 +1,78 @@
+/* Page-level spacing measured on the Figma frames (1440 x 1024). */
+
+.intro {
+  margin-top: var(--web-space-13);
+  max-width: var(--web-intro-width);
+}
+
+.getStarted {
+  align-self: flex-start;
+  margin-top: var(--web-space-60);
+}
+
+.headingGap {
+  margin-top: var(--web-space-40);
+}
+
+.buttonGap {
+  margin-top: var(--web-space-60);
+}
+
+.sectionGap {
+  margin-top: var(--web-space-50);
+}
+
+.smallGap {
+  margin-top: var(--web-field-stack-gap);
+}
+
+.forgotRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--web-space-11);
+  margin-bottom: var(--web-space-25);
+}
+
+.forgotRow a {
+  font-weight: var(--text-h4-weight);
+  color: var(--color-secondary);
+}
+
+.successNote {
+  margin-top: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--web-field-radius);
+  background: var(--color-success-surface);
+  font-size: var(--text-webBody14-size);
+  line-height: var(--text-webBody14-line-height);
+  color: var(--color-secondary);
+}
+
+.resend {
+  margin-top: var(--web-space-50);
+  text-align: center;
+  font-size: var(--text-webBody20Tight-size);
+  line-height: var(--text-webBody20Tight-line-height);
+  letter-spacing: var(--text-webBody20Tight-tracking);
+  color: var(--color-secondary);
+}
+
+.allSet {
+  margin-top: var(--web-space-50);
+  text-align: center;
+  font-size: var(--text-webBody20-size);
+  line-height: var(--text-webBody20-line-height);
+  color: var(--color-secondary);
+}
+
+.allSet a {
+  font-weight: var(--text-h4-weight);
+}
+
+.forgotIntro {
+  margin-top: var(--web-space-17);
+}
+
+.resetGap {
+  margin-top: var(--web-space-50);
+}

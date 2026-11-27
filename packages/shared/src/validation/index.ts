@@ -3,6 +3,7 @@
 // handler or edge function accepts the same payload.
 export * from './auth';
 export * from './booking';
+export * from './business';
 export * from './common';
 export * from './discovery';
 export * from './profile';

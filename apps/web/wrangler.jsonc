@@ -16,9 +16,13 @@
   "observability": { "enabled": true },
   // NEXT_PUBLIC_* are also inlined into the browser bundle at build time:
   // scripts/deploy-staging.mjs passes these same values to `next build`.
+  // AUTO_APPROVE_BUSINESSES=1 activates new businesses at once (staging only;
+  // ignored when NEXT_PUBLIC_APP_ENV is production). Secret: SUPABASE_SECRET_KEY.
   "vars": {
+    "AUTO_APPROVE_BUSINESSES": "1",
     "NEXT_PUBLIC_APP_ENV": "staging",
     "NEXT_PUBLIC_SITE_URL": "https://moment-web-staging.work-nabeelahmed.workers.dev",
+    "NEXT_PUBLIC_CONTACT_EMAIL": "support@momentbooking.com",
     "NEXT_PUBLIC_SUPABASE_URL": "https://iltnkqxgdnhsnkvvhpxp.supabase.co",
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_uAyMdobTDPzo9Jbfv3S3_Q_McQ62XRE"
   }

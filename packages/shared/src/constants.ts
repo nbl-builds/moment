@@ -9,6 +9,8 @@ export const COUNTRY_CODE = 'PK';
 export const COUNTRY_CALLING_CODE = '+92';
 
 export const LAUNCH_CITIES = ['Islamabad', 'Lahore', 'Karachi'] as const;
+/** Countries offered on forms (business sign-up). Pakistan only at launch. */
+export const COUNTRIES = [{ code: 'PK', name: 'Pakistan' }] as const;
 export type LaunchCity = (typeof LAUNCH_CITIES)[number];
 
 /** Digits in a Supabase phone/email OTP (`otp_length` in supabase/config.toml, 6 boxes in Figma). */
@@ -41,6 +43,8 @@ export const LIMITS = {
   supportSubject: { min: 3, max: 140 },
   supportBody: 4000,
   searchQuery: 100,
+  businessName: 120, // businesses.name check (2..120)
+  businessAddress: 200,
 } as const;
 
 /**

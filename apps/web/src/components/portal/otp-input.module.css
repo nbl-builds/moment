@@ -1,0 +1,61 @@
+.row {
+  display: flex;
+  gap: var(--web-otp-gap);
+  width: 100%;
+}
+
+/* 72 x 72, radius 15, S Tint 6; empty cells show an var(--web-space-18) S Tint 5 dot. */
+.cell {
+  position: relative;
+  flex: 1 1 0;
+  max-width: var(--web-otp-cell);
+  aspect-ratio: 1;
+  border-radius: var(--web-otp-radius);
+  background: var(--color-field);
+  border: 1px solid transparent;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.cell[data-empty="true"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--web-otp-dot);
+  height: var(--web-otp-dot);
+  border-radius: 50%;
+  background: var(--color-otp-dot);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cell:focus-within {
+  border-color: var(--color-secondary);
+}
+
+.cell[data-empty="true"]:focus-within::after {
+  display: none;
+}
+
+.cell[data-invalid="true"] {
+  background: var(--color-otp-error-surface);
+  border-color: var(--color-otp-error-border);
+}
+
+/* Body XX-Large 25 Bold. */
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  text-align: center;
+  font: inherit;
+  font-size: var(--text-webBody25-size);
+  line-height: var(--text-webBody25-line-height);
+  font-weight: var(--text-h4-weight);
+  color: var(--color-secondary);
+  caret-color: var(--color-secondary);
+}

@@ -1,0 +1,109 @@
+/* Figma: 1440 x 1024 frames, photo column 710 wide, form column 480 centred in the rest. */
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  background: var(--color-white);
+}
+
+.photo {
+  position: sticky;
+  top: 0;
+  flex: 0 0 calc(var(--web-auth-photo-width) / var(--web-frame-width) * 100%);
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.photoFrame {
+  position: absolute;
+  inset: 0;
+}
+
+.photoImage {
+  object-fit: cover;
+}
+
+.photoLogo {
+  position: absolute;
+  top: var(--web-logo-top);
+  left: var(--web-auth-header-inset-x);
+  display: flex;
+}
+
+.side {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--web-auth-header-inset-y) var(--web-auth-header-inset-x) 0;
+}
+
+.headerLogo {
+  display: none;
+}
+
+/* Figma "Button" Secondary / Medium: 40 tall, 1px Secondary border, radius 10, SemiBold 14. */
+.contact {
+  display: inline-flex;
+  align-items: center;
+  height: var(--web-button-medium-height);
+  padding: 0 var(--web-button-medium-padding-x);
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--web-button-medium-radius);
+  color: var(--color-secondary);
+  font-size: var(--text-webButton14-size);
+  line-height: var(--text-webButton14-line-height);
+  font-weight: var(--text-webButton14-weight);
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.contact:hover {
+  background: var(--color-field);
+}
+
+.contact:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-xxxl) var(--space-xl) var(--web-space-80);
+}
+
+.top {
+  justify-content: flex-start;
+  padding-top: var(--web-space-60);
+}
+
+@media (max-width: 1023.98px) {
+  .photo {
+    display: none;
+  }
+
+  .header {
+    justify-content: space-between;
+    padding: var(--space-lg) var(--web-gutter);
+  }
+
+  .headerLogo {
+    display: flex;
+  }
+
+  .main,
+  .top {
+    justify-content: flex-start;
+    padding: var(--space-xxl) var(--web-gutter) var(--space-xxxl);
+  }
+}

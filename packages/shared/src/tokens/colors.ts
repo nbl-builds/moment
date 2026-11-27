@@ -9,6 +9,10 @@ export const palette = {
   limeShade2: '#92B23C', // Figma: Primary Color / P Shade 2 (picked seat, Adventure Quiz 20:2367)
   limeShade4: '#52661E', // Figma: Primary Color / P Shade 4
   limeTint6: '#F8FFE5', // Figma: Primary Color / P Tint 6
+  limeTint2: '#DDFF88', // Figma: Primary Color / P Tint 2
+  limeTint3: '#E4FFA0', // Figma: Primary Color / P Tint 3
+  limeTint4: '#EBFFB8', // Figma: Primary Color / P Tint 4
+  limeTint5: '#F2FFD0', // Figma: Primary Color / P Tint 5
   nearBlack: '#131617',
   nearBlackTint1: '#383B3C', // Figma: Secondary Color / S Tint 1
   nearBlackTint2: '#5D6061', // Figma: Secondary Color / S Tint 2
@@ -17,6 +21,28 @@ export const palette = {
   nearBlackTint5: '#CCCFD0', // Figma: Secondary Color / S Tint 5
   nearBlackTint6: '#F1F3F4', // Figma: Secondary Color / S Tint 6
   orange: '#FE8A29', // Figma: Third Color / Third Color
+  // Third Color tints and shades (Business App file, Colors page 4:139)
+  orangeTint1: '#FE9B49',
+  orangeTint2: '#FEAC69',
+  orangeTint3: '#FEBD89',
+  orangeTint4: '#FECEA9',
+  orangeTint5: '#FEDFC9',
+  orangeTint6: '#FFF1E6',
+  orangeShade1: '#D77423',
+  orangeShade2: '#B15F1C',
+  orangeShade3: '#8B4A15',
+  orangeShade4: '#65350E',
+  orangeShade5: '#3F2007',
+  orangeShade6: '#190B00',
+  // Business App file, Buttons page (127:886): accent colours
+  trueBlue: '#005CE3',
+  trueBlueLighter: '#72A6F1',
+  trueBlueDarker: '#00347E',
+  harvestGold: '#E39700',
+  harvestGoldLighter: '#F1C772',
+  harvestGoldDarker: '#7E5500',
+  azureishWhite: '#D9E8FF',
+  azureishWhiteDarker: '#6C7A8C',
   black: '#1A1A1A',
   white: '#FFFFFF',
   pureBlack: '#000000', // Figma: Black Color / Black Color

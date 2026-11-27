@@ -1,4 +1,10 @@
 import { defineCloudflareConfig } from "@opennextjs/cloudflare";
+import staticAssetsIncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/static-assets-incremental-cache";
 
-// No incremental cache (R2/KV) yet: the portal is dynamic and per user.
-export default defineCloudflareConfig({});
+// Prerendered pages (e.g. /business) are read from the Worker's static assets.
+// Without an incremental cache they intermittently 404'd. No revalidation is
+// used, so the read-only static assets cache is enough (no R2 / KV needed).
+export default defineCloudflareConfig({
+  incrementalCache: staticAssetsIncrementalCache,
+  enableCacheInterception: true,
+});

@@ -1,0 +1,160 @@
+.wide {
+  max-width: var(--web-auth-wide-form-width);
+}
+
+.grid {
+  max-width: var(--web-auth-tile-grid-width);
+}
+
+/* Tell us about yourself: 522 x 120 cards, 30 apart, radius 15. */
+.typeList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--web-space-30);
+  margin-top: var(--web-space-40);
+}
+
+.typeCard {
+  display: flex;
+  align-items: center;
+  gap: var(--web-space-22);
+  min-height: var(--web-type-card-height);
+  padding: var(--space-lg) var(--web-space-38) var(--space-lg) var(--web-space-40);
+  border: 1px solid var(--color-field);
+  border-radius: var(--web-card-radius);
+  background: var(--color-white);
+  transition: background-color 0.15s ease;
+}
+
+.typeCard:hover,
+.typeCard:focus-visible,
+.typeCard[data-selected="true"] {
+  background: var(--color-field);
+}
+
+.typeCard:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.typeIcon {
+  flex: 0 0 auto;
+  display: flex;
+  width: var(--web-tile-icon);
+  height: var(--web-tile-icon);
+}
+
+.typeText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--web-type-text-width);
+}
+
+/* Body Regular 16 Bold / Body X-Small 12 Regular S Tint 2. */
+.typeTitle,
+.tileTitle {
+  font-size: var(--text-webBody16-size);
+  line-height: var(--text-webBody16-line-height);
+  font-weight: var(--text-h4-weight);
+  color: var(--color-secondary);
+}
+
+.typeDescription,
+.tileDescription {
+  font-size: var(--text-webBody12-size);
+  line-height: var(--text-webBody12-line-height);
+  color: var(--color-text-muted);
+}
+
+.chevron {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--web-icon);
+  height: var(--web-icon);
+  margin-left: auto;
+}
+
+/* What does your business provide: 262 x 204 tiles, 18 / 20 apart, radius 15. */
+.tiles {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, var(--web-tile-width)));
+  column-gap: var(--web-space-18);
+  row-gap: var(--web-tile-gap);
+  margin-top: var(--web-space-40);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: var(--web-tile-height);
+  height: 100%;
+  padding: var(--web-space-30) var(--web-space-12) var(--space-lg);
+  border: 1px solid transparent;
+  border-radius: var(--web-card-radius);
+  background: var(--color-field);
+  text-align: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.tile:hover {
+  border-color: var(--color-secondary-tint5);
+}
+
+.tile[data-selected="true"] {
+  background: var(--color-white);
+  border-color: var(--color-secondary);
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.tileIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--web-tile-icon);
+  height: var(--web-tile-icon);
+}
+
+.tileTitle {
+  margin-top: var(--web-space-14);
+}
+
+.tileDescription {
+  margin-top: var(--web-space-10);
+}
+
+@media (max-width: 479.98px) {
+  .typeCard {
+    padding: var(--space-lg);
+    gap: var(--space-lg);
+  }
+
+  .typeIcon {
+    width: var(--web-compact-icon);
+    height: var(--web-compact-icon);
+  }
+
+  .typeIcon img {
+    width: var(--web-compact-icon);
+    height: var(--web-compact-icon);
+  }
+
+  .tiles {
+    column-gap: var(--space-md);
+    row-gap: var(--space-md);
+  }
+
+  .tile {
+    min-height: 0;
+    padding: var(--space-lg) var(--space-sm);
+  }
+}

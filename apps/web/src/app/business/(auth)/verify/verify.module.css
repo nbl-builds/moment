@@ -1,0 +1,41 @@
+/* Padlock badge: P Tint 6, 30 padding, 30 radius, 80 icon (P Shade 2 stroke). */
+.badge {
+  align-self: flex-start;
+  display: flex;
+  padding: var(--web-badge-padding);
+  border-radius: var(--web-badge-radius);
+  background: var(--color-badge-surface);
+}
+
+.title {
+  margin-top: var(--web-space-20);
+}
+
+.sentTo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--web-space-14);
+}
+
+.dot {
+  font-weight: var(--text-h4-weight);
+  color: var(--color-secondary);
+}
+
+.code {
+  position: relative;
+  margin-top: var(--web-space-40);
+}
+
+/* Not in Figma: wrong-code message under the boxes (kept short, var(--web-space-12)). */
+.message {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + var(--space-sm));
+  font-size: var(--text-webBody12-size);
+  line-height: var(--text-webBody12-line-height);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-otp-error-border);
+}
