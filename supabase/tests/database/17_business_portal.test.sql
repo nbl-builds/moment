@@ -79,5 +79,19 @@ select pg_temp.login(:hamza);
 select throws_ok($$ select public.business_insights('00000000-0000-4000-b000-000000000031') $$, 'P0002', null, 'outsiders get nothing');
 select pg_temp.logout();
 
+-- Message guest
+select pg_temp.login(:owner);
+select lives_ok($$ select public.start_guest_conversation((select id from public.bookings
+  where business_id = '00000000-0000-4000-b000-000000000031' and status = 'confirmed' order by starts_at desc limit 1)) $$,
+  'team member opens a chat with the guest');
+select is((select count(*)::int from public.conversations c join public.bookings b on b.id = c.booking_id
+  where b.business_id = '00000000-0000-4000-b000-000000000031' and b.status = 'confirmed'
+    and b.id = (select id from public.bookings where business_id = '00000000-0000-4000-b000-000000000031' and status = 'confirmed' order by starts_at desc limit 1)), 1,
+  'one conversation for the reservation');
+select pg_temp.login(:fatima);
+select throws_ok($$ select public.start_guest_conversation((select id from public.bookings where consumer_id = '00000000-0000-4000-a000-000000000021' limit 1)) $$,
+  'P0002', null, 'outsiders cannot');
+select pg_temp.logout();
+
 select * from finish();
 rollback;

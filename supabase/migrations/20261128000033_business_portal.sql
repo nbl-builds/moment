@@ -366,3 +366,46 @@ $$;
 
 revoke execute on function public.business_insights(uuid, text) from public, anon;
 grant execute on function public.business_insights(uuid, text) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- "Message guest" from a reservation
+-- ---------------------------------------------------------------------------
+-- A team member opens (or resumes) the chat with the guest of a reservation,
+-- the same conversation the guest sees in the app. The guest is a participant.
+create function public.start_guest_conversation(p_booking_id uuid)
+returns public.conversations
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_booking public.bookings;
+  v_conversation public.conversations;
+begin
+  select * into v_booking from public.bookings where id = p_booking_id;
+  if not found or not private.is_business_member(v_booking.business_id) then
+    raise exception 'Booking not found' using errcode = 'P0002';
+  end if;
+
+  select c.* into v_conversation from public.conversations c
+  where c.type = 'business' and c.business_id = v_booking.business_id and c.booking_id = v_booking.id
+  limit 1;
+
+  if not found then
+    insert into public.conversations (type, business_id, booking_id, created_by)
+    values ('business', v_booking.business_id, v_booking.id, v_booking.consumer_id)
+    returning * into v_conversation;
+    insert into public.conversation_participants (conversation_id, user_id)
+    values (v_conversation.id, v_booking.consumer_id)
+    on conflict do nothing;
+  end if;
+
+  insert into public.conversation_participants (conversation_id, user_id, last_read_at)
+  values (v_conversation.id, (select auth.uid()), now())
+  on conflict do nothing;
+  return v_conversation;
+end;
+$$;
+
+revoke execute on function public.start_guest_conversation(uuid) from public, anon;
+grant execute on function public.start_guest_conversation(uuid) to authenticated;

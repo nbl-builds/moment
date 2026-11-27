@@ -332,7 +332,7 @@ select
   'app',
   case d.status when 'cancelled_by_business' then 'The Fort closed for a state event that day.'
                 when 'cancelled_by_consumer' then 'Change of plans, sorry!' end,
-  t.starts_at - make_interval(days => d.lead_days)
+  least(t.starts_at - make_interval(days => d.lead_days), now() - make_interval(hours => 2 + (d.n % 20)::int))
 from demo_bookings d
 join public.listings l on l.id = ('00000000-0000-4000-e000-0000000003' || d.listing)::uuid
 join public.profiles pr on pr.id = ('00000000-0000-4000-a000-0000000000' || d.guest)::uuid

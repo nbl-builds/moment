@@ -3981,6 +3981,25 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      start_guest_conversation: {
+        Args: { p_booking_id: string };
+        Returns: {
+          booking_id: string | null;
+          business_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          group_id: string | null;
+          id: string;
+          last_message_at: string | null;
+          type: Database["public"]["Enums"]["conversation_type"];
+        };
+        SetofOptions: {
+          from: "*";
+          to: "conversations";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       submit_quiz: {
         Args: { p_answer_ids: string[] };
         Returns: {
