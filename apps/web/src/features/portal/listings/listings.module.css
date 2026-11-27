@@ -1,0 +1,246 @@
+/* Figma 126:302: H5 title, text tabs + "All" pill on the right, 403 x 360 cards (3 per row, 30 apart). */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--web-space-16);
+  margin-bottom: var(--web-space-40);
+}
+
+.title {
+  font-size: var(--text-webH5-size);
+  line-height: var(--text-webH5-line-height);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--text-webH5-tracking);
+  color: var(--color-black);
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: var(--web-space-24);
+}
+
+/* 14 Regular, S Tint 1; the active view is underlined. */
+.tabLink {
+  font-size: var(--text-webBody14-size);
+  line-height: var(--text-webBody14-line-height);
+  color: var(--color-secondary-tint1);
+  white-space: nowrap;
+}
+
+.tabLink[data-active="true"] {
+  text-decoration: underline;
+  text-decoration-skip-ink: none;
+  text-underline-position: from-font;
+}
+
+.filterWrap {
+  position: relative;
+}
+
+/* "All" pill: radius 50, S Tint 5 fill while the menu is open. */
+.allButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--web-space-6);
+  height: var(--web-space-32);
+  padding: 0 var(--web-space-12) 0 var(--web-space-16);
+  border: 0;
+  border-radius: var(--web-radius-pill);
+  background: transparent;
+  font: inherit;
+  font-size: var(--text-webBody14-size);
+  color: var(--color-secondary-tint1);
+  cursor: pointer;
+}
+
+.allButton:hover,
+.allButton[data-open="true"] {
+  background: var(--color-secondary-tint5);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + var(--web-space-12));
+  right: 0;
+  z-index: 20;
+  width: var(--web-menu-width);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-field);
+  border-radius: var(--web-radius-card-large);
+  background: var(--color-white);
+  box-shadow: 0 var(--web-space-22) 133px var(--color-shadow);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  min-height: var(--web-menu-item-height);
+  padding: 0 var(--web-space-20);
+  font-size: var(--text-webNav14-size);
+  line-height: var(--text-webNav14-line-height);
+  letter-spacing: var(--text-webNav14-tracking);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary);
+}
+
+.menuItem:hover,
+.menuItem[data-current="true"] {
+  background: var(--color-field);
+}
+
+.grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: var(--web-space-30);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--web-listing-card-height);
+  padding: var(--web-space-20);
+  border-radius: var(--web-radius-card-large);
+  background: var(--color-white);
+}
+
+.cardLink {
+  display: block;
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  height: var(--web-listing-photo-height);
+  border-radius: var(--web-radius-card);
+  object-fit: cover;
+}
+
+.noPhoto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-field);
+  font-size: var(--text-webBody14-size);
+  color: var(--color-text-muted);
+}
+
+/* Body XX-Large 25 Bold, one line. */
+.cardTitle {
+  margin-top: var(--web-space-20);
+  font-size: var(--text-webBody25-size);
+  line-height: var(--text-webBody25-line-height);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-black);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardTitle a:hover {
+  text-decoration: underline;
+}
+
+.meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--web-space-12);
+  margin-top: var(--web-space-10);
+}
+
+.date {
+  font-size: var(--text-webBody14-size);
+  line-height: var(--text-webBody14-line-height);
+  color: var(--color-secondary-tint1);
+}
+
+.category {
+  display: flex;
+  align-items: center;
+  gap: var(--web-space-8);
+  margin-top: var(--web-space-6);
+  font-size: var(--text-webBody16-size);
+  line-height: var(--text-webBody16-line-height);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary);
+}
+
+/* 42px edit button, S Tint 5 border, radius 10. */
+.edit {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--web-edit-button);
+  height: var(--web-edit-button);
+  border: 1px solid var(--color-secondary-tint5);
+  border-radius: var(--web-radius-card);
+}
+
+.edit:hover {
+  background: var(--color-field);
+}
+
+.tabLink:focus-visible,
+.allButton:focus-visible,
+.menuItem:focus-visible,
+.cardLink:focus-visible,
+.cardTitle a:focus-visible,
+.edit:focus-visible,
+.createButton:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--web-space-24);
+  padding: var(--web-space-60) var(--web-space-20);
+  border-radius: var(--web-radius-card-large);
+  background: var(--color-white);
+  text-align: center;
+}
+
+.empty p {
+  max-width: var(--web-auth-form-width);
+  font-size: var(--text-webNav14-size);
+  line-height: var(--text-webNav14-line-height);
+  color: var(--color-secondary);
+}
+
+.createButton {
+  display: inline-flex;
+  align-items: center;
+  height: var(--web-button-large-height);
+  padding: 0 var(--web-button-large-padding-x);
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--web-radius-card);
+  font-size: var(--text-webButton16-size);
+  font-weight: var(--font-weight-semibold);
+}
+
+@media (max-width: 1023.98px) {
+  .head {
+    margin-bottom: var(--web-space-20);
+  }
+
+  .title {
+    font-size: var(--text-webBody25-size);
+  }
+
+  .filters {
+    gap: var(--web-space-14);
+  }
+
+  .cardTitle {
+    font-size: var(--text-webBody20-size);
+  }
+}
