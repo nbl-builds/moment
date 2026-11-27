@@ -3,7 +3,7 @@
 Keep this file current: tick items as they land and update **Next up** so any session can pick up where the last one stopped.
 
 ## Next up
-- **Business portal (current phase, `apps/web`)**: sign up / login / recovery and the main area (Dashboard, Calendar, Inbox, Listings, Insights, Reviews) are done. Next: Listing Details (`/business/listings/[id]`), then the listing wizard. Demo login (local and staging): `portal@moment.test` / `password123` (owner; `manager.portal@` and `staff.portal@` for roles)
+- **Business portal (current phase, `apps/web`)**: sign up / login / recovery and the main area (Dashboard, Calendar, Inbox, Listings, Insights, Reviews) and Listing Details (`/business/listings/[id]`) are done. Next: the listing wizard (`/business/listings/[id]/edit?step=details|photos|pricing|availability|location|policies|team`, linked from every Edit link and the draft checklist). Demo login (local and staging): `portal@moment.test` / `password123` (owner; `manager.portal@` and `staff.portal@` for roles)
 - Maps: Explore uses react-native-maps with the default provider (Apple Maps on iOS, muted style; Google on Android). Decide Mapbox vs Google before launch; Figma's grey map style needs the Google provider (`customMapStyle`) or Mapbox
 - Phase 1 remaining: Supabase Auth providers for production (a Pakistan SMS provider for phone OTP, email, Apple, Google, Facebook). Locally, phone OTP works with the test numbers in `supabase/config.toml` (`+92 308 4282001` / `051518`, `+92 300 1234567` / `123456`)
 - Sign-in providers at the end: a Pakistan SMS provider (production phone OTP), Apple, Google and Facebook (buttons show "Coming soon" today), and production SMTP for auth emails (templates in `supabase/templates`)
@@ -49,6 +49,9 @@ One branch per section (`feat/<section>`), merged into `staging`. Frames: `docs/
 - [x] 10. Profile Screens: Profile tab (bell with unread count, profile card with the unverified alert, General / Support / Legal, Sign Out confirm, app version; guests get a sign-in card and protected rows open the login sheet), Notifications (real feed from booking, payment and refund triggers, marks read on open, taps open the booking), Show profile (photo upload, verified tick, identity verification, MAQ badge, Choose Location), Edit personal info (names, pronouns, email change, phone change through the OTP screen, emergency contact, Delete Account), Adventure Quiz badge (retake after 3 completed bookings), Wallet (balance, deposit, history, All Transactions by period), Payment method (Card / JazzCash / Easypaisa, default, remove), Membership, Offers (Apply saves a coupon that Confirm Reservation pre-applies), Invite friends + My Recent Invites, Privacy & Sharing (manage my data, sharing toggles), Get started, Receive help (FAQ + answer sheet), Contact Moment Support (support ticket chat), Give us feedback, Follow us, Rate us (store review prompt), Privacy policy and Terms in-app
 
 ## To wire after UI
+- **Portal: listing map tile** (`features/portal/listing-detail/overview-tab.tsx`): a drawn tile with the pin and an "Open in Maps" link (Google Maps search URL from `listing_point`). Swap for a static map image once the maps provider is chosen
+- **App: paused listings**: `accepting_bookings = false` makes guest bookings fail in the database ("This experience isn't taking new bookings right now"); the app still shows the Book button. Read the flag in the experience screen and show "Not taking bookings" instead
+
 Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`). Swap each for the `api.*` call when the backend lands.
 - **Search: date availability** (`features/search/mock.ts` `availableListingIds`): every listing counts as available. Needs an availability search RPC (slots + staff schedules)
 - **Search: host mode** (`features/search/mock.ts` `searchHosts`): Filters > Host shows hosts; loads the top 100 hosts and filters on the device by name, category, city, language and rating (area, distance, price and dates ignored). Needs a `search_hosts` RPC
@@ -174,7 +177,8 @@ Figma: https://www.figma.com/design/hvSITt4VVdCeFArVVFUgl1/Moment-Business-App (
 - [x] Reviews: average, count, 5-1 distribution, list with photos (lightbox), Reply / Edit reply (not in Figma)
 - [x] Listing views tracked from the app (experience and business pages; `record_listing_view`, de-duplicated)
 - [x] Portal demo seed (`supabase/seeds/portal_demo.sql`) and Playwright E2E for the portal at 1440 and 390
-- [ ] Listing Details page (next), listing wizard, Notifications, Business profile, Account settings (placeholder routes today)
+- [x] Listing Details (`/business/listings/[id]`, no full Figma; top of 629:7360 matched): breadcrumb, status pill, Preview (customer view in a phone frame, mobile order), Edit listing, ••• (Duplicate, Archive / Unarchive, Unpublish, Delete for drafts with confirm); gallery + lightbox; tabs Overview (sections hide when empty, Edit links to wizard steps, map tile + Open in Maps), Availability (next 14 sessions with booked / capacity, Block date, Add session; appointments: staff weekly hours + blocked dates), Reservations (sub-tabs with counts, side panel), Reviews (summary, list, Reply); sticky right column: Status with "Accepting bookings" (`listings.accepting_bookings`), Last 30 days (`listing_stats`, revenue owners + managers), Next reservations, Share. Drafts: "Finish your listing" checklist (`listingChecklist`) and Publish. Staff read-only; loading, not-found and archived states; E2E at 1440 and 390
+- [ ] Listing wizard (next), Notifications, Business profile, Account settings (placeholder routes today)
 - [ ] Google / Facebook sign-in (buttons show "coming soon")
 - [ ] Business profile
 - [ ] Listings and services management

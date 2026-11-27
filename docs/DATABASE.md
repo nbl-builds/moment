@@ -83,6 +83,10 @@ RLS helpers live in the `private` schema (not exposed through the API), are `sec
 - `business_insights(business, period)`: one jsonb for the Insights page. `weekly` = last 7 days by day, `monthly` = last 4 weeks by week, `yearly` = last 12 months by month, in the business's timezone. Bookings created, views (with the previous period for % change), rating and monthly trend, bookings per category group, newly added and most viewed listings. `revenue` (succeeded payments minus Moment's fee) and `wallet` (collected by Moment, minus refunds and payouts) are only returned to owners; managers and staff get null.
 - `business_inbox(business, search, unread_only, since, limit)`: the shared inbox, one row per business conversation with the guest, the reservation or the guest's latest booked listing (+ cover), the last message and unread guest messages for the signed-in team member (each member has their own `conversation_participants.last_read_at`).
 - `start_guest_conversation(booking)`: "Message guest". A team member opens or resumes the reservation's chat (the guest is a participant), the same conversation the guest sees in the app.
+- `listings.accepting_bookings` (default true): the portal's "Accepting bookings" switch. Off, a trigger refuses new bookings from guests (`source` app / web, error 22023) while the listing stays published; the business can still add bookings (portal, POS).
+- `listing_stats(listing)`: last 30 days for one listing in the business's timezone (views and bookings with the previous 30 days, daily views series). `revenue` only for owners and managers (null for staff). Team members and super admins only.
+- `duplicate_listing(listing)`: security invoker (listing write policies apply), owners and managers only. Copies the listing as a draft titled "(copy)" (slug `-copy`, then `-copy-xxxx`) with options, photos, tags, staff and itinerary; not its sessions, bookings or reviews.
+- `listing_point(listing)`: latitude / longitude of the meeting point, or the listing's business location, for the map preview.
 
 ### Catalog
 - `categories` (nestable, by kind), `tags` (drive recommendations). The 7 business sign-up tiles (Adventure, Tours, Food, Health & Wellness, Art & Culture, Entertainment, Beauty) are categories with `is_group = true`, a `description`, and `business_kind`: what a "Business" picking that tile becomes (`operator` for Adventure, Tours, Art & Culture; `venue` for Food, Health & Wellness, Entertainment, Beauty). Hosts are always `host`. Listing categories are their children (`parent_id`); `catalog.listCategories` leaves the groups out, `business.listSignUpCategories` returns only them.
@@ -241,6 +245,7 @@ pnpm db:types    # regenerate packages/shared/src/types/database.types.ts
 - `10_booking_flow`: quotes and coupon reasons, sold-out and private slots, services cart (coupon once, idempotent, all or nothing), calendar days, phone sync.
 - `15_profile_account`: personal details checks, verified flag not user-settable, saved payment methods (own only, one default, promotion), saved coupons (public only), booking notifications, public config.
 - `14_groups`: likes and likes visibility, match requests (who can send, accept and withdraw), `group_matches`, `group_recommendations`, `find_people` (no guests, phone formats), invites, covers bucket.
+- `18_listing_details`: accepting_bookings trigger (guests blocked, business sources allowed), `listing_stats` (revenue hidden from staff, other businesses refused), `duplicate_listing` (copies, roles), `listing_point`.
 - `09_business_page`: opening hours and `business_is_open` (split days, past midnight), gallery and hours RLS, seed coverage, review-photo uploads, `reviewable_bookings`, location points.
 
 ### Seed data (local only)

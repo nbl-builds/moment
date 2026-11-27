@@ -213,6 +213,6 @@ bikes), forgot (dog), reset (hiker); in `apps/web/public/business/auth` as WebP 
 | My Listings / My Drafts + category menu / My Archives | 126:302, 626:5263, 626:5371 | `app/business/(portal)/listings` |
 | Insights (top / full) | 127:456, 512:2143 | `app/business/(portal)/insights` |
 | Reviews | 513:2725 | `app/business/(portal)/reviews` |
-| Listing Details (start only) | 629:7360 | next section |
+| Listing Details (start only: top bar, title, cover) | 629:7360 | `app/business/(portal)/listings/[id]`, `features/portal/listing-detail/` (rest designed in portal style) |
 
 Not in Figma, built in the portal style: the reservation side panel, the help and What's New sheets, review replies, the phone menu.
