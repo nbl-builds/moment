@@ -1,7 +1,8 @@
 import { colors } from '@moment/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useRef, useState, type ComponentRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
+import { trackView } from '@/lib/view-tracking';
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, {
   interpolate,
@@ -86,6 +87,9 @@ export default function BusinessScreen() {
 
   const business = useBusiness(slug);
   const biz = business.data;
+  useEffect(() => {
+    if (biz?.id) trackView({ businessId: biz.id });
+  }, [biz?.id]);
   const location = useBusinessLocation(biz?.id);
   const services = useBusinessServices(biz?.id);
   const popular = useBusinessPopular(biz?.id);
