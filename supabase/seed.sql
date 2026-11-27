@@ -136,6 +136,19 @@ insert into public.categories (slug, name, kind, icon, sort_order) values
   ('grooming', 'Grooming', 'service', 'razor', 13),
   ('skin-care', 'Skin Care', 'service', 'face-id', 14);
 
+-- Group them under the business sign-up tiles (groups come from migration
+-- 20261127000032_business_onboarding.sql).
+update public.categories c
+set parent_id = g.id
+from (values
+  ('tours-walks', 'tours'), ('day-trips', 'tours'), ('food-drink', 'food'),
+  ('outdoor-adventure', 'adventure'), ('water-activities', 'adventure'),
+  ('arts-workshops', 'art-culture'), ('spa-massage', 'health-wellness'),
+  ('hair', 'beauty'), ('nails', 'beauty'), ('grooming', 'beauty'), ('skin-care', 'beauty')
+) as m(child, grp)
+join public.categories g on g.slug = m.grp
+where c.slug = m.child;
+
 insert into public.tags (slug, name) values
   ('adventure', 'Adventure'), ('hiking', 'Hiking'), ('nature', 'Nature'), ('water', 'Water'),
   ('heritage', 'Heritage'), ('history', 'History'), ('culture', 'Culture'), ('food', 'Food'),

@@ -903,6 +903,7 @@ export type Database = {
           logo_url: string | null;
           name: string;
           phone: string | null;
+          primary_category_id: string | null;
           rating_avg: number;
           rating_count: number;
           slug: string;
@@ -927,6 +928,7 @@ export type Database = {
           logo_url?: string | null;
           name: string;
           phone?: string | null;
+          primary_category_id?: string | null;
           rating_avg?: number;
           rating_count?: number;
           slug: string;
@@ -950,6 +952,7 @@ export type Database = {
           logo_url?: string | null;
           name?: string;
           phone?: string | null;
+          primary_category_id?: string | null;
           rating_avg?: number;
           rating_count?: number;
           slug?: string;
@@ -959,13 +962,24 @@ export type Database = {
           updated_at?: string;
           website?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "businesses_primary_category_id_fkey";
+            columns: ["primary_category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       categories: {
         Row: {
+          business_kind: Database["public"]["Enums"]["business_kind"] | null;
+          description: string | null;
           icon: string | null;
           id: string;
           is_active: boolean;
+          is_group: boolean;
           kind: Database["public"]["Enums"]["category_kind"];
           name: string;
           parent_id: string | null;
@@ -974,9 +988,12 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          business_kind?: Database["public"]["Enums"]["business_kind"] | null;
+          description?: string | null;
           icon?: string | null;
           id?: string;
           is_active?: boolean;
+          is_group?: boolean;
           kind: Database["public"]["Enums"]["category_kind"];
           name: string;
           parent_id?: string | null;
@@ -984,9 +1001,12 @@ export type Database = {
           sort_order?: number;
         };
         Update: {
+          business_kind?: Database["public"]["Enums"]["business_kind"] | null;
+          description?: string | null;
           icon?: string | null;
           id?: string;
           is_active?: boolean;
+          is_group?: boolean;
           kind?: Database["public"]["Enums"]["category_kind"];
           name?: string;
           parent_id?: string | null;
@@ -3546,6 +3566,19 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      create_business: {
+        Args: {
+          p_address: string;
+          p_category_id: string;
+          p_city: string;
+          p_country_code?: string;
+          p_email?: string;
+          p_kind: Database["public"]["Enums"]["business_kind"];
+          p_name: string;
+          p_phone?: string;
+        };
+        Returns: string;
       };
       create_business_api_key: {
         Args: { p_business_id: string; p_name: string; p_scopes?: string[] };
