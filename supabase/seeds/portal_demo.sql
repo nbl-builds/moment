@@ -517,3 +517,9 @@ select '00000000-0000-4000-b000-000000000031',
        null, 'demo-session-' || g, 'app',
        now() - make_interval(secs => (power(random(), 1.6) * 365 * 86400)::integer)
 from (select g, random() as r from generate_series(1, 4200) g) x;
+
+-- A blocked evening on the food walk (Listing Details > Availability).
+insert into public.availability_exceptions (business_id, scope, listing_id, starts_at, ends_at, reason, created_by)
+values ('00000000-0000-4000-b000-000000000031', 'listing', '00000000-0000-4000-e000-000000000331',
+        pg_temp.d_pk(pg_temp.d_today() + 16, '00:00'), pg_temp.d_pk(pg_temp.d_today() + 17, '00:00'),
+        'Private event', '00000000-0000-4000-a000-000000000031');
