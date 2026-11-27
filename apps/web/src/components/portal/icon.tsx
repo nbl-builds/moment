@@ -48,7 +48,15 @@ export type PortalIconName =
   | "star-14"
   | "image-add-50"
   | "check-circle-14"
-  | "location-share";
+  | "location-share"
+  | "camera-20"
+  | "security-50"
+  | "calling-50"
+  | "mail-50"
+  | "security-42"
+  | "card-42"
+  | "menu-user-42"
+  | "device-mobile-50";
 
 /** Native sizes of the Figma exports (the SVGs' own width / height). */
 const SIZES: Record<PortalIconName, [number, number]> = {
@@ -101,6 +109,14 @@ const SIZES: Record<PortalIconName, [number, number]> = {
   "image-add-50": [50, 50],
   "check-circle-14": [14, 14],
   "location-share": [21.5, 16],
+  "camera-20": [15, 14.17],
+  "security-50": [37.42, 40.6],
+  "calling-50": [39.06, 39.06],
+  "mail-50": [41.67, 37.5],
+  "security-42": [42, 42],
+  "card-42": [42, 42],
+  "menu-user-42": [42, 42],
+  "device-mobile-50": [50, 50],
 };
 
 /** A Figma icon from /public/business/icons at its exported size. */

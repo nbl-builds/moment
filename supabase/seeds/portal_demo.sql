@@ -579,3 +579,17 @@ insert into public.listing_staff (business_id, listing_id, staff_id) values
 on conflict do nothing;
 insert into public.staff_schedules (business_id, staff_id, weekday, start_time, end_time)
 select '00000000-0000-4000-b000-000000000031', '00000000-0000-4000-d000-000000000033', d, '12:00', '20:00' from generate_series(2, 6) d;
+
+-- ---------------------------------------------------------------------------
+-- Profile and Account Settings: the owner's host cover, a payout account and
+-- a second (paid) payout.
+-- ---------------------------------------------------------------------------
+update public.staff_members set cover_url = 'storage://seed-media/listings/night-market.jpg'
+where id = '00000000-0000-4000-d000-000000000031';
+
+insert into public.payout_accounts (id, business_id, provider, provider_account_ref, account_title, bank_name, account_number_last4, iban_masked, is_default, verified_at)
+values ('00000000-0000-4000-f000-000000000031', '00000000-0000-4000-b000-000000000031', 'bank_transfer', 'demo-bank-ref-031',
+        'Lahore Heritage Trails', 'Meezan Bank', '6702', 'PK36 •••• •••• 6702', true, now() - interval '60 days')
+on conflict (id) do nothing;
+update public.payouts set payout_account_id = '00000000-0000-4000-f000-000000000031', provider = 'bank_transfer'
+where business_id = '00000000-0000-4000-b000-000000000031' and payout_account_id is null;
