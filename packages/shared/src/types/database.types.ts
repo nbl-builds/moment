@@ -1739,6 +1739,52 @@ export type Database = {
           },
         ];
       };
+      listing_views: {
+        Row: {
+          business_id: string;
+          id: number;
+          listing_id: string | null;
+          session_key: string | null;
+          source: string;
+          viewed_at: string;
+          viewer_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          business_id: string;
+          id?: never;
+          listing_id?: string | null;
+          session_key?: string | null;
+          source?: string;
+          viewed_at?: string;
+          viewer_id?: string | null;
+        };
+        Update: {
+          business_id?: string;
+          id?: never;
+          listing_id?: string | null;
+          session_key?: string | null;
+          source?: string;
+          viewed_at?: string;
+          viewer_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "listing_views_business_id_fkey";
+            columns: ["business_id"];
+            isOneToOne: false;
+            referencedRelation: "businesses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "listing_views_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       listings: {
         Row: {
           booking_count: number;
@@ -3387,6 +3433,34 @@ export type Database = {
         Args: { p_from: string; p_listing_id: string; p_to: string };
         Returns: string[];
       };
+      business_inbox: {
+        Args: {
+          p_business_id: string;
+          p_limit?: number;
+          p_search?: string;
+          p_since?: string;
+          p_unread_only?: boolean;
+        };
+        Returns: {
+          booking_id: string;
+          conversation_id: string;
+          guest_avatar_url: string;
+          guest_city: string;
+          guest_id: string;
+          guest_name: string;
+          last_message_at: string;
+          last_message_body: string;
+          last_message_has_attachment: boolean;
+          listing_cover: string;
+          listing_id: string;
+          listing_title: string;
+          unread: number;
+        }[];
+      };
+      business_insights: {
+        Args: { p_business_id: string; p_period?: string };
+        Returns: Json;
+      };
       business_is_open: {
         Args: { p_at?: string; p_business_id: string };
         Returns: boolean;
@@ -3797,6 +3871,15 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      record_listing_view: {
+        Args: {
+          p_business_id?: string;
+          p_listing_id?: string;
+          p_session_key?: string;
+          p_source?: string;
+        };
+        Returns: boolean;
+      };
       reply_to_review: {
         Args: { p_reply: string; p_review_id: string };
         Returns: {
@@ -3882,6 +3965,25 @@ export type Database = {
       };
       start_direct_conversation: {
         Args: { p_user_id: string };
+        Returns: {
+          booking_id: string | null;
+          business_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          group_id: string | null;
+          id: string;
+          last_message_at: string | null;
+          type: Database["public"]["Enums"]["conversation_type"];
+        };
+        SetofOptions: {
+          from: "*";
+          to: "conversations";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      start_guest_conversation: {
+        Args: { p_booking_id: string };
         Returns: {
           booking_id: string | null;
           business_id: string | null;

@@ -1,0 +1,285 @@
+/* Figma 209:930: white bar, 100 tall; content x 80 -> 1360. */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--color-white);
+}
+
+.inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--web-top-bar-height);
+  max-width: calc(var(--web-content-width1280) + 2 * var(--web-auth-header-inset-x));
+  margin: 0 auto;
+  padding: 0 var(--web-auth-header-inset-x);
+}
+
+.logo {
+  display: flex;
+  flex: 0 0 auto;
+  margin-right: var(--web-space-80);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--web-space-20);
+}
+
+/* Nav pills: 10 / 14 padding, radius 10, Medium 14 / 1.4, S Tint 2; active = Secondary, white Bold. */
+.pill {
+  padding: var(--web-space-10) var(--web-space-14);
+  border-radius: var(--web-radius-card);
+  font-size: var(--text-webNav14-size);
+  line-height: var(--text-webNav14-line-height);
+  letter-spacing: var(--text-webNav14-tracking);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-nav-inactive);
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.pill:hover {
+  background: var(--color-field);
+}
+
+.pill[data-active="true"] {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  font-weight: var(--font-weight-bold);
+}
+
+.pill:focus-visible,
+.iconButton:focus-visible,
+.avatarButton:focus-visible,
+.menuItem:focus-visible,
+.burger:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--web-space-20);
+  margin-left: auto;
+}
+
+/* 48 x 48 outlined icon buttons. */
+.iconButton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--web-top-icon-button);
+  height: var(--web-top-icon-button);
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--web-radius-card);
+  background: var(--color-white);
+}
+
+.iconButton:hover {
+  background: var(--color-field);
+}
+
+.dot,
+.avatarDot {
+  position: absolute;
+  width: var(--web-space-6);
+  height: var(--web-space-6);
+  border-radius: 50%;
+  background: var(--color-warning);
+}
+
+.dot {
+  top: var(--web-space-6);
+  right: var(--web-space-8);
+}
+
+.menuWrap {
+  position: relative;
+}
+
+/* Avatar button: 96 x 48, S Tint 6 fill, Secondary border, 40px photo and a chevron. */
+.avatarButton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--web-space-12);
+  width: var(--web-avatar-button-width);
+  height: var(--web-top-icon-button);
+  padding: 0 var(--web-space-12) 0 var(--web-space-4);
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--web-radius-card);
+  background: var(--color-field);
+  cursor: pointer;
+}
+
+.avatar,
+.avatarFallback {
+  width: var(--web-avatar-size);
+  height: var(--web-avatar-size);
+  border-radius: var(--space-sm);
+  object-fit: cover;
+}
+
+.avatarFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary);
+}
+
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--web-icon);
+  height: var(--web-icon);
+}
+
+.avatarDot {
+  top: var(--web-space-2);
+  left: var(--web-space-38);
+}
+
+/* Figma 102:3016: 221 wide, radius 15, S Tint 6 border, soft shadow, 53px rows. */
+.menu {
+  position: absolute;
+  top: calc(100% + var(--web-space-14));
+  right: 0;
+  width: var(--web-menu-width);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-field);
+  border-radius: var(--web-radius-card-large);
+  background: var(--color-white);
+  box-shadow: 0 var(--web-space-22) var(--web-shadow-blur) var(--color-shadow);
+  z-index: 35;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  min-height: var(--web-menu-item-height);
+  padding: 0 var(--web-space-20);
+  border: 0;
+  background: var(--color-white);
+  text-align: left;
+  font: inherit;
+  font-size: var(--text-webNav14-size);
+  line-height: var(--text-webNav14-line-height);
+  letter-spacing: var(--text-webNav14-tracking);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary);
+  cursor: pointer;
+}
+
+.menuItem:hover,
+.menuItem[data-current="true"] {
+  background: var(--color-field);
+}
+
+.logout {
+  font-weight: var(--font-weight-medium);
+}
+
+.switcher {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-field);
+  border-bottom: 1px solid var(--color-field);
+}
+
+.switcherLabel {
+  padding: var(--web-space-10) var(--web-space-20) 0;
+  font-size: var(--text-webBody12-size);
+  line-height: var(--text-webBody12-line-height);
+  color: var(--color-text-subtle);
+}
+
+.burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--web-space-4);
+  width: var(--web-top-icon-button);
+  height: var(--web-top-icon-button);
+  padding: 0 var(--web-space-12);
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--web-radius-card);
+  background: var(--color-white);
+  cursor: pointer;
+}
+
+.burger span {
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-secondary);
+}
+
+/* Below 1024: nav collapses into a menu under the bar. */
+@media (max-width: 1023.98px) {
+  .inner {
+    height: auto;
+    min-height: calc(var(--web-top-bar-height) * 0.72);
+    padding: var(--web-space-12) var(--web-gutter);
+  }
+
+  .logo {
+    margin-right: var(--web-space-12);
+  }
+
+  .actions {
+    gap: var(--web-space-8);
+  }
+
+  .burger {
+    display: flex;
+  }
+
+  .nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--web-space-4);
+    padding: var(--web-space-8) var(--web-gutter) var(--web-space-16);
+    background: var(--color-white);
+    box-shadow: 0 var(--web-space-22) var(--web-shadow-blur) var(--color-shadow);
+  }
+
+  .navOpen {
+    display: flex;
+  }
+
+  .pill {
+    padding: var(--web-space-12) var(--web-space-14);
+  }
+}
+
+@media (max-width: 479.98px) {
+  .logo img:last-child {
+    display: none;
+  }
+
+  .avatarButton {
+    width: auto;
+    gap: var(--web-space-4);
+    padding-right: var(--web-space-4);
+  }
+
+  .iconButton,
+  .burger {
+    width: var(--web-composer-button);
+    height: var(--web-composer-button);
+  }
+}

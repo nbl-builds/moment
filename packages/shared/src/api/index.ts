@@ -5,6 +5,7 @@ import { createBusinessApi } from './business';
 import { createCatalogApi } from './catalog';
 import { createEngagementApi } from './engagement';
 import type { MomentSupabaseClient } from './errors';
+import { createPortalApi } from './portal';
 import { createProfileApi } from './profile';
 import { createChatApi, createGroupsApi, createSupportApi } from './social';
 
@@ -36,6 +37,7 @@ export function createMomentApi(db: MomentSupabaseClient) {
     support: createSupportApi(db),
     account: createAccountApi(db),
     business: createBusinessApi(db),
+    portal: createPortalApi(db),
     media: {
       /**
        * Public URL for a media column. http(s) URLs pass through; storage refs
@@ -58,3 +60,4 @@ export { BOOKING_LIST_SELECT, PAST_STATUSES, UPCOMING_STATUSES } from './booking
 export type { ChatMessageEvent } from './social';
 export type { EmailSignInMethod, OAuthProvider } from './auth';
 export * from './errors';
+export * from './portal';

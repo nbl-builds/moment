@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState, type ReactNode } from 'react';
+import { trackView } from '@/lib/view-tracking';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
@@ -50,7 +51,9 @@ export default function ExperienceScreen() {
   const listing = useListing(id);
 
   useEffect(() => {
-    if (id) recordListingView(id).catch(() => undefined);
+    if (!id) return;
+    recordListingView(id).catch(() => undefined);
+    trackView({ listingId: id });
   }, [id]);
 
   if (listing.isPending) {

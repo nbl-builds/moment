@@ -1,0 +1,246 @@
+/* Figma 477:2553: two white cards (630 each, 20 apart, radius 15). */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--web-space-20);
+  align-items: start;
+}
+
+.calendarCard,
+.listCard {
+  min-height: var(--web-chart-card-height);
+  padding: var(--web-space-20) var(--web-space-30) var(--web-space-30);
+  border-radius: var(--web-radius-card-large);
+  background: var(--color-white);
+}
+
+.listCard {
+  position: sticky;
+  top: calc(var(--web-top-bar-height) + var(--web-space-20));
+  padding-top: var(--web-space-30);
+}
+
+.title {
+  font-size: var(--text-webH5-size);
+  line-height: var(--text-webH5-line-height);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--text-webH5-tracking);
+  color: var(--color-black);
+}
+
+.months {
+  display: flex;
+  flex-direction: column;
+  gap: var(--web-space-30);
+  margin-top: var(--web-space-24);
+}
+
+.monthHead {
+  display: flex;
+  align-items: center;
+  gap: var(--web-space-20);
+}
+
+/* "April" SemiBold 18, year Bold. */
+.monthName {
+  font-size: var(--text-webBody18-size);
+  line-height: 1.2;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-secondary);
+  white-space: nowrap;
+}
+
+.monthName strong {
+  font-weight: var(--font-weight-bold);
+}
+
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-secondary-tint5);
+}
+
+.navButtons {
+  display: flex;
+  gap: var(--web-space-10);
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--web-space-32);
+  height: var(--web-space-32);
+  border: 1px solid var(--color-secondary-tint5);
+  border-radius: var(--space-sm);
+}
+
+.navButton:hover {
+  background: var(--color-field);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-top: var(--web-space-20);
+  text-align: center;
+}
+
+/* Bold 12 caps, S Tint 2. */
+.weekday {
+  padding-bottom: var(--web-space-6);
+  font-size: var(--text-webWeekday12-size);
+  line-height: var(--text-webWeekday12-line-height);
+  letter-spacing: var(--text-webWeekday12-tracking);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--web-calendar-cell);
+  font-size: var(--text-webBody16-size);
+  color: var(--color-secondary);
+}
+
+.day > span:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--web-calendar-selected);
+  height: var(--web-calendar-selected);
+  border-radius: var(--web-radius-card);
+}
+
+.day:hover > span:first-child {
+  background: var(--color-field);
+}
+
+.day[data-today="true"] > span:first-child {
+  font-weight: var(--font-weight-bold);
+  box-shadow: inset 0 0 0 1px var(--color-secondary-tint5);
+}
+
+/* Selected: black 38px tile, white Bold. */
+.day[data-selected="true"] > span:first-child {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  font-weight: var(--font-weight-bold);
+  box-shadow: none;
+}
+
+.dot {
+  position: absolute;
+  bottom: var(--web-space-2);
+  width: var(--web-space-6);
+  height: var(--web-space-6);
+  border-radius: 50%;
+  background: var(--color-third);
+}
+
+.day:focus-visible,
+.navButton:focus-visible,
+.completeButton:focus-visible,
+.todayLink:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+  border-radius: var(--web-radius-card);
+}
+
+.todayLink {
+  display: inline-block;
+  margin-top: var(--web-space-20);
+  font-size: var(--text-webBody14-size);
+  font-weight: var(--font-weight-bold);
+  text-decoration: underline;
+}
+
+.dayTitle {
+  margin-bottom: var(--web-space-20);
+  font-size: var(--text-webBody18-size);
+  line-height: var(--text-webBody18-line-height);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--web-space-20);
+}
+
+.noneToday {
+  font-size: var(--text-webBody14-size);
+  color: var(--color-text-muted);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--web-space-24);
+  min-height: calc(var(--web-chart-card-height) * 1.6);
+  text-align: center;
+}
+
+.emptyArt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyIcon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty p {
+  max-width: var(--web-tile-width);
+  font-size: var(--text-webNav14-size);
+  line-height: var(--text-webNav14-line-height);
+  letter-spacing: var(--text-webNav14-tracking);
+  color: var(--color-secondary);
+}
+
+/* White, Secondary border, 14 padding, radius 10, Medium 14. */
+.completeButton {
+  padding: var(--web-space-14);
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--web-radius-card);
+  font-size: var(--text-webNav14-size);
+  line-height: var(--text-webNav14-line-height);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-secondary);
+}
+
+@media (max-width: 1023.98px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .listCard {
+    position: static;
+  }
+
+  .calendarCard,
+  .listCard {
+    padding: var(--web-space-20) var(--web-space-16);
+  }
+
+  .day {
+    height: calc(var(--web-calendar-cell) * 0.8);
+  }
+
+  .emptyArt {
+    transform: scale(0.8);
+  }
+}

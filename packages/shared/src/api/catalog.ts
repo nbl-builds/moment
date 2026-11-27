@@ -45,6 +45,22 @@ export function createCatalogApi(db: MomentSupabaseClient) {
 
   return {
     /**
+     * Counts a view of an experience (`listingId`) or a business page
+     * (`businessId`) for the business's Insights. The server ignores repeats
+     * from the same person within 30 minutes and the business's own team.
+     * Guests pass a random per-install `sessionKey`. Never throws.
+     */
+    recordView: async (target: { listingId?: string; businessId?: string; sessionKey?: string; source?: 'app' | 'web' }) => {
+      const { data } = await db.rpc('record_listing_view', {
+        p_listing_id: target.listingId,
+        p_business_id: target.businessId,
+        p_session_key: target.sessionKey,
+        p_source: target.source ?? 'app',
+      });
+      return data === true;
+    },
+
+    /**
      * Listing categories (chips, filters). The business sign-up groups
      * (`is_group`, see `business.listSignUpCategories`) are left out.
      */

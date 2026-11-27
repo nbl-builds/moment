@@ -34,6 +34,27 @@ export const palette = {
   orangeShade4: '#65350E',
   orangeShade5: '#3F2007',
   orangeShade6: '#190B00',
+  // Business App file, portal screens (Dashboard 209:929, Inbox 127:507, Insights 512:2143)
+  grey94Warm: '#F0F0F0', // reservations panel
+  grey98: '#F9F9F9', // calendar rows, unread inbox rows
+  offWhite99: '#FDFDFD', // suggestion chips, chart tooltips ("BG 10%")
+  grey64: '#A3A3A3', // chart axis labels ("Black 40%")
+  grey46: '#767676', // chart guide line ("Black 60%")
+  grey28: '#484848', // donut slice ("Black 80%")
+  insightOrange: '#FF6500', // views line, tooltip values ("Orange 100%")
+  insightGreen: '#348373', // positive change ("Green 80%")
+  insightYellow: '#FFBE3F', // revenue bars ("Yellow 80%")
+  insightYellowDeep: '#FFAD0F', // donut slice ("Yellow 100%")
+  limeShade5: '#32400F', // donut slice (P Shade 5)
+  statBlue: '#2971FE',
+  statPurple: '#D329FE',
+  statRed: '#FE2929',
+  statGreen: '#35E1A3',
+  statBlueTint: '#E6F4FF',
+  statPurpleTint: '#FAE6FF',
+  statRedTint: '#FFE6E6',
+  statGreenTint: '#E6FFEE',
+  starGold: '#FFB628',
   // Business App file, Buttons page (127:886): accent colours
   trueBlue: '#005CE3',
   trueBlueLighter: '#72A6F1',

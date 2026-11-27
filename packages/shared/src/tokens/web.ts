@@ -35,6 +35,78 @@ export const webColors = {
   /** Toasts. */
   toast: palette.nearBlack,
   onToast: palette.white,
+
+  // Portal (Dashboard, Calendar, Inbox, Listings, Insights, Reviews)
+  /** Grey page behind the white cards. */
+  page: palette.offWhite,
+  /** Inactive nav pills and secondary labels (S Tint 2); active pill is Secondary. */
+  navInactive: palette.nearBlackTint2,
+  /** Reservations panel behind the rows. */
+  panel: palette.grey94Warm,
+  /** Calendar reservation rows, unread inbox rows. */
+  rowMuted: palette.grey98,
+  /** Addresses and times under rows (S Tint 3). */
+  textSubtle: palette.nearBlackTint3,
+  /** "Complete your profile" and its shield. */
+  warning: palette.coralShade,
+  /** Card and menu shadow colour (Figma: 0 22 133 rgba(0,0,0,0.08)). */
+  shadow: 'rgba(0, 0, 0, 0.08)',
+  /** Suggestion chips and outgoing bubbles (0 4 33 rgba(0,0,0,0.1)). */
+  chip: palette.offWhite99,
+  chipShadow: 'rgba(0, 0, 0, 0.1)',
+  /** "Suggestions" label (P Shade 2). */
+  suggestionLabel: palette.limeShade2,
+  /** Incoming chat bubble and composer buttons (Black Tint 7). */
+  bubbleIn: palette.grey95,
+  composerText: palette.blackTint2,
+  timestamp: palette.blackTint1,
+  /** Inbox search placeholder and icon (Black Tint 4). */
+  searchText: palette.blackTint4,
+  /** Unread count badges. */
+  unreadBadge: palette.pureBlack,
+  /** Charts. */
+  chartAxis: palette.grey64,
+  chartGuide: palette.grey46,
+  chartBar: palette.nearBlack,
+  chartRevenue: palette.insightYellow,
+  chartViews: palette.insightOrange,
+  chartTooltip: palette.offWhite99,
+  chartTooltipShadow: 'rgba(108, 126, 147, 0.15)',
+  chartValue: palette.insightOrange,
+  positive: palette.insightGreen,
+  negative: palette.coralShade,
+  donut1: palette.limeShade5,
+  donut2: palette.insightOrange,
+  donut3: palette.insightYellowDeep,
+  donut4: palette.grey28,
+  donut5: palette.nearBlackTint3,
+  donut6: palette.limeShade2,
+  /** Insights stat cards: number and icon tile per status. */
+  statIncoming: palette.orange,
+  statIncomingTint: palette.orangeTint6,
+  statOngoing: palette.statBlue,
+  statOngoingTint: palette.statBlueTint,
+  statPending: palette.statPurple,
+  statPendingTint: palette.statPurpleTint,
+  statCancelled: palette.statRed,
+  statCancelledTint: palette.statRedTint,
+  statCompleted: palette.statGreen,
+  statCompletedTint: palette.statGreenTint,
+  /** Rating stars (filled / empty) and rating bars. */
+  star: palette.starGold,
+  starEmpty: palette.nearBlackTint4,
+  ratingTrack: palette.nearBlackTint6,
+  /** Reservation status pills in the side panel. */
+  statusPending: palette.orangeTint6,
+  onStatusPending: palette.orangeShade3,
+  statusConfirmed: palette.limeTint6,
+  onStatusConfirmed: palette.limeShade4,
+  statusCancelled: palette.redTint,
+  onStatusCancelled: palette.coralShade,
+  statusDone: palette.nearBlackTint6,
+  onStatusDone: palette.nearBlackTint1,
+  /** Scrim behind the side panel and sheets. */
+  scrim: 'rgba(19, 22, 23, 0.4)',
 } as const;
 
 /**
@@ -62,6 +134,19 @@ export const webTextStyles = {
   webButton14: { fontSize: 14, lineHeight: 1.2, fontWeight: fontWeight.semibold, letterSpacing: 0 },
   webButton16: { fontSize: 16, lineHeight: 1.2, fontWeight: fontWeight.semibold, letterSpacing: 0 },
   webBody12: { fontSize: 12, lineHeight: 1.5, fontWeight: fontWeight.regular, letterSpacing: 0 },
+  webBody10: { fontSize: 10, lineHeight: 1.5, fontWeight: fontWeight.regular, letterSpacing: 0 },
+  /** Chart axis labels (11 / 1.35). */
+  webAxis11: { fontSize: 11, lineHeight: 1.35, fontWeight: fontWeight.regular, letterSpacing: 0 },
+  /** Portal nav pills, "Profile" menu items (14 / 1.4 / 1%). */
+  webNav14: { fontSize: 14, lineHeight: 1.4, fontWeight: fontWeight.medium, letterSpacing: 0.14 },
+  /** Card titles on the right of the dashboard (16 / 1.4 / 1%). */
+  webCardTitle16: { fontSize: 16, lineHeight: 1.4, fontWeight: fontWeight.bold, letterSpacing: 0.16 },
+  /** "Your reservations" (ExtraBold 30 / 1.5 / 1%). */
+  webSection30: { fontSize: 30, lineHeight: 1.5, fontWeight: fontWeight.extrabold, letterSpacing: 0.3 },
+  /** Wallet and rating figures (ExtraBold 36 / 1.4 / 1%). */
+  webFigure36: { fontSize: 36, lineHeight: 1.4, fontWeight: fontWeight.extrabold, letterSpacing: 0.36 },
+  /** Calendar weekday labels (Bold 12, caps, 0.86 tracking). */
+  webWeekday12: { fontSize: 12, lineHeight: 1.2, fontWeight: fontWeight.bold, letterSpacing: 0.857 },
 } as const;
 
 export type WebTextStyleToken = keyof typeof webTextStyles;
@@ -118,6 +203,56 @@ export const webLayout = {
   readingWidth: 760,
   /** Compact type-card icon on phones. */
   compactIcon: 44,
+
+  // Portal shell and pages (Figma 1440 frames)
+  topBarHeight: 100,
+  /** Content runs from x 80 to x 1360. */
+  contentWidth1280: 1280,
+  topIconButton: 48,
+  avatarButtonWidth: 96,
+  avatarSize: 40,
+  menuWidth: 221,
+  menuItemHeight: 53,
+  heroPhoto: 122,
+  heroHeight: 154,
+  sideCardHeight: 67,
+  dashboardRightColumn: 413,
+  reservationRowHeight: 80,
+  rowPhoto: 60,
+  inboxListWidth: 433,
+  inboxRowHeight: 100,
+  inboxPhoto: 40,
+  threadPhoto: 50,
+  chatAvatar: 35,
+  bubbleMaxWidth: 340,
+  composerButton: 40,
+  listingCardHeight: 360,
+  listingPhotoHeight: 197,
+  editButton: 42,
+  statCardHeight: 163,
+  statIcon: 50,
+  chartCardHeight: 332,
+  calendarCell: 52,
+  calendarSelected: 38,
+  panelWidth: 480,
+  ratingBarHeight: 10,
+  reviewPhotoWidth: 56,
+  reviewPhotoHeight: 64,
+  /** Menu / card shadow blur (Figma 0 22 133) and chip / bubble blur (0 4 33). */
+  shadowBlur: 133,
+  chipShadowBlur: 33,
+  lightboxWidth: 1100,
+  inboxMinHeight: 600,
+  compactMinHeight: 520,
+  tileCardHeight: 150,
+  emptyMinHeight: 490,
+  emptyTextWidth: 220,
+  phonePanelMinHeight: 360,
+  phoneEmptyMinHeight: 340,
+  /** Narrowest listing card before the grid wraps. */
+  cardMinColumn: 340,
+  ratingColumn: 136,
+  accentBorder: 3,
 } as const;
 
 /**
@@ -125,7 +260,10 @@ export const webLayout = {
  * `--web-space-<n>` (e.g. 40 between a heading block and the first field,
  * 50 between sections, 60 above a primary button).
  */
-export const webSpace = [4, 8, 9, 10, 11, 12, 13, 14, 17, 18, 20, 22, 25, 30, 32, 38, 40, 50, 60, 80] as const;
+export const webSpace = [2, 4, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 20, 22, 24, 25, 30, 32, 38, 40, 50, 60, 80] as const;
+
+/** Portal radii: cards 10 / 15, inbox bubbles 30 with a 5 corner, pills 50. */
+export const webRadii = { card: 10, cardLarge: 15, photo: 6, bubble: 30, bubbleTail: 5, pill: 50 } as const;
 
 /**
  * Buttons page (127:886): Small 30, Medium 40, Large 48 tall; radius 10; label

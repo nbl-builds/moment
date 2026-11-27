@@ -90,12 +90,15 @@ export async function fillDetails(page: Page, values: { name: string; password?:
   }
 }
 
-export async function expectDashboard(page: Page, name: string) {
-  await expect(page).toHaveURL(/\/business\/dashboard$/);
-  await expect(page.getByRole("heading", { name })).toBeVisible();
+/** Signed in to the portal dashboard as the owner whose first name is given. */
+export async function expectDashboard(page: Page, ownerFirstName?: string) {
+  await expect(page).toHaveURL(/\/business\/dashboard/);
+  await expect(page.getByText("Your reservations")).toBeVisible();
+  if (ownerFirstName) await expect(page.getByText(`Hi, ${ownerFirstName}`)).toBeVisible();
 }
 
 export async function signOut(page: Page) {
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.getByRole("button", { name: /Account menu/ }).click();
+  await page.getByRole("menuitem", { name: "Logout" }).click();
   await expect(page).toHaveURL(/\/business\/login/);
 }

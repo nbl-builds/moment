@@ -1,7 +1,7 @@
 import { colors } from './colors';
 import { radii, spacing } from './layout';
 import { fontWeight, textStyles } from './typography';
-import { webButtonSizes, webColors, webLayout, webSpace, webTextStyles } from './web';
+import { webButtonSizes, webColors, webLayout, webRadii, webSpace, webTextStyles } from './web';
 
 const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
@@ -22,6 +22,7 @@ export const cssVariables: Record<string, string> = {
   ...Object.fromEntries(Object.entries(fontWeight).map(([k, v]) => [`--font-weight-${k}`, v])),
   ...Object.fromEntries(Object.entries(webLayout).map(([k, v]) => [`--web-${kebab(k)}`, `${v}px`])),
   ...Object.fromEntries(webSpace.map((v) => [`--web-space-${v}`, `${v}px`])),
+  ...Object.fromEntries(Object.entries(webRadii).map(([k, v]) => [`--web-radius-${kebab(k)}`, `${v}px`])),
   ...Object.fromEntries(
     Object.entries(webButtonSizes).flatMap(([k, v]) => [
       [`--web-button-${k}-height`, `${v.height}px`],

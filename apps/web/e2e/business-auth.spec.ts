@@ -56,9 +56,8 @@ test.describe("business sign up with phone @staging", () => {
     await fillDetails(page, { name: "Ali Hunza Treks", password: PASSWORD });
     await page.getByRole("button", { name: "Agree & Continue" }).click();
 
-    await expectDashboard(page, "Ali Hunza Treks");
-    await expect(page.getByText("Host · Owner")).toBeVisible();
-    if (autoApprove) await expect(page.getByText("Your business is live on Moment")).toBeVisible();
+    await expectDashboard(page);
+    if (autoApprove) await expect(page.getByText("Your business is under review.")).toHaveCount(0);
     else await expect(page.getByText("Your business is under review.")).toBeVisible();
 
     // Signed in with a business: auth pages go to the dashboard.
@@ -70,7 +69,7 @@ test.describe("business sign up with phone @staging", () => {
     await page.getByLabel("Email Address / Phone Number").fill(`0${NEW_PHONE.national}`);
     await page.getByLabel("Password*").fill(PASSWORD);
     await page.getByRole("button", { name: "Continue to my account" }).click();
-    await expectDashboard(page, "Ali Hunza Treks");
+    await expectDashboard(page);
   });
 });
 
@@ -102,8 +101,7 @@ test.describe("business sign up with email", () => {
     await fillDetails(page, { name: "Gulberg Glow Salon", password: PASSWORD });
     await page.getByRole("button", { name: "Agree & Continue" }).click();
 
-    await expectDashboard(page, "Gulberg Glow Salon");
-    await expect(page.getByText("Venue · Owner")).toBeVisible();
+    await expectDashboard(page);
     await signOut(page);
 
     // Wrong password, then the right one.
@@ -113,7 +111,7 @@ test.describe("business sign up with email", () => {
     await expect(page.getByText("That email or phone number and password don't match.")).toBeVisible();
     await page.getByLabel("Password*").fill(PASSWORD);
     await page.getByRole("button", { name: "Continue to my account" }).click();
-    await expectDashboard(page, "Gulberg Glow Salon");
+    await expectDashboard(page);
   });
 });
 
@@ -131,7 +129,7 @@ test.describe("forgot and reset password", () => {
     await page.getByRole("link", { name: /^Food/ }).click();
     await fillDetails(page, { name: "Lahore Food Walks", password: PASSWORD });
     await page.getByRole("button", { name: "Agree & Continue" }).click();
-    await expectDashboard(page, "Lahore Food Walks");
+    await expectDashboard(page);
     await signOut(page);
 
     await page.getByRole("link", { name: "Forgot password?" }).click();
@@ -159,7 +157,7 @@ test.describe("forgot and reset password", () => {
     await page.getByLabel("Email Address / Phone Number").fill(email);
     await page.getByLabel("Password*").fill("newpass456");
     await page.getByRole("button", { name: "Continue to my account" }).click();
-    await expectDashboard(page, "Lahore Food Walks");
+    await expectDashboard(page);
   });
 
   test("phone: code -> Set new password -> login", async ({ page }) => {
@@ -177,7 +175,7 @@ test.describe("forgot and reset password", () => {
     await page.getByLabel("Email Address / Phone Number").fill(`0${NEW_PHONE.national}`);
     await page.getByLabel("Password*").fill("phonepass789");
     await page.getByRole("button", { name: "Continue to my account" }).click();
-    await expectDashboard(page, "Ali Hunza Treks");
+    await expectDashboard(page);
   });
 });
 
@@ -207,7 +205,6 @@ test.describe("routing and extras", () => {
     await expect(page.getByLabel("Password*", { exact: true })).toHaveCount(0);
     await fillDetails(page, { name: `Hamza Adventures ${Date.now() % 10000}` });
     await page.getByRole("button", { name: "Agree & Continue" }).click();
-    await expect(page).toHaveURL(/\/business\/dashboard$/);
-    await expect(page.getByText(/Experience operator · Owner/)).toBeVisible();
+    await expectDashboard(page);
   });
 });

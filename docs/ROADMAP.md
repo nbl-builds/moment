@@ -3,7 +3,7 @@
 Keep this file current: tick items as they land and update **Next up** so any session can pick up where the last one stopped.
 
 ## Next up
-- **Business portal (current phase, `apps/web`)**: sign up / login / recovery are done (see "Business portal" below). Next: the portal dashboard and its sections from the "Business Web App Design" page (Figma file `hvSITt4VVdCeFArVVFUgl1`), section by section, UI first with typed mocks in `apps/web/src/features/<name>/mock.ts`
+- **Business portal (current phase, `apps/web`)**: sign up / login / recovery and the main area (Dashboard, Calendar, Inbox, Listings, Insights, Reviews) are done. Next: Listing Details (`/business/listings/[id]`), then the listing wizard. Demo login (local and staging): `portal@moment.test` / `password123` (owner; `manager.portal@` and `staff.portal@` for roles)
 - Maps: Explore uses react-native-maps with the default provider (Apple Maps on iOS, muted style; Google on Android). Decide Mapbox vs Google before launch; Figma's grey map style needs the Google provider (`customMapStyle`) or Mapbox
 - Phase 1 remaining: Supabase Auth providers for production (a Pakistan SMS provider for phone OTP, email, Apple, Google, Facebook). Locally, phone OTP works with the test numbers in `supabase/config.toml` (`+92 308 4282001` / `051518`, `+92 300 1234567` / `123456`)
 - Sign-in providers at the end: a Pakistan SMS provider (production phone OTP), Apple, Google and Facebook (buttons show "Coming soon" today), and production SMTP for auth emails (templates in `supabase/templates`)
@@ -31,6 +31,7 @@ Everything about the staging backend and app is in `docs/STAGING.md`.
 - **Rebuild the APK:** `cd apps/mobile && pnpm dlx eas-cli build -p android --profile preview` (bump `android.versionCode`; bump `version` for a new native release)
 - **Publish a JS update:** `cd apps/mobile && pnpm dlx eas-cli update --channel staging --environment preview --message "..."`
 - **New migrations:** `npx supabase db push --linked` (never `db reset --linked`)
+- **Portal demo:** `portal@moment.test` / `password123` on staging (see `docs/STAGING.md`)
 - **Web (business portal):** `pnpm web:deploy:staging` -> https://moment-web-staging.work-nabeelahmed.workers.dev (Cloudflare Worker `moment-web-staging`; `main` is never deployed). Test phone sign-up with +92 308 4282001 / 051518
 - **To do:** Google Maps key for Android (Explore shows the list with "Map coming soon" until then), custom SMTP so email codes work on staging, a real iOS icon (`assets/expo.icon` is still Expo's), production Supabase project + `[remotes.production]` + production EAS variables
 
@@ -58,6 +59,10 @@ Mocks behind the real API signatures (`apps/mobile/src/features/<name>/mock.ts`)
 - **Group invites**: invited people see the group in their list with Join / Decline, but get no push or in-app notification yet (notifications feed)
 - **Bucket List: shared links**: "Share a link" sends `moment://bucket-list/<share_token>`; opening it (read-only view by token, RLS or an RPC) is not built yet
 
+- **Portal: Withdraw** (`apps/web/src/features/portal/insights/mock.ts` `requestWithdrawal`): Insights > Wallet > Withdraw returns a `TEST-...` pending request and nothing is paid. Needs a payout provider, payout accounts and a `request_payout` RPC that creates a `payouts` row
+- **Portal: voice notes** (`apps/web/src/features/portal/inbox/mock.ts` `uploadVoiceNote`): recorded in the browser, kept on the device, not sent (same as mobile). Allow audio in `chat-attachments` and send as an attachment
+- **Portal: refunds on business cancellation**: the panel says the guest gets a full refund, but cancelling only changes the booking status; the refund is created when payments are wired
+- **Portal: inbox list refresh**: threads are live (Realtime); the conversation list refreshes every 15 s and on focus. A per-business Realtime topic would make it instant
 - **Payments** (`features/booking/mock.ts` `payForBookings`): Confirm & Pay books for real, then the mock returns a pending `TEST-...` payment after 600ms and nothing is charged; bookings stay `payment_status = 'unpaid'`. Wire to the chosen Pakistan provider (card, JazzCash, Easypaisa in `PAYMENT_METHODS`); the server marks bookings paid by webhook
 - **Membership apply** (`features/booking/mock.ts` `applyForMembership`): "Apply Membership" goes through Confirm & Pay and shows "Your membership request is sent", but nothing is stored. Needs a membership checkout endpoint (memberships are created by backend code after payment)
 - **Tax and service fee** (`BOOKING_CHARGES` in `packages/shared/src/constants.ts`: 16% tax on the amount after the coupon, Rs 150 fee per checkout): placeholder rates shown on Price Details only; the booking's `total_amount` excludes them. Confirm the rates with finance and add them server side with payments
@@ -159,8 +164,18 @@ Figma: https://www.figma.com/design/hvSITt4VVdCeFArVVFUgl1/Moment-Business-App (
 - [x] Login with email or phone + password; Forgot password (email reset link via `/business/auth/callback`, or phone code) -> Set new password ("Save password") -> login with a toast
 - [x] Routing guard in `src/proxy.ts`: signed out -> login; no active business membership -> onboarding; with one -> dashboard. Existing consumer accounts can log in and create a business (no password fields when they signed in with one)
 - [x] Playwright E2E (`apps/web/e2e`, 1440 and 390): both sign-up flows, wrong code, login, email and phone reset; phone flow also passes on staging
+- [x] Portal shell: top bar (Dashboard / Calendar / Inbox / Listings / Insights, active black pill), + (create listing), bell with unread dot, avatar menu (Profile, Account Settings, Get Help sheet, business switcher for several memberships, Logout), phone menu below 1024px, under-review banner. Roles from `business_members`: managers and staff never see revenue, wallet or withdraw; staff can't edit listings or reply to reviews
+- [x] Dashboard: greeting by Pakistan time, Complete your profile (only when the logo, description, contact or photos are missing), Create new listing, Contact Support / What's New sheets, reservation tabs (Ongoing / Upcoming / Pending / Cancelled / Completed) with real counts and per-tab empty states
+- [x] Reservation side panel (not in Figma): guest, listing, time in PKT, items, guests, notes, price breakdown, payment, history; Accept / Decline with reason, Mark completed / No-show, Cancel with refund note, Message guest. Status changes reach the app through the existing triggers (notification rows and the guest's Realtime topic)
+- [x] Calendar: two months with prev / next, today, dots on busy days, the day's reservations; "Complete your listing" empty state when nothing is published
+- [x] Inbox: shared business inbox (`business_inbox`) with search, Unread and time filters, unread counts per team member, live threads over Realtime (same conversations as the app), typing indicator, photos, voice notes (mock, as on mobile), quick replies (`src/config/quick-replies.ts`), View reservation / See Listing Details
+- [x] Listings: My Listings / Drafts / Archive with the category-group menu, cards to the details route, edit to the wizard route
+- [x] Insights: booking counts with View All, bookings, listing views, revenue and views charts (Chart.js, loaded in the browser only) with Weekly / Monthly / Yearly, wallet + Withdraw (owner, mock), rating and trend, bookings by category, newly added and most viewed
+- [x] Reviews: average, count, 5-1 distribution, list with photos (lightbox), Reply / Edit reply (not in Figma)
+- [x] Listing views tracked from the app (experience and business pages; `record_listing_view`, de-duplicated)
+- [x] Portal demo seed (`supabase/seeds/portal_demo.sql`) and Playwright E2E for the portal at 1440 and 390
+- [ ] Listing Details page (next), listing wizard, Notifications, Business profile, Account settings (placeholder routes today)
 - [ ] Google / Facebook sign-in (buttons show "coming soon")
-- [ ] Portal dashboard and navigation (placeholder today)
 - [ ] Business profile
 - [ ] Listings and services management
 - [ ] Staff and availability

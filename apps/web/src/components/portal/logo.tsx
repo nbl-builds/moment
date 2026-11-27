@@ -1,17 +1,17 @@
 import styles from "./logo.module.css";
 
 /**
- * Moment wordmark (Figma 472:1651): the "M" mark and "oment" exported as two
- * white SVGs. `tone="dark"` turns it near black for white backgrounds (the
- * auth pages below 1024px, where the photo is hidden).
+ * Moment wordmark: the "M" mark and "oment" as two SVGs. White on the auth
+ * photos (Figma 472:1651); Secondary on white (portal top bar, 209:947).
  */
 export function Logo({ tone = "light", className }: { tone?: "light" | "dark"; className?: string }) {
+  const suffix = tone === "dark" ? "logo-dark" : "logo-glyph";
   return (
-    <span className={`${styles.logo} ${tone === "dark" ? styles.dark : ""} ${className ?? ""}`} role="img" aria-label="Moment">
+    <span className={`${styles.logo} ${className ?? ""}`} role="img" aria-label="Moment">
       {/* eslint-disable-next-line @next/next/no-img-element -- static SVG, no optimisation needed */}
-      <img src="/business/icons/logo-glyph-b.svg" alt="" width={28.34} height={24.97} className={styles.mark} />
+      <img src={`/business/icons/${suffix}-b.svg`} alt="" width={28.34} height={24.97} className={styles.mark} />
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/business/icons/logo-glyph-a.svg" alt="" width={107.45} height={25.62} />
+      <img src={`/business/icons/${suffix}-a.svg`} alt="" width={107.45} height={25.62} />
     </span>
   );
 }

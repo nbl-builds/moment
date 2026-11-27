@@ -10,10 +10,10 @@ select has_table('public', 'listing_itinerary_steps', 'itinerary steps exist');
 select ok((select relrowsecurity from pg_class where oid = 'public.listing_itinerary_steps'::regclass), 'RLS on itinerary steps');
 select has_column('public', 'staff_members', 'cover_url', 'hosts have a cover photo');
 
--- Seed: every experience has full content
-select is((select count(*)::int from public.listings where type = 'experience' and (cardinality(highlights) = 0 or cardinality(what_to_bring) = 0)), 0, 'every experience has reasons and what to bring');
-select is((select count(*)::int from public.listings l where type = 'experience' and not exists (select 1 from public.listing_itinerary_steps s where s.listing_id = l.id)), 0, 'every experience has an itinerary');
-select is((select count(*)::int from public.listings l where type = 'experience' and (select count(*) from public.listing_media m where m.listing_id = l.id) < 6), 0, 'every experience has at least six photos');
+-- Seed: every published experience has full content (drafts are incomplete by design)
+select is((select count(*)::int from public.listings where type = 'experience' and status = 'published' and (cardinality(highlights) = 0 or cardinality(what_to_bring) = 0)), 0, 'every experience has reasons and what to bring');
+select is((select count(*)::int from public.listings l where type = 'experience' and status = 'published' and not exists (select 1 from public.listing_itinerary_steps s where s.listing_id = l.id)), 0, 'every experience has an itinerary');
+select is((select count(*)::int from public.listings l where type = 'experience' and status = 'published' and (select count(*) from public.listing_media m where m.listing_id = l.id) < 6), 0, 'every experience has at least six photos');
 
 -- Explore: experiences in the Islamabad box, none from Lahore; filters apply
 select ok((select count(*) from public.explore_listings(33.55, 72.9, 33.85, 73.25)) >= 3, 'experiences inside the Islamabad box');
