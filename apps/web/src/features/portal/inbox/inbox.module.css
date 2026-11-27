@@ -3,7 +3,7 @@
   display: grid;
   grid-template-columns: var(--web-inbox-list-width) minmax(0, 1fr);
   height: calc(100dvh - var(--web-top-bar-height) - var(--web-space-50) - var(--web-space-60));
-  min-height: 600px;
+  min-height: var(--web-inbox-min-height);
   overflow: hidden;
   border-radius: var(--web-radius-card-large);
   background: var(--color-white);
@@ -75,7 +75,7 @@
   overflow: hidden;
   border-radius: var(--web-radius-card-large);
   background: var(--color-white);
-  box-shadow: 0 var(--web-space-22) 133px var(--color-shadow);
+  box-shadow: 0 var(--web-space-22) var(--web-shadow-blur) var(--color-shadow);
 }
 
 .timeItem {
@@ -443,7 +443,7 @@
 .message[data-mine="true"] .bubble {
   border-radius: var(--web-radius-bubble) var(--web-radius-bubble-tail) var(--web-radius-bubble) var(--web-radius-bubble);
   background: var(--color-white);
-  box-shadow: 0 var(--web-space-4) 33px var(--color-chip-shadow);
+  box-shadow: 0 var(--web-space-4) var(--web-chip-shadow-blur) var(--color-chip-shadow);
 }
 
 .bubble[data-pending="true"] {
@@ -528,7 +528,7 @@
   border: 0;
   border-radius: var(--web-radius-card-large);
   background: var(--color-chip);
-  box-shadow: 0 var(--web-space-4) 33px var(--color-chip-shadow);
+  box-shadow: 0 var(--web-space-4) var(--web-chip-shadow-blur) var(--color-chip-shadow);
   font: inherit;
   font-size: var(--text-webBody16-size);
   font-weight: var(--font-weight-bold);
@@ -618,7 +618,7 @@
   .card {
     grid-template-columns: 1fr;
     height: calc(100dvh - var(--web-top-bar-height) * 0.72 - var(--web-space-60));
-    min-height: 520px;
+    min-height: var(--web-compact-min-height);
   }
 
   .listPane {

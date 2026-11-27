@@ -23,7 +23,7 @@
   align-items: center;
   gap: var(--web-space-4);
   flex: 0 0 auto;
-  min-width: 136px;
+  min-width: var(--web-rating-column);
 }
 
 /* Headings/H2: Bold 61. */
@@ -203,7 +203,7 @@
 .reply {
   margin-left: calc(var(--web-row-photo) + var(--web-space-20));
   padding: var(--web-space-12) var(--web-space-14);
-  border-left: 3px solid var(--color-primary);
+  border-left: var(--web-accent-border) solid var(--color-primary);
   border-radius: var(--web-space-4);
   background: var(--color-row-muted);
   font-size: var(--text-webBody14-size);

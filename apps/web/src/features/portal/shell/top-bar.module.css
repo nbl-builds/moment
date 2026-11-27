@@ -159,7 +159,7 @@
   border: 1px solid var(--color-field);
   border-radius: var(--web-radius-card-large);
   background: var(--color-white);
-  box-shadow: 0 var(--web-space-22) 133px var(--color-shadow);
+  box-shadow: 0 var(--web-space-22) var(--web-shadow-blur) var(--color-shadow);
   z-index: 35;
 }
 
@@ -254,7 +254,7 @@
     gap: var(--web-space-4);
     padding: var(--web-space-8) var(--web-gutter) var(--web-space-16);
     background: var(--color-white);
-    box-shadow: 0 var(--web-space-22) 133px var(--color-shadow);
+    box-shadow: 0 var(--web-space-22) var(--web-shadow-blur) var(--color-shadow);
   }
 
   .navOpen {

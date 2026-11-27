@@ -140,7 +140,7 @@
   align-items: flex-start;
   justify-content: flex-end;
   gap: var(--web-space-12);
-  min-height: 150px;
+  min-height: var(--web-tile-card-height);
   padding: var(--web-space-20);
 }
 
@@ -249,7 +249,7 @@
 
 .panel {
   margin-top: var(--web-space-20);
-  min-height: 520px;
+  min-height: var(--web-compact-min-height);
   padding: var(--web-space-14) var(--web-space-20) var(--web-space-20);
   border-radius: var(--web-radius-card-large);
   background: var(--color-panel);
@@ -267,12 +267,12 @@
   align-items: center;
   justify-content: center;
   gap: var(--web-space-24);
-  min-height: 490px;
+  min-height: var(--web-empty-min-height);
   text-align: center;
 }
 
 .empty p {
-  max-width: 220px;
+  max-width: var(--web-empty-text-width);
   font-size: var(--text-webNav14-size);
   line-height: var(--text-webNav14-line-height);
   letter-spacing: var(--text-webNav14-tracking);
@@ -322,10 +322,10 @@
 
   .panel {
     padding: var(--web-space-10);
-    min-height: 360px;
+    min-height: var(--web-phone-panel-min-height);
   }
 
   .empty {
-    min-height: 340px;
+    min-height: var(--web-phone-empty-min-height);
   }
 }

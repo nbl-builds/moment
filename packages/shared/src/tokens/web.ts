@@ -238,6 +238,21 @@ export const webLayout = {
   ratingBarHeight: 10,
   reviewPhotoWidth: 56,
   reviewPhotoHeight: 64,
+  /** Menu / card shadow blur (Figma 0 22 133) and chip / bubble blur (0 4 33). */
+  shadowBlur: 133,
+  chipShadowBlur: 33,
+  lightboxWidth: 1100,
+  inboxMinHeight: 600,
+  compactMinHeight: 520,
+  tileCardHeight: 150,
+  emptyMinHeight: 490,
+  emptyTextWidth: 220,
+  phonePanelMinHeight: 360,
+  phoneEmptyMinHeight: 340,
+  /** Narrowest listing card before the grid wraps. */
+  cardMinColumn: 340,
+  ratingColumn: 136,
+  accentBorder: 3,
 } as const;
 
 /**

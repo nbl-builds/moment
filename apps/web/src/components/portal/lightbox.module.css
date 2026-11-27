@@ -12,13 +12,13 @@
   inset: 0;
   border: 0;
   background: var(--color-scrim);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(var(--web-space-2));
   cursor: zoom-out;
 }
 
 .image {
   position: relative;
-  max-width: min(90vw, 1100px);
+  max-width: min(90vw, var(--web-lightbox-width));
   max-height: 84vh;
   border-radius: var(--web-radius-card-large);
   object-fit: contain;

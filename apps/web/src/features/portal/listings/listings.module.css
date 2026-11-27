@@ -73,7 +73,7 @@
   border: 1px solid var(--color-field);
   border-radius: var(--web-radius-card-large);
   background: var(--color-white);
-  box-shadow: 0 var(--web-space-22) 133px var(--color-shadow);
+  box-shadow: 0 var(--web-space-22) var(--web-shadow-blur) var(--color-shadow);
 }
 
 .menuItem {
@@ -96,7 +96,7 @@
 .grid {
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--web-card-min-column)), 1fr));
   gap: var(--web-space-30);
 }
 
