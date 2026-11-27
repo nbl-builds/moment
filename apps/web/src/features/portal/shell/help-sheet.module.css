@@ -1,0 +1,64 @@
+.intro {
+  font-size: var(--text-webBody14-size);
+  line-height: var(--text-webBody14-line-height);
+  color: var(--color-text-muted);
+}
+
+.faq {
+  display: flex;
+  flex-direction: column;
+  gap: var(--web-space-10);
+  margin-top: var(--web-space-20);
+}
+
+.item {
+  padding: var(--web-space-14) var(--web-space-16);
+  border-radius: var(--web-radius-card);
+  background: var(--color-field);
+}
+
+.item summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-webBody14-size);
+  line-height: var(--text-webBody14-line-height);
+}
+
+.item p,
+.news p {
+  margin-top: var(--web-space-8);
+  font-size: var(--text-webBody14-size);
+  line-height: var(--text-webBody14-line-height);
+  color: var(--color-secondary-tint1);
+}
+
+.contact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--web-button-large-height);
+  border-radius: var(--web-radius-card);
+  background: var(--color-secondary);
+  color: var(--color-white);
+  font-weight: var(--font-weight-bold);
+}
+
+.news {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--web-space-20);
+}
+
+.news strong {
+  display: block;
+  margin-top: var(--web-space-2);
+  font-size: var(--text-webBody16-size);
+}
+
+.when {
+  font-size: var(--text-webBody12-size);
+  color: var(--color-suggestion-label);
+  font-weight: var(--font-weight-semibold);
+}

@@ -8,8 +8,3 @@
 .mark {
   margin-top: 0.7px;
 }
-
-/* The SVGs are white; brightness(0) renders them black on light backgrounds. */
-.dark img {
-  filter: brightness(0);
-}

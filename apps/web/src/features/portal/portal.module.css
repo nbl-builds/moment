@@ -1,0 +1,120 @@
+/* Shared portal page pieces (Figma frames: grey page, white cards, x 80 -> 1360). */
+.page {
+  min-height: 100dvh;
+  background: var(--color-page);
+}
+
+.main {
+  max-width: calc(var(--web-content-width1280) + 2 * var(--web-auth-header-inset-x));
+  margin: 0 auto;
+  padding: var(--web-space-50) var(--web-auth-header-inset-x) var(--web-space-60);
+}
+
+.bannerWrap {
+  max-width: calc(var(--web-content-width1280) + 2 * var(--web-auth-header-inset-x));
+  margin: 0 auto;
+  padding: var(--web-space-20) var(--web-auth-header-inset-x) 0;
+}
+
+.banner {
+  padding: var(--web-space-14) var(--web-space-20);
+  border: 1px solid var(--color-notice-border);
+  border-radius: var(--web-radius-card-large);
+  background: var(--color-notice-surface);
+  color: var(--color-notice-text);
+  font-size: var(--text-webBody14-size);
+  line-height: var(--text-webBody14-line-height);
+}
+
+/* Page titles: Headings/H5 Bold 32. */
+.title {
+  font-size: var(--text-webH5-size);
+  line-height: var(--text-webH5-line-height);
+  font-weight: var(--text-webH5-weight);
+  letter-spacing: var(--text-webH5-tracking);
+  color: var(--color-black);
+}
+
+.card {
+  border-radius: var(--web-radius-card);
+  background: var(--color-white);
+}
+
+.cardLarge {
+  border-radius: var(--web-radius-card-large);
+  background: var(--color-white);
+}
+
+/* Outline button (Figma Button Secondary Large / Medium). */
+.outlineButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  height: var(--web-button-large-height);
+  padding: 0 var(--web-button-large-padding-x);
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--web-radius-card);
+  background: var(--color-white);
+  color: var(--color-secondary);
+  font: inherit;
+  font-size: var(--text-webButton16-size);
+  line-height: var(--text-webButton16-line-height);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.outlineButtonSmall {
+  composes: outlineButton;
+  height: var(--web-button-medium-height);
+  padding: 0 var(--web-button-medium-padding-x);
+  font-size: var(--text-webButton14-size);
+}
+
+.outlineButton:hover {
+  background: var(--color-field);
+}
+
+.outlineButton:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.placeholder {
+  max-width: var(--web-reading-width);
+  padding: var(--web-space-40);
+}
+
+.placeholder p {
+  margin-top: var(--web-space-12);
+  color: var(--color-text-muted);
+  font-size: var(--text-webBody16-size);
+  line-height: var(--text-webBody16-line-height);
+}
+
+.placeholder a {
+  margin-top: var(--web-space-24);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 1023.98px) {
+  .main {
+    padding: var(--web-space-24) var(--web-gutter) var(--web-space-40);
+  }
+
+  .bannerWrap {
+    padding: var(--web-space-12) var(--web-gutter) 0;
+  }
+
+  .title {
+    font-size: var(--text-webBody25-size);
+  }
+
+  .placeholder {
+    padding: var(--web-space-24);
+  }
+}
