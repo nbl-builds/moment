@@ -73,12 +73,15 @@ function ReservationPanel({
   const [mode, setMode] = useState<Mode>({ kind: "idle" });
   const [reason, setReason] = useState("");
   const [outcome, setOutcome] = useState<string>();
+  /** When the reservation was loaded: decides if "Mark completed" is offered. */
+  const [loadedAt, setLoadedAt] = useState(0);
 
   const load = useCallback(
     async (id: string) => {
       setError(undefined);
       try {
         setData(await api.portal.getReservation(id));
+        setLoadedAt(Date.now());
       } catch (e) {
         setError(errorMessage(e, "We couldn't load this reservation."));
       }
@@ -124,7 +127,7 @@ function ReservationPanel({
   }
 
   const b = data;
-  const started = b ? new Date(b.starts_at).getTime() <= Date.now() : false;
+  const started = b ? new Date(b.starts_at).getTime() <= loadedAt : false;
   const paid = b ? b.payment_status === "paid" || b.payment_status === "partially_paid" : false;
   const busy = mode.kind === "busy";
 
