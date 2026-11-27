@@ -73,7 +73,8 @@ describe.skipIf(!url || !key)('portal API', () => {
 
   it('lists listings by state and category group', async () => {
     const counts = await owner.portal.listingCounts(BIZ);
-    expect(counts).toMatchObject({ draft: 2, archived: 1 });
+    // Drafts include the wizard demo drafts (339-342) and listings waiting for review.
+    expect(counts).toMatchObject({ draft: 6, archived: 1 });
     const food = await owner.portal.listListings(BIZ, 'published', { groupSlug: 'food' });
     expect(food.map((l) => l.title)).toContain('Walled City Food Walk at Dusk');
     expect(food.every((l) => l.category?.parent?.slug === 'food' || l.category?.slug === 'food')).toBe(true);
