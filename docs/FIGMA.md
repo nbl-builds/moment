@@ -202,3 +202,17 @@ set `127:886`). Web tokens: `packages/shared/src/tokens/web.ts`.
 
 Photos per flow: phone (cave, `welcome`), email (harness, `email`), login (quad
 bikes), forgot (dog), reset (hiker); in `apps/web/public/business/auth` as WebP 710 / 1420.
+
+## Portal main area
+| Frame | Node | Built |
+|---|---|---|
+| Dashboard (empty / with reservations) | 102:2894, 209:929 | `app/business/(portal)/dashboard` |
+| Avatar menu | 203:763 | `features/portal/shell/top-bar.tsx` |
+| Calendar (no listing / with reservations) | 102:3034, 477:2553 | `app/business/(portal)/calendar` |
+| Inbox / time filter | 127:507, 476:1958 | `app/business/(portal)/inbox` |
+| My Listings / My Drafts + category menu / My Archives | 126:302, 626:5263, 626:5371 | `app/business/(portal)/listings` |
+| Insights (top / full) | 127:456, 512:2143 | `app/business/(portal)/insights` |
+| Reviews | 513:2725 | `app/business/(portal)/reviews` |
+| Listing Details (start only) | 629:7360 | next section |
+
+Not in Figma, built in the portal style: the reservation side panel, the help and What's New sheets, review replies, the phone menu.

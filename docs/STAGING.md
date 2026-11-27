@@ -212,3 +212,17 @@ dashboard; log in with its phone and password instead, or delete the test
 account in Supabase > Authentication (delete its business first: a business must
 keep an owner). E2E against staging (phone flow only):
 `cd apps/web && E2E_BASE_URL=https://moment-web-staging.work-nabeelahmed.workers.dev pnpm exec playwright test --project=desktop`
+
+## Portal demo business on staging
+
+Loaded once (2026-11-28) from `supabase/seeds/portal_demo.sql`, on its own and
+in one transaction, because `db push --include-seed` would re-run the changed
+`seed.sql` on top of the existing data:
+```bash
+{ echo "begin;"; cat supabase/seeds/portal_demo.sql; echo "commit;"; } > /tmp/portal_demo_tx.sql
+pnpm exec supabase db query --linked -f /tmp/portal_demo_tx.sql
+```
+Log in at https://moment-web-staging.work-nabeelahmed.workers.dev/business/login
+with `portal@moment.test` / `password123` (owner), `manager.portal@moment.test`
+or `staff.portal@moment.test` (roles). Dates are relative to the day it was
+loaded, so "today" on staging drifts; reload it on a fresh project if needed.

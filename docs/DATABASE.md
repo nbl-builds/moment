@@ -78,6 +78,12 @@ RLS helpers live in the `private` schema (not exposed through the API), are `sec
 
 **Hosts.** A host is a `staff_member` with `is_host = true`. "Top Hosts" ranks them by rating. A solo local host is a business of kind `host` with one staff member linked to the owner's login.
 
+### Business portal (Insights, Inbox)
+- `listing_views`: one row per view of an experience (`listing_id`) or a business page (`listing_id` null). Written only by `record_listing_view(listing, business, session_key, source)` (anon and signed in): published listings / active businesses only, the business's own team doesn't count, and the same viewer (account, or a guest's per-install `session_key`) is counted once per page per 30 minutes. RLS: no client reads (admins only); businesses see aggregates through `business_insights`.
+- `business_insights(business, period)`: one jsonb for the Insights page. `weekly` = last 7 days by day, `monthly` = last 4 weeks by week, `yearly` = last 12 months by month, in the business's timezone. Bookings created, views (with the previous period for % change), rating and monthly trend, bookings per category group, newly added and most viewed listings. `revenue` (succeeded payments minus Moment's fee) and `wallet` (collected by Moment, minus refunds and payouts) are only returned to owners; managers and staff get null.
+- `business_inbox(business, search, unread_only, since, limit)`: the shared inbox, one row per business conversation with the guest, the reservation or the guest's latest booked listing (+ cover), the last message and unread guest messages for the signed-in team member (each member has their own `conversation_participants.last_read_at`).
+- `start_guest_conversation(booking)`: "Message guest". A team member opens or resumes the reservation's chat (the guest is a participant), the same conversation the guest sees in the app.
+
 ### Catalog
 - `categories` (nestable, by kind), `tags` (drive recommendations). The 7 business sign-up tiles (Adventure, Tours, Food, Health & Wellness, Art & Culture, Entertainment, Beauty) are categories with `is_group = true`, a `description`, and `business_kind`: what a "Business" picking that tile becomes (`operator` for Adventure, Tours, Art & Culture; `venue` for Food, Health & Wellness, Entertainment, Beauty). Hosts are always `host`. Listing categories are their children (`parent_id`); `catalog.listCategories` leaves the groups out, `business.listSignUpCategories` returns only them.
 - Curation tags `local-fun` and `must-try` fill the Home rails "Local fun" and "Must-trys" (tagged listings in the user's city).
@@ -238,6 +244,9 @@ pnpm db:types    # regenerate packages/shared/src/types/database.types.ts
 - `09_business_page`: opening hours and `business_is_open` (split days, past midnight), gallery and hours RLS, seed coverage, review-photo uploads, `reviewable_bookings`, location points.
 
 ### Seed data (local only)
+
+`seed.sql` plus every file in `supabase/seeds/` (config `[db.seed] sql_paths`). `seeds/portal_demo.sql` is the business portal demo (owner `portal@moment.test`, manager `manager.portal@`, staff `staff.portal@`, password `password123`): Lahore Heritage Trails with listings in every state, ~90 bookings in every status, unread guest chats, reviews with photos and replies, payments, a payout and 4,200 view events. Run `pnpm db:test` on a fresh reset: the integration tests change seed data.
+
 Every account uses password `password123`. Emails end in `@moment.test`.
 
 | Account | Role |
